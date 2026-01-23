@@ -1,0 +1,117 @@
+import type { Cake, SpecialOffer, CustomizationOptions } from './types';
+
+export const cakes: Cake[] = [
+  {
+    id: 'red-velvet-delight',
+    name: 'Red Velvet Delight',
+    description: 'A classic Southern dessert, this cake boasts a moist, velvety crumb with a hint of cocoa, layered with rich cream cheese frosting.',
+    base_price: 3200,
+    image_id: 'red-velvet-delight',
+    rating: 4.8,
+    category: 'Classic',
+    orders_count: 152,
+    ready_time: '24h',
+  },
+  {
+    id: 'strawberry-dream',
+    name: 'Strawberry Dream',
+    description: 'Light vanilla sponge cake filled with fresh strawberries and whipped cream. A dreamy, refreshing treat for any occasion.',
+    base_price: 3000,
+    image_id: 'strawberry-dream',
+    rating: 4.7,
+    category: 'Fruit',
+    orders_count: 120,
+    ready_time: '24h',
+  },
+    {
+    id: 'chocolate-fudge-bliss',
+    name: 'Chocolate Fudge Bliss',
+    description: 'A chocoholic\'s dream. Decadent layers of rich chocolate fudge cake and creamy chocolate ganache. Pure bliss.',
+    base_price: 3500,
+    image_id: 'special-offer-cake', // Re-using special offer image for this
+    rating: 4.9,
+    category: 'Chocolate',
+    orders_count: 210,
+    ready_time: '48h',
+  },
+  {
+    id: 'lemon-zest-creation',
+    name: 'Lemon Zest Creation',
+    description: 'A zesty and tangy lemon cake made with fresh lemon juice and zest, topped with a sweet lemon glaze.',
+    base_price: 2800,
+    image_id: 'lemon-zest-creation',
+    rating: 4.6,
+    category: 'Citrus',
+    orders_count: 98,
+    ready_time: '24h',
+  },
+  {
+    id: 'vanilla-bean-classic',
+    name: 'Vanilla Bean Classic',
+    description: 'Timeless and elegant. A moist vanilla bean cake with a silky smooth vanilla buttercream frosting. Simply perfect.',
+    base_price: 2500,
+    image_id: 'vanilla-bean-classic',
+    rating: 4.5,
+    category: 'Classic',
+    orders_count: 180,
+    ready_time: '24h',
+  },
+  {
+    id: 'matcha-elegance',
+    name: 'Matcha Elegance',
+    description: 'A sophisticated cake featuring premium matcha green tea, balanced with a light and airy white chocolate mousse.',
+    base_price: 3800,
+    image_id: 'matcha-elegance',
+    rating: 4.8,
+    category: 'Exotic',
+    orders_count: 75,
+    ready_time: '48h',
+  },
+];
+
+export const specialOffer: SpecialOffer = {
+  cake: {
+    id: 'special-offer-cake',
+    name: 'Whiskey Delight',
+    description: 'Our signature creation. A rich chocolate cake infused with a hint of premium whiskey, layered with a salted caramel buttercream. An unforgettable taste.',
+    base_price: 4000,
+    image_id: 'special-offer-cake',
+    rating: 4.9,
+    category: 'Signature',
+    orders_count: 88,
+    ready_time: '48h',
+  },
+  discount_percentage: 20,
+  original_price: 4000,
+  special_price: 3200,
+  savings: 800,
+};
+
+export const customizationOptions: CustomizationOptions = {
+  flavors: [
+    { id: 'f1', name: 'Classic Vanilla', description: 'Sweet and aromatic', price: 0, color: '#F3E5AB' },
+    { id: 'f2', name: 'Rich Chocolate', description: 'Deep and decadent', price: 200, color: '#5D4037' },
+    { id: 'f3', name: 'Zesty Lemon', description: 'Bright and refreshing', price: 150, color: '#FFF59D' },
+    { id: 'f4', name: 'Red Velvet', description: 'Classic Southern charm', price: 300, color: '#B71C1C' },
+  ],
+  sizes: [
+    { id: 's1', name: '6" Round', serves: '6-8 people', price: 0 },
+    { id: 's2', name: '8" Round', serves: '10-12 people', price: 800 },
+    { id: 's3', name: '10" Round', serves: '15-20 people', price: 1500 },
+    { id: 's4', name: 'Two-Tier', serves: '25-30 people', price: 4000 },
+  ],
+  colors: [
+    { id: 'c1', name: 'Classic White', hex_value: '#FFFFFF', price: 0 },
+    { id: 'c2', name: 'Pastel Pink', hex_value: '#FFCDD2', price: 100 },
+    { id: 'c3', name: 'Sky Blue', hex_value: '#BBDEFB', price: 100 },
+    { id: 'c4', name: 'Golden Amber', hex_value: '#FFD54F', price: 200 },
+    { id: 'c5', name: 'Rich Chocolate', hex_value: '#5D4037', price: 250 },
+  ],
+  toppings: [
+    { id: 't1', name: 'Fresh Berries', price: 400 },
+    { id: 't2', name: 'Chocolate Drip', price: 300 },
+    { id: 't3', name: 'Macarons (3 pcs)', price: 500 },
+    { id: 't4', name: 'Edible Flowers', price: 350 },
+    { id: 't5', name: 'Gold Leaf Flakes', price: 600 },
+  ],
+};
