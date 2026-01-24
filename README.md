@@ -236,7 +236,7 @@ These tables store the available choices for building a custom cake.
 
 ### d. MS SQL Server Table Creation Scripts
 
-You can use a database migration tool (like Prisma, Drizzle) to generate tables from a schema, or create them directly using these SQL scripts in a tool like SQL Server Management Studio (SSMS) or Azure Data Studio.
+You can use these SQL scripts to create the tables in a tool like SQL Server Management Studio (SSMS) or Azure Data Studio.
 
 ```sql
 -- This script is for Microsoft SQL Server.
@@ -322,35 +322,116 @@ CREATE TABLE customization_toppings (
     name NVARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) NOT NULL
 );
-
--- Note on updated_at: For automatic updates on change, a trigger would be required in MS SQL.
--- Example trigger for the 'cakes' table:
-/*
-CREATE TRIGGER trg_cakes_updated_at
-ON cakes
-AFTER UPDATE
-AS
-BEGIN
-    UPDATE cakes
-    SET updated_at = GETDATE()
-    FROM inserted
-    WHERE cakes.id = inserted.id;
-END;
-*/
 ```
 
-### e. Local MS SQL Server Setup (using Docker)
+### e. MySQL / MariaDB Table Creation Scripts (for XAMPP users)
+If you are using XAMPP, use these scripts in phpMyAdmin or a similar tool.
 
-The easiest way to run a local MS SQL database is with Docker. This avoids installing it directly on your system.
+```sql
+-- This script is for MySQL or MariaDB.
+
+-- 1. Cakes Table
+CREATE TABLE cakes (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    base_price DECIMAL(10, 2) NOT NULL,
+    image_id VARCHAR(255),
+    rating FLOAT DEFAULT 0,
+    category VARCHAR(255),
+    orders_count INT DEFAULT 0,
+    ready_time VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+-- 2. Special Offers Table
+CREATE TABLE special_offers (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    cake_id VARCHAR(255),
+    discount_percentage INT NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    start_date DATE,
+    end_date DATE,
+    FOREIGN KEY (cake_id) REFERENCES cakes(id) ON DELETE SET NULL
+);
+
+-- 3. Orders Table
+CREATE TABLE orders (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_number VARCHAR(255) NOT NULL UNIQUE,
+    customer_name VARCHAR(255) NOT NULL,
+    customer_phone VARCHAR(20) NOT NULL,
+    customer_email VARCHAR(255),
+    delivery_method ENUM('delivery', 'pickup') NOT NULL,
+    delivery_address TEXT,
+    pickup_location VARCHAR(255),
+    delivery_date DATE,
+    total_price DECIMAL(10, 2) NOT NULL,
+    payment_status ENUM('pending', 'paid') DEFAULT 'pending',
+    order_status ENUM('processing', 'complete', 'cancelled') DEFAULT 'processing',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Order Items Table
+CREATE TABLE order_items (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    order_id INT NOT NULL,
+    cake_id VARCHAR(255) NOT NULL,
+    quantity INT NOT NULL DEFAULT 1,
+    price_at_purchase DECIMAL(10, 2) NOT NULL,
+    customizations_json JSON,
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (cake_id) REFERENCES cakes(id)
+);
+
+-- 5. Customization Flavors Table
+CREATE TABLE customization_flavors (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL
+);
+
+-- 6. Customization Sizes Table
+CREATE TABLE customization_sizes (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    serves VARCHAR(255),
+    price DECIMAL(10, 2) NOT NULL
+);
+
+-- 7. Customization Colors Table
+CREATE TABLE customization_colors (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    hex_value VARCHAR(7),
+    price DECIMAL(10, 2) NOT NULL
+);
+
+-- 8. Customization Toppings Table
+CREATE TABLE customization_toppings (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL
+);
+```
+
+### f. Local Database Setup
+
+The Next.js frontend **should not** connect directly to the database for security reasons. It must communicate with a **backend API**. The following instructions are for setting up the database that your future backend API will connect to.
+
+#### Option 1: Local MS SQL Server Setup (using Docker)
+
+The easiest way to run a local MS SQL database is with Docker.
 
 **Prerequisites:**
 -   **Docker Desktop**: Make sure it is installed and running on your machine.
--   **Database Tool**: A tool to connect to and manage the database. **Azure Data Studio** is recommended for MS SQL, but others like DBeaver or the SQL Server extension for VS Code also work.
+-   **Database Tool**: **Azure Data Studio** is recommended for MS SQL.
 
 **Step-by-Step Instructions:**
 
 1.  **Create a Database Docker Compose File:**
-    In the root of your project, create a new file named `docker-compose.sql.yml` (to keep it separate from the app's `docker-compose.yml`) and add the following content:
+    In the root of your project, create a new file named `docker-compose.sql.yml` and add the following:
 
     ```yml
     version: '3.8'
@@ -369,46 +450,57 @@ The easiest way to run a local MS SQL database is with Docker. This avoids insta
     volumes:
       sqlserver_data:
     ```
-    > **Important:** Change `your_Strong_Password123` to a secure password.
 
 2.  **Start the Database Container:**
-    Open your terminal in the project root and run the following command:
+    Open your terminal in the project root and run:
     ```bash
     docker-compose -f docker-compose.sql.yml up -d
     ```
-    This will download the MS SQL Server image and start it in the background. The `-d` flag means "detached mode".
 
 3.  **Connect to Your Local Database:**
-    -   Open Azure Data Studio (or your preferred tool).
-    -   Create a new connection with the following settings:
+    -   Open Azure Data Studio.
+    -   Create a new connection:
         -   **Server**: `localhost`
         -   **Authentication type**: `SQL Login`
-        -   **User name**: `sa` (this is the default System Administrator user)
+        -   **User name**: `sa`
         -   **Password**: The password you set in the `docker-compose.sql.yml` file.
-        -   **Database Name**: You can leave this blank for now.
-    -   Connect. You are now connected to your local SQL Server instance!
+    -   Connect.
 
 4.  **Create the Database and Tables:**
-    -   Once connected, open a new query editor.
-    -   First, create the database by running:
-        ```sql
-        CREATE DATABASE CakeParadiseDB;
-        ```
-    -   Then, switch your connection to use this new database.
-    -   Finally, copy all the `CREATE TABLE` scripts from the section above and run them in the query editor to create all your application's tables.
+    -   Open a new query editor.
+    -   Run `CREATE DATABASE CakeParadiseDB;`
+    -   Switch your connection to use this new database.
+    -   Copy and run the **MS SQL Server** `CREATE TABLE` scripts from the section above.
 
-Your local database is now set up and ready to be used by a backend application.
+#### Option 2: Using XAMPP for the Database (MySQL/MariaDB)
 
-### f. Connecting a Backend to Your Database
+If you prefer to use XAMPP, you can use its included MySQL/MariaDB server.
 
-This Next.js app is a **frontend** and **should not connect directly to the database**. You must build a **backend API** (e.g., using Node.js/Express, ASP.NET, or even Next.js API Routes) that handles database operations.
+1. **Start XAMPP**: Open the XAMPP Control Panel and start the `Apache` and `MySQL` modules.
+2. **Open phpMyAdmin**: Click the `Admin` button next to the MySQL module. This will open phpMyAdmin in your browser.
+3. **Create the Database**:
+   - In phpMyAdmin, click on the `Databases` tab.
+   - Enter `CakeParadiseDB` in the "Create database" field and click `Create`.
+4. **Run SQL Scripts**:
+   - Select the `CakeParadiseDB` database from the left-hand sidebar.
+   - Click on the `SQL` tab.
+   - Copy all the **MySQL/MariaDB** `CREATE TABLE` scripts from the section above and paste them into the query box.
+   - Click the `Go` button to create all the tables.
 
-In your backend application's environment file (e.g., `.env`), you would add a connection string like this:
 
+### g. Connecting a Backend to Your Database
+
+Your backend application (e.g., using Node.js/Express, ASP.NET) will handle the database operations. In that **separate backend project**, you would have an environment file (`.env`) with a connection string like this:
+
+**For MS SQL Server:**
 ```
 DATABASE_URL="sqlserver://localhost:1433;database=CakeParadiseDB;user=sa;password=your_Strong_Password123;encrypt=false;trustServerCertificate=true"
 ```
-Your backend code would then use this string with a library like `node-mssql` or an ORM like Prisma to execute queries against the database and expose the data via the API endpoints defined in section 5a.
+**For MySQL/MariaDB (XAMPP):**
+```
+DATABASE_URL="mysql://root:@localhost:3306/CakeParadiseDB"
+```
+Your backend code would then use this string to connect to the database and expose the API endpoints listed in section 5a.
 
 ## 7. Local Development Setup
 
