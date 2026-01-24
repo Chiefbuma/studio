@@ -1,4 +1,1 @@
-import { config } from 'dotenv';
-config();
-
-import '@/ai/flows/personalized-cake-recommendations.ts';
+// This file is intentionally left blank.

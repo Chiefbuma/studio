@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/utils';
 import { BackToHomeButton } from './back-to-home-button';
 import { Star, Clock, ShoppingCart, BookOpen } from 'lucide-react';
-import { AiRecommender } from './ai-recommender';
 
 interface MenuProps {
   cakes: Cake[];
@@ -91,10 +90,6 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
           <CarouselPrevious className="hidden sm:flex" />
           <CarouselNext className="hidden sm:flex" />
         </Carousel>
-        
-        <div className="max-w-4xl mx-auto mt-16 sm:mt-24">
-            <AiRecommender />
-        </div>
       </div>
     </div>
   );

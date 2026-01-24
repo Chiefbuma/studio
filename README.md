@@ -16,11 +16,7 @@ This application is built on a modern, robust, and scalable technology stack des
 
 -   **ShadCN/UI**: A collection of beautifully designed, accessible, and reusable UI components built on top of Radix UI and Tailwind CSS. This accelerates UI development and ensures consistency.
 
--   **Genkit (with Google AI)**: An open-source framework from Google for building AI-powered features. It is used here for the "AI Recommender" feature to generate personalized cake suggestions.
-
 -   **Paystack**: A payment gateway integrated for processing M-Pesa payments securely. The integration uses the official Paystack inline popup.
-
--   **Zod**: A TypeScript-first schema declaration and validation library. It's used in our AI flows to define and enforce the structure of data passed to and from the AI models.
 
 ## 2. Design Principles & Architecture
 
@@ -41,8 +37,7 @@ Logic is clearly separated into different layers of the application.
     -   `useCart`: Manages the global shopping cart state (adding, removing, updating items) and persists it to `localStorage`.
     -   `useCakeData`: Manages the fetching and loading state of all initial cake data for the application.
 -   **Data Fetching (`src/services`):** The `cake-service.ts` file is responsible for all data retrieval. It abstracts the data source from the rest of the application. **This is the key to easy backend integration.**
--   **Server-Side Logic (`src/lib/actions.ts`):** Next.js Server Actions are used to handle secure operations that should run on the server, such as placing an order or calling the AI service. This avoids the need to create and expose traditional API endpoints.
--   **AI Logic (`src/ai/flows`):** All Genkit-related code, including prompts and flow definitions, is isolated in this directory.
+-   **Server-Side Logic (`src/lib/actions.ts`):** Next.js Server Actions are used to handle secure operations that should run on the server, such as placing an order. This avoids the need to create and expose traditional API endpoints.
 
 ## 3. File-by-File Breakdown
 
@@ -57,7 +52,6 @@ Here is an explanation of the key files and directories in the project.
 -   `src/components/`
     -   `cake-paradise/`: Contains all the custom components specific to this application.
         -   `customization/`: Components related to the cake customization modal and forms.
-        -   `ai-recommender.tsx`: The component that interacts with the Genkit AI flow.
         -   `cart-icon.tsx` & `cart-sheet.tsx`: The floating cart button and the slide-out cart panel.
         -   `cover-page.tsx`, `special-offer.tsx`, `menu.tsx`: The three main views of the homepage.
     -   `ui/`: Contains the ShadCN/UI components (e.g., `Button.tsx`, `Card.tsx`, `Dialog.tsx`). These are general-purpose, reusable UI primitives.
@@ -68,7 +62,7 @@ Here is an explanation of the key files and directories in the project.
     -   `use-toast.ts`: A hook for showing toast notifications.
 
 -   `src/lib/`
-    -   `actions.ts`: Contains Next.js Server Actions. These are server-side functions that can be called directly from client components. `placeOrder` and `personalizedCakeRecommendations` are defined here.
+    -   `actions.ts`: Contains Next.js Server Actions. `placeOrder` is defined here.
     -   `data.ts`: **(Mock Backend)** Contains the hardcoded array of cakes, special offers, and customization options. This file acts as our temporary database.
     -   `placeholder-images.ts` & `.json`: Defines and exports all placeholder image data to ensure consistency.
     -   `types.ts`: Contains all TypeScript type definitions for the application's data structures (e.g., `Cake`, `CartItem`).
@@ -76,10 +70,6 @@ Here is an explanation of the key files and directories in the project.
 
 -   `src/services/`
     -   `cake-service.ts`: **(Data Access Layer)** This service contains functions (`getCakes`, `getSpecialOffer`, etc.) that simulate fetching data with a delay. It currently imports from `src/lib/data.ts`.
-
--   `src/ai/`
-    -   `genkit.ts`: Initializes and configures the Genkit `ai` instance.
-    -   `flows/personalized-cake-recommendations.ts`: Defines the Genkit flow for the AI recommender, including the Zod schemas for input/output and the prompt itself.
 
 -   `package.json`: Lists all project dependencies and scripts.
 -   `.env`: **(Important)** This file is for environment variables. You must add your Paystack public key here for payments to work.
@@ -124,15 +114,7 @@ This application was designed to make backend integration straightforward. You o
     3.  Your backend will save the order to a database and return a real order number.
     4.  Return the response from your backend.
 
-### c. AI Recommendations
-
--   **File to Modify**: `src/lib/actions.ts` (the `personalizedCakeRecommendations` function).
--   **Current Implementation**: It uses a hardcoded `MOCK_USER_ORDER_HISTORY`.
--   **Future Implementation**:
-    1.  If a user is logged in, you would first fetch their real order history from your backend.
-    2.  Pass this real history to the `personalizedCakeRecommendationsFlow`.
-
-### d. Verifying Payments
+### c. Verifying Payments
 
 -   **File to Modify**: `src/app/checkout/page.tsx` (the `handlePaymentSuccess` function).
 -   **Current Implementation**: When payment succeeds, it shows a toast message and clears the cart.
@@ -265,17 +247,14 @@ Follow these instructions to get the application running on your local machine.
 
 ### b. Environment Variables
 
-For the application to run correctly, especially for payment integration and AI features, you must provide a few environment variables.
+For the application to run correctly, especially for payment integration, you must provide an environment variable.
 
 1.  Create a new file named `.env` in the root of the project.
-2.  Add the following lines to the file, replacing the placeholders with your actual keys:
+2.  Add the following line to the file, replacing the placeholder with your actual key:
 
     ```
     # Your public key from the Paystack dashboard (required for payments)
     NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxx
-
-    # Your API key from Google AI Studio (required for the AI Recommender)
-    GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxx
     ```
 
 ### c. Standard Installation
