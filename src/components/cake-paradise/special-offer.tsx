@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { SocialIcons } from "./social-icons";
-import { ArrowRight, CheckCircle, Clock, Crown, Star, Sparkles, Cake as CakeIcon } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, Crown, Star, Sparkles, Cake as CakeIcon, Trophy } from "lucide-react";
 
 interface SpecialOfferProps {
     specialOffer: SpecialOfferType | null;
@@ -29,30 +29,8 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
             <SocialIcons />
             
             <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:py-12 min-h-screen flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
-                <div className="lg:w-1/2 w-full flex">
-                    <div className="relative group w-full">
-                         <div className="absolute -inset-2 bg-gradient-to-r from-primary/50 to-accent/50 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-all duration-500 animate-pulse"></div>
-                        <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-background/10 h-96 lg:h-[32rem]">
-                            <Image
-                                src={cakeImage.imageUrl}
-                                alt={cake.name}
-                                fill
-                                className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                data-ai-hint={cakeImage.imageHint}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                            
-                            <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm p-3 rounded-xl shadow-lg flex items-center gap-3">
-                                <CheckCircle className="w-5 h-5 text-primary" />
-                                <div>
-                                    <div className="font-bold text-sm text-foreground">{cake.orders_count}+ Orders</div>
-                                    <div className="text-xs text-muted-foreground">This Month</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
+                
+                {/* Left Side: Text Content */}
                 <div className="lg:w-1/2 w-full">
                     <div className="relative bg-card/5 backdrop-blur-sm rounded-2xl p-6 sm:p-8 lg:p-12 shadow-2xl border border-primary/20 overflow-hidden flex flex-col justify-center">
                         <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
@@ -86,7 +64,7 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
+                            <div className="flex flex-col sm:flex-row flex-wrap gap-4">
                                 <Button className="shadow-lg hover:shadow-primary/50 transition-shadow" onClick={() => onOrder(cake)}>
                                     <CakeIcon className="mr-2 h-5 w-5" /> Add to Cart
                                 </Button>
@@ -96,6 +74,40 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                                 <Button variant="outline" className="bg-card/10 border-primary/30 hover:bg-card/20" onClick={onNavigateToMenu}>
                                     View Full Menu <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Side: Image Content */}
+                <div className="lg:w-1/2 w-full flex justify-center">
+                    <div className="relative group w-full max-w-md">
+                         <div className="absolute -inset-2 bg-gradient-to-r from-primary/50 to-accent/50 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-all duration-500 animate-pulse"></div>
+                        <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-background/10 h-96 lg:h-[32rem]">
+                            <Image
+                                src={cakeImage.imageUrl}
+                                alt={cake.name}
+                                fill
+                                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                data-ai-hint={cakeImage.imageHint}
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                            
+                            {/* #1 Best Seller Badge (Top Right) */}
+                            <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 bg-background/90 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-4 shadow-xl border border-primary/20">
+                                <div className="text-center">
+                                    <div className="flex justify-center items-center gap-1 text-lg sm:text-2xl font-bold text-primary"><Trophy className="w-5 h-5 sm:w-6 sm:h-6" />1</div>
+                                    <div className="text-xs sm:text-sm text-muted-foreground">Best Seller</div>
+                                </div>
+                            </div>
+                            
+                             {/* Orders This Month Badge (Bottom Left) */}
+                            <div className="absolute -bottom-2 -left-2 sm:-bottom-4 sm:-left-4 bg-background/80 backdrop-blur-sm p-3 rounded-xl shadow-lg flex items-center gap-3 border border-primary/20">
+                                <CheckCircle className="w-5 h-5 text-primary" />
+                                <div>
+                                    <div className="font-bold text-sm text-foreground">{cake.orders_count}+ Orders</div>
+                                    <div className="text-xs text-muted-foreground">This Month</div>
+                                </div>
                             </div>
                         </div>
                     </div>
