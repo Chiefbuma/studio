@@ -9,11 +9,10 @@ import type { Cake } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CakeSlice } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
-import { CartIcon } from '@/components/cake-paradise/cart-icon';
 import { CartSheet } from '@/components/cake-paradise/cart-sheet';
 import { useCakeData } from '@/hooks/use-cake-data';
-import { AppFooter } from '@/components/cake-paradise/footer';
 import { SocialIcons } from '@/components/cake-paradise/social-icons';
+import { AppHeader } from '@/components/cake-paradise/header';
 
 export default function Home() {
   const [view, setView] = useState<'cover' | 'offer' | 'menu'>('cover');
@@ -85,10 +84,10 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden flex flex-col">
-      <main className="flex-grow">
+    <div className="min-h-screen bg-background overflow-x-hidden">
+      <AppHeader />
+      <main>
         <SocialIcons />
-        <CartIcon />
         <CartSheet />
         
         {view === 'cover' && <CoverPage />}
@@ -118,7 +117,6 @@ export default function Home() {
           />
         )}
       </main>
-      <AppFooter />
     </div>
   );
 }

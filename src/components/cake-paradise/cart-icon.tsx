@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
+// THIS COMPONENT IS NO LONGER USED ON THE MAIN PAGE.
+// It has been replaced by the cart button in the new AppHeader component.
 export function CartIcon() {
   const { itemCount, setIsCartOpen } = useCart();
 
