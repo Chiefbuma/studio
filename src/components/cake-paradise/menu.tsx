@@ -69,22 +69,28 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
 
     const nextSlide = () => {
         setIsInteracting(true);
-        setCurrentSlide((prev) => (prev === cakes.length - 1 ? 0 : prev + 1));
+        setCurrentSlide((prev) => (prev === cakes.length - 1 ? prev : prev + 1));
     };
 
     const prevSlide = () => {
         setIsInteracting(true);
-        setCurrentSlide((prev) => (prev === 0 ? cakes.length - 1 : prev - 1));
+        setCurrentSlide((prev) => (prev === 0 ? prev : prev - 1));
     };
 
     useEffect(() => {
-        const interactionTimer = setTimeout(() => setIsInteracting(false), 5000);
-        return () => clearTimeout(interactionTimer);
-    }, [currentSlide]);
+        // Reset interaction flag after a delay
+        if (isInteracting) {
+            const timer = setTimeout(() => setIsInteracting(false), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [isInteracting]);
     
     useEffect(() => {
+        // Autoplay logic - cycles through and resets
         if (isInteracting) return;
-        const autoplay = setInterval(nextSlide, 5000);
+        const autoplay = setInterval(() => {
+            setCurrentSlide((prev) => (prev === cakes.length - 1 ? 0 : prev + 1));
+        }, 5000);
         return () => clearInterval(autoplay);
     }, [isInteracting, cakes.length]);
     
@@ -125,59 +131,48 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                                 <CakeCard cake={cakes[currentSlide]} onOrder={onOrder} />
                             </motion.div>
                         </AnimatePresence>
-                         <Button onClick={prevSlide} size="icon" variant="outline" className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10"><ChevronLeft /></Button>
-                         <Button onClick={nextSlide} size="icon" variant="outline" className="absolute -right-2 sm:-right-4 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10"><ChevronRight /></Button>
+                         <Button onClick={prevSlide} size="icon" variant="outline" className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10" disabled={currentSlide === 0}><ChevronLeft /></Button>
+                         <Button onClick={nextSlide} size="icon" variant="outline" className="absolute -right-2 sm:-right-4 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10" disabled={currentSlide === cakes.length - 1}><ChevronRight /></Button>
                     </div>
                 ) : (
-                    // Desktop: 3D Perspective Carousel
-                    <div className="relative w-full h-[550px] flex items-center justify-center" style={{ perspective: '1200px' }}>
+                    // Desktop: Overlapping Stack Carousel
+                    <div className="relative w-full h-[550px] flex items-center justify-center">
                         <AnimatePresence>
                             {cakes.map((cake, index) => {
                                 const distance = index - currentSlide;
-                                let circularDistance = distance;
-                                const half = cakes.length / 2;
-                                if (distance > half) {
-                                    circularDistance = distance - cakes.length;
-                                } else if (distance < -half) {
-                                    circularDistance = distance + cakes.length;
-                                }
                                 
-                                if (Math.abs(circularDistance) > 2) {
+                                // Only render the current, previous, and next slides for performance
+                                if (Math.abs(distance) > 1) {
                                     return null;
                                 }
 
-                                const isCenter = circularDistance === 0;
-                                const isAdjacent = Math.abs(circularDistance) === 1;
-
-                                const scale = 1 - Math.abs(circularDistance) * 0.2;
-                                const opacity = isCenter ? 1 : (isAdjacent ? 0.7 : 0);
-                                const zIndex = 100 - Math.abs(circularDistance);
-                                const translateX = circularDistance * 60; // In percentage
-                                const rotateY = circularDistance * -20; // In degrees
+                                const isCenter = distance === 0;
+                                const zIndex = 100 - Math.abs(distance);
+                                const scale = 1 - Math.abs(distance) * 0.15;
+                                const translateX = distance * 65; // Percentage for overlap
+                                const opacity = isCenter ? 1 : 0.5;
                                 
                                 return (
                                     <motion.div
                                         key={cake.id}
                                         className="absolute w-full max-w-sm"
-                                        style={{ transformStyle: 'preserve-3d', zIndex }}
-                                        initial={{ scale: 0, opacity: 0, x: '0%', rotateY: 0 }}
+                                        style={{ zIndex }}
+                                        initial={{ scale: 0, opacity: 0, x: `${translateX}%` }}
                                         animate={{
-                                            scale: isCenter ? 1.05 : scale,
-                                            opacity: opacity,
+                                            scale,
+                                            opacity,
                                             x: `${translateX}%`,
-                                            rotateY: rotateY,
                                         }}
-                                        exit={{ scale: 0, opacity: 0 }}
+                                        exit={{ scale: 0.5, opacity: 0, x: `${distance > 0 ? 150 : -150}%` }}
                                         transition={{ type: "spring", stiffness: 100, damping: 20 }}
-                                        layout
                                     >
                                         <CakeCard cake={cake} onOrder={onOrder} />
                                     </motion.div>
                                 );
                             })}
                         </AnimatePresence>
-                        <Button onClick={prevSlide} size="icon" variant="outline" className="absolute -left-8 top-1/2 -translate-y-1/2 z-[101] rounded-full h-12 w-12"><ChevronLeft /></Button>
-                        <Button onClick={nextSlide} size="icon" variant="outline" className="absolute -right-8 top-1/2 -translate-y-1/2 z-[101] rounded-full h-12 w-12"><ChevronRight /></Button>
+                        <Button onClick={prevSlide} size="icon" variant="outline" className="absolute -left-8 top-1/2 -translate-y-1/2 z-[101] rounded-full h-12 w-12" disabled={currentSlide === 0}><ChevronLeft /></Button>
+                        <Button onClick={nextSlide} size="icon" variant="outline" className="absolute -right-8 top-1/2 -translate-y-1/2 z-[101] rounded-full h-12 w-12" disabled={currentSlide === cakes.length - 1}><ChevronRight /></Button>
                     </div>
                 )}
                  <div className="flex justify-center gap-2 mt-8">
