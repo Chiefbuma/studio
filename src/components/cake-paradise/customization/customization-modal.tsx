@@ -21,7 +21,7 @@ interface CustomizationModalProps {
   isCustom: boolean;
 }
 
-export function CustomizationModal({ cake, isOpen, onClose, customizationOptions }: CustomizationModalProps) {
+export function CustomizationModal({ cake, isOpen, onClose, customizationOptions, isCustom }: CustomizationModalProps) {
   const { toast } = useToast();
   const { addToCart } = useCart();
   
@@ -34,6 +34,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
 
   useEffect(() => {
     if (isOpen) {
+      // Reset customizations every time the modal opens
       setCustomizations({
         flavor: customizationOptions.flavors?.[0]?.id || null,
         size: customizationOptions.sizes?.[0]?.id || null,
@@ -44,7 +45,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
   }, [isOpen, customizationOptions]);
 
   const totalPrice = useMemo(() => {
-    let total = cake.base_price; // Starts at 0 for custom cake
+    let total = cake.base_price;
     const { flavors, sizes, colors, toppings } = customizationOptions;
 
     const selectedFlavor = flavors?.find(f => f.id === customizations.flavor);
@@ -78,7 +79,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
   };
 
   const handleAddToCart = () => {
-    if (!customizations.flavor || !customizations.size) {
+    if (isCustom && (!customizations.flavor || !customizations.size)) {
       toast({
         variant: "destructive",
         title: "Missing selections",
@@ -86,6 +87,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
       });
       return;
     }
+    // For pre-defined cakes, we add them with the default or selected customizations.
     addToCart(cake, 1, totalPrice, customizations);
     onClose();
   };
@@ -96,8 +98,8 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
         <DialogHeader className="p-6 pb-0">
-          <DialogTitle className="text-2xl">Create Your Custom Cake</DialogTitle>
-          <DialogDescription>Make it yours! Select your options below.</DialogDescription>
+          <DialogTitle className="text-2xl">{isCustom ? "Create Your Custom Cake" : `Customize Your "${cake.name}"`}</DialogTitle>
+          <DialogDescription>{isCustom ? "Design your own cake from scratch. Choose your flavor, size, colors, and toppings to create your perfect dessert." : "Make it yours! Select your options below."}</DialogDescription>
         </DialogHeader>
         
         <div className="grid md:grid-cols-2 gap-6 overflow-y-auto px-6 pb-6">

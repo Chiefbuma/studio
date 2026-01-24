@@ -34,17 +34,22 @@ export default function Home() {
     return () => clearTimeout(coverTimer);
   }, [view, loading]);
 
-  const handleOrder = (cake: Cake) => {
+  // Handler for adding the non-customizable special offer cake directly to the cart.
+  const handleOrderSpecialOffer = (cake: Cake) => {
     if (!specialOffer) return;
-    const price = cake.id === 'special-offer-cake' ? specialOffer.special_price : cake.base_price;
-    addToCart(cake, 1, price);
+    // The price is the special price, not the base price.
+    addToCart(cake, 1, specialOffer.special_price);
   };
   
-  const handleOrderCustom = () => {
-    if (!customCake) return;
-    setSelectedCake(customCake);
-    setIsOrderingCustom(true);
-    setShowOrderModal(true);
+  // Handler to open the customization modal for any cake.
+  const handleOpenCustomizationModal = (cake: Cake, isCustom: boolean) => {
+      if (!customizationOptions) {
+          console.error("Customization options not loaded.");
+          return;
+      }
+      setSelectedCake(cake);
+      setIsOrderingCustom(isCustom);
+      setShowOrderModal(true);
   };
 
   const handleNavigateToMenu = () => {
@@ -57,9 +62,10 @@ export default function Home() {
 
   const handleCloseModal = () => {
     setShowOrderModal(false);
-    setIsOrderingCustom(false);
+    // Delay resetting the cake to allow for the closing animation
     setTimeout(() => {
       setSelectedCake(null);
+      setIsOrderingCustom(false);
     }, 300);
   };
 
@@ -87,15 +93,15 @@ export default function Home() {
         {view === 'offer' && (
           <SpecialOffer
             specialOffer={specialOffer}
-            onOrder={handleOrder}
-            onOrderCustom={handleOrderCustom}
+            onOrder={handleOrderSpecialOffer}
+            onOrderCustom={() => customCake && handleOpenCustomizationModal(customCake, true)}
             onNavigateToMenu={handleNavigateToMenu}
           />
         )}
         {view === 'menu' && (
           <Menu
             cakes={cakes}
-            onOrder={handleOrder}
+            onOrder={(cake) => handleOpenCustomizationModal(cake, false)}
             onBack={handleNavigateToHome}
           />
         )}

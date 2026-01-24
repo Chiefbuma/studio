@@ -44,38 +44,41 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const addToCart = (cake: Cake, quantity: number, price: number, customizations?: Customizations) => {
     setCart(prevCart => {
-      const isCustom = !!customizations;
-      
-      // For non-custom cakes, check if it already exists in the cart.
-      const existingItemIndex = !isCustom 
-        ? prevCart.findIndex(item => item.cakeId === cake.id && !item.customizations)
-        : -1;
-
-      let newCart = [...prevCart];
-
-      if (existingItemIndex > -1) {
-        // Update quantity for existing standard cake
-        newCart[existingItemIndex].quantity += quantity;
-      } else {
-        // Add as a new item (either standard or custom)
-        const newItem: CartItem = {
-          id: isCustom ? `custom-${Date.now()}` : cake.id,
-          cakeId: cake.id,
-          name: cake.name,
-          quantity,
-          price,
-          image_id: cake.image_id,
-          customizations,
-        };
-        newCart.push(newItem);
+      // If the item is the non-customizable special offer, check if it already exists and update quantity.
+      if (cake.id === 'special-offer-cake' && !customizations) {
+          const existingItemIndex = prevCart.findIndex(item => item.cakeId === cake.id && !item.customizations);
+          if (existingItemIndex > -1) {
+              const newCart = [...prevCart];
+              newCart[existingItemIndex].quantity += quantity;
+              
+              toast({
+                title: "Cart Updated!",
+                description: `Quantity for ${cake.name} is now ${newCart[existingItemIndex].quantity}.`,
+              });
+              setIsCartOpen(true);
+              
+              return newCart;
+          }
       }
       
+      // For all other cakes (including customized ones), add as a new unique item.
+      const newItem: CartItem = {
+        id: `${cake.id}-${Date.now()}`,
+        cakeId: cake.id,
+        name: cake.name,
+        quantity,
+        price,
+        image_id: cake.image_id,
+        customizations,
+      };
+
       toast({
         title: "Added to Cart!",
         description: `${quantity} x ${cake.name} added.`,
       });
       setIsCartOpen(true);
-      return newCart;
+
+      return [...prevCart, newItem];
     });
   };
 

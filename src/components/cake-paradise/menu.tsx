@@ -9,7 +9,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/utils';
 import { BackToHomeButton } from './back-to-home-button';
-import { Star, Clock, ShoppingCart, BookOpen } from 'lucide-react';
+import { Star, Clock, ShoppingCart, BookOpen, Sparkles } from 'lucide-react';
 
 interface MenuProps {
   cakes: Cake[];
@@ -78,8 +78,8 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                       </div>
 
                       <Button className="w-full mt-auto" onClick={() => onOrder(cake)}>
-                        <ShoppingCart className="mr-2 h-4 w-4" />
-                        Order Now
+                        <Sparkles className="mr-2 h-4 w-4" />
+                        Customize
                       </Button>
                     </CardContent>
                   </Card>
