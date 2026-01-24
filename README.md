@@ -16,7 +16,7 @@ This application is built on a modern, robust, and scalable technology stack des
 
 -   **ShadCN/UI**: A collection of beautifully designed, accessible, and reusable UI components built on top of Radix UI and Tailwind CSS. This accelerates UI development and ensures consistency.
 
--   **Google Maps API**: Integrated via `@react-google-maps/api` to provide an intelligent address search with autocomplete for accurate delivery location capture.
+-   **OpenStreetMap (Nominatim)**: Integrated for an intelligent address search with autocomplete. This provides a free and open-source alternative to other mapping services for accurate delivery location capture.
 
 -   **Paystack**: A payment gateway integrated for processing M-Pesa payments securely. The integration uses the official Paystack inline popup.
 
@@ -53,7 +53,7 @@ The checkout process (`src/app/checkout/page.tsx`) is designed to be a smooth, r
 
 -   **Mobile-First Design**: The layout uses a single-column, centered design that works seamlessly on all screen sizes, from mobile phones to desktops.
 -   **Collapsible Order Summary**: On mobile, the order summary is collapsed by default into a single bar showing the total price. This saves valuable screen space while keeping the most important information accessible with a single tap.
--   **Google Maps Address Search**: To improve accuracy and speed, the address field uses Google Maps Places Autocomplete. As the customer types, a list of suggested addresses appears. Selecting an address automatically fills in the full details and captures the precise GPS coordinates for delivery.
+-   **OpenStreetMap Address Search**: To improve accuracy and speed, the address field uses OpenStreetMap's Nominatim service for autocomplete. As the customer types, a list of suggested addresses appears. Selecting an address automatically fills in the full details and captures the precise GPS coordinates for delivery.
 -   **Animated Transitions**: The transition between the "Delivery Information" step and the "Payment" step is handled with smooth fade-in/fade-out animations, providing a seamless user experience without jarring page reloads.
 -   **Clear Step-by-Step Process**: A simple visual indicator at the top of the form clearly shows the customer which step of the checkout process they are on.
 
@@ -63,7 +63,7 @@ Here is an explanation of the key files and directories in the project.
 
 -   `src/app/`
     -   `layout.tsx`, `globals.css`, `page.tsx`: These files define the main customer-facing application layout, styles, and page views.
-    -   `checkout/page.tsx`: A responsive, single-page checkout flow with animated steps, a collapsible order summary, and Google Maps address search.
+    -   `checkout/page.tsx`: A responsive, single-page checkout flow with animated steps, a collapsible order summary, and OpenStreetMap address search.
 
 -   `src/app/admin/`
     -   `login/page.tsx`: The dedicated login page for the admin panel.
@@ -598,17 +598,14 @@ Follow these instructions to get the application running on your local machine.
 
 ### b. Environment Variables
 
-For the application to run correctly, especially for payment and map integrations, you must provide environment variables.
+For the application to run correctly, especially for payment integration, you must provide an environment variable.
 
 1.  Create a new file named `.env` in the root of the project.
-2.  Add the following lines to the file, replacing the placeholders with your actual keys:
+2.  Add the following line to the file, replacing the placeholder with your actual key:
 
     ```
     # Your public key from the Paystack dashboard (required for payments)
     NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxx
-
-    # Your public key from Google Cloud Console with Maps & Places APIs enabled
-    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxx
     ```
 
 ### c. Standard Installation (npm)

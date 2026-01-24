@@ -1,17 +1,15 @@
 'use client';
 
-import { useState, useRef, useCallback, Dispatch, SetStateAction } from 'react';
-import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
+import { useState, useRef, useCallback, Dispatch, SetStateAction, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { DeliveryInfo } from "@/lib/types";
-import { Store, Truck, MapPin, Loader2, AlertTriangle } from "lucide-react";
+import { Store, Truck, MapPin, Loader2, LocateFixed, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-const libraries: ('places' | 'drawing' | 'geometry' | 'visualization')[] = ['places'];
+import { Button } from '@/components/ui/button';
 
 interface LocationSearchInputProps {
     onLocationSelect: (address: string, lat: number, lng: number) => void;
@@ -19,80 +17,123 @@ interface LocationSearchInputProps {
 }
 
 function LocationSearchInput({ onLocationSelect, initialValue = '' }: LocationSearchInputProps) {
-    const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    
-    if (!googleMapsApiKey) {
-        return (
-            <div className="flex items-center gap-2 text-destructive text-sm p-2 bg-destructive/10 rounded-md h-10 border border-destructive/50">
-                <AlertTriangle className="h-4 w-4" />
-                <span>Map search disabled: API key is missing.</span>
-            </div>
-        );
-    }
+    const { toast } = useToast();
+    const [query, setQuery] = useState(initialValue);
+    const [results, setResults] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [showResults, setShowResults] = useState(false);
+    const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-    const { isLoaded, loadError } = useJsApiLoader({
-        googleMapsApiKey: googleMapsApiKey,
-        libraries,
-    });
-
-    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-
-    const onLoad = useCallback((autocompleteInstance: google.maps.places.Autocomplete) => {
-        autocompleteRef.current = autocompleteInstance;
-    }, []);
-
-    const onUnmount = useCallback(() => {
-        autocompleteRef.current = null;
-    }, []);
-
-    const onPlaceChanged = () => {
-        const autocomplete = autocompleteRef.current;
-        if (autocomplete !== null) {
-            const place = autocomplete.getPlace();
-            const address = place.formatted_address || '';
-            const lat = place.geometry?.location?.lat();
-            const lng = place.geometry?.location?.lng();
-
-            if (address && lat && lng) {
-                onLocationSelect(address, lat, lng);
-            }
-        } else {
-            console.log('Autocomplete is not loaded yet!');
+    useEffect(() => {
+        if (query.trim().length < 3) {
+            setResults([]);
+            return;
         }
-    };
 
-    if (loadError) {
-        return (
-            <div className="flex items-center gap-2 text-destructive text-sm p-2 bg-destructive/10 rounded-md h-10 border border-destructive/50">
-                <AlertTriangle className="h-4 w-4" />
-                <span>Error loading Google Maps.</span>
-            </div>
-        );
+        if (debounceTimeout.current) {
+            clearTimeout(debounceTimeout.current);
+        }
+
+        debounceTimeout.current = setTimeout(async () => {
+            setLoading(true);
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ke&limit=5`, {
+                    headers: { 'Accept-Language': 'en', 'User-Agent': 'WhiskeDelights/1.0' }
+                });
+                const data = await response.json();
+                setResults(data);
+                setShowResults(true);
+            } catch (error) {
+                console.error("Failed to fetch from Nominatim:", error);
+                toast({ variant: 'destructive', title: "Address search failed" });
+            } finally {
+                setLoading(false);
+            }
+        }, 500); // 500ms debounce
+
+    }, [query, toast]);
+    
+    const handleSelectResult = (result: any) => {
+        const address = result.display_name;
+        const lat = parseFloat(result.lat);
+        const lng = parseFloat(result.lon);
+        setQuery(address);
+        onLocationSelect(address, lat, lng);
+        setShowResults(false);
     }
+    
+    const handleGetCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            toast({ variant: "destructive", title: "Geolocation is not supported by your browser." });
+            return;
+        }
 
-    if (!isLoaded) {
-        return (
-            <div className="flex items-center gap-2 text-muted-foreground p-2 bg-muted/50 rounded-md h-10">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <span>Loading map search...</span>
-            </div>
-        );
+        setLoading(true);
+        
+        const success = async (position: GeolocationPosition) => {
+            const { latitude, longitude } = position.coords;
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`,
+                    { headers: { 'Accept-Language': 'en', 'User-Agent': 'WhiskeDelights/1.0' } }
+                );
+                const data = await response.json();
+                const address = data.display_name || `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+                setQuery(address);
+                onLocationSelect(address, latitude, longitude);
+            } catch (error) {
+                const address = `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
+                setQuery(address);
+                onLocationSelect(address, latitude, longitude);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        const error = () => {
+            setLoading(false);
+            toast({ variant: "destructive", title: "Unable to retrieve your location.", description: "Please enable location services or search manually." });
+        };
+
+        navigator.geolocation.getCurrentPosition(success, error, { enableHighAccuracy: true });
     }
 
     return (
-        <Autocomplete
-            onLoad={onLoad}
-            onPlaceChanged={onPlaceChanged}
-            onUnmount={onUnmount}
-            fields={['formatted_address', 'geometry.location']}
-            options={{ componentRestrictions: { country: 'ke' } }} // Restrict to Kenya
-        >
-            <Input
-                type="text"
-                placeholder="Search for your address, estate or building..."
-                defaultValue={initialValue}
-            />
-        </Autocomplete>
+        <div className="relative">
+            <div className="flex gap-2">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        type="text"
+                        placeholder="Search for your address, estate or building..."
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        onFocus={() => setShowResults(true)}
+                        onBlur={() => setTimeout(() => setShowResults(false), 200)} // Delay hiding to allow click
+                        className="pl-9"
+                    />
+                    {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin" />}
+                </div>
+                <Button type="button" variant="outline" size="icon" onClick={handleGetCurrentLocation} title="Use my current location">
+                    <LocateFixed className="h-5 w-5 text-primary" />
+                </Button>
+            </div>
+            
+            {showResults && results.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {results.map((result) => (
+                         <button
+                            key={result.place_id}
+                            type="button"
+                            className="w-full text-left p-3 text-sm hover:bg-accent"
+                            onClick={() => handleSelectResult(result)}
+                        >
+                            {result.display_name}
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -116,7 +157,7 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
         }));
         toast({
             title: "Address Selected!",
-            description: `Address set successfully.`,
+            description: `Location has been set successfully.`,
         });
     }
 
@@ -152,14 +193,14 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
                     <Label htmlFor="name">Full Name *</Label>
                     <Input id="name" placeholder="John Doe" value={deliveryInfo.name} onChange={(e) => handleInputChange('name', e.target.value)} required />
                 </div>
-                 <div className="space-y-2">
-                    <Label htmlFor="phone">Phone Number *</Label>
-                    <Input id="phone" type="tel" placeholder="0712345678" value={deliveryInfo.phone} onChange={(e) => handleInputChange('phone', e.target.value)} required />
-                </div>
                 <div className="space-y-2">
                     <Label htmlFor="email">Email Address (Optional)</Label>
                     <Input id="email" type="email" placeholder="your@email.com" value={deliveryInfo.email} onChange={(e) => handleInputChange('email', e.target.value)} />
                     <p className="text-xs text-muted-foreground">For order confirmation and receipt.</p>
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Input id="phone" type="tel" placeholder="0712345678" value={deliveryInfo.phone} onChange={(e) => handleInputChange('phone', e.target.value)} required />
                 </div>
             </div>
 
@@ -171,7 +212,7 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
                         initialValue={deliveryInfo.address}
                     />
                     <div className="flex justify-between items-center pt-1">
-                        <p className="text-xs text-muted-foreground">Search and select your delivery location.</p>
+                        <p className="text-xs text-muted-foreground">Search, or use the location button.</p>
                         {deliveryInfo.coordinates && (
                             <p className="text-xs text-green-600 font-medium flex items-center gap-1">
                                 <MapPin className="h-3 w-3" />
