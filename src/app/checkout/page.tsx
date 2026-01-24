@@ -153,12 +153,13 @@ export default function CheckoutPage() {
       key: paystackPublicKey,
       email: customerEmail,
       amount: Math.round(amount * 100), // Amount in kobo/cents
+      currency: 'KES', // Explicitly set currency to Kenyan Shillings
       phone: deliveryInfo.phone,
       ref: `WD_${orderNumber}_${Date.now()}`,
       metadata: {
         order_number: orderNumber,
         customer_phone: deliveryInfo.phone,
-        payment_type: "M-PESA Deposit"
+        payment_type: "Deposit"
       },
       callback: function(response: any) {
         // No need to setIsProcessing(false) here, as we navigate away
