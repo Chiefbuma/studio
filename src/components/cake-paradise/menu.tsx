@@ -99,10 +99,10 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
     }
 
     return (
-        <div className="relative min-h-screen bg-gradient-to-br from-background via-amber-50 to-background py-16 sm:py-24 px-4 overflow-x-hidden">
+        <div className="relative min-h-screen flex items-center bg-gradient-to-br from-background via-amber-50 to-background px-4 overflow-x-hidden">
             <BackToHomeButton onBack={onBack} />
             
-            <div className="max-w-7xl mx-auto">
+            <div className="max-w-7xl mx-auto w-full">
                 <div className="text-center mb-12 sm:mb-16">
                     <Badge variant="secondary" className="mb-4 text-sm">
                         <BookOpen className="w-4 h-4 mr-2"/>

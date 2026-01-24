@@ -23,10 +23,10 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
     const cakeImage = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white">
+        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white flex items-center justify-center">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-50"></div>
             
-            <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:py-12 min-h-screen flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
+            <div className="relative z-10 max-w-7xl w-full mx-auto px-4 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
                 
                 {/* Left Side: Text Content */}
                 <div className="lg:w-1/2 w-full">
@@ -92,16 +92,16 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                             
                             {/* #1 Best Seller Badge (Top Right) */}
-                            <div className="absolute -top-2 -right-2 sm:-top-4 sm:-right-4 bg-background/90 backdrop-blur-sm rounded-lg sm:rounded-xl p-2 sm:p-4 shadow-xl border border-primary/20">
+                            <div className="absolute top-4 right-4 bg-background/90 backdrop-blur-sm rounded-xl p-2 shadow-xl border border-primary/20">
                                 <div className="text-center">
-                                    <div className="flex justify-center items-center gap-1 text-lg sm:text-2xl font-bold text-primary"><Trophy className="w-5 h-5 sm:w-6 sm:h-6" />1</div>
-                                    <div className="text-xs sm:text-sm text-muted-foreground">Best Seller</div>
+                                    <div className="flex justify-center items-center gap-1 text-lg font-bold text-primary"><Trophy className="w-5 h-5" />1</div>
+                                    <div className="text-xs text-muted-foreground">Best Seller</div>
                                 </div>
                             </div>
                             
                              {/* Orders This Month Badge (Bottom Left) */}
-                            <div className="absolute -bottom-2 -left-2 sm:-bottom-4 sm:-left-4 bg-background/80 backdrop-blur-sm p-3 rounded-xl shadow-lg flex items-center gap-3 border border-primary/20">
-                                <CheckCircle className="w-5 h-5 text-primary" />
+                            <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm p-2 rounded-xl shadow-lg flex items-center gap-2 border border-primary/20">
+                                <CheckCircle className="w-4 h-4 text-primary" />
                                 <div>
                                     <div className="font-bold text-sm text-foreground">{cake.orders_count}+ Orders</div>
                                     <div className="text-xs text-muted-foreground">This Month</div>
