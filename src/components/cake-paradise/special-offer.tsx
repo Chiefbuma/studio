@@ -28,11 +28,11 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-50"></div>
             <SocialIcons />
             
-            <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:py-12 min-h-screen flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-8 lg:gap-12">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:py-12 min-h-screen flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
                 <div className="lg:w-1/2 w-full flex">
                     <div className="relative group w-full">
                          <div className="absolute -inset-2 bg-gradient-to-r from-primary/50 to-accent/50 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-all duration-500 animate-pulse"></div>
-                        <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-background/10 h-96 lg:h-full">
+                        <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-background/10 h-96 lg:h-[32rem]">
                             <Image
                                 src={cakeImage.imageUrl}
                                 alt={cake.name}
@@ -59,14 +59,14 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                         <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-accent/10 rounded-full blur-3xl animate-pulse delay-500"></div>
                         
                         <div className="relative z-10">
-                            <div className="flex flex-col items-start gap-3 mb-6">
-                                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-2 rounded-full shadow-lg">
-                                    <Crown className="w-4 h-4 text-amber-300" />
-                                    <span className="font-bold text-xs uppercase tracking-wider">Today's Special</span>
-                                </div>
+                            <div className="flex flex-col sm:flex-row items-start gap-3 mb-6">
                                 <div className="bg-background/80 backdrop-blur-sm p-3 rounded-xl shadow-lg text-center border border-background/20">
                                     <div className="text-2xl font-bold text-primary">#1</div>
                                     <div className="text-xs text-foreground font-semibold uppercase tracking-wider">Best Seller</div>
+                                </div>
+                                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-2 rounded-full shadow-lg">
+                                    <Crown className="w-4 h-4 text-amber-300" />
+                                    <span className="font-bold text-xs uppercase tracking-wider">Today's Special</span>
                                 </div>
                             </div>
 
