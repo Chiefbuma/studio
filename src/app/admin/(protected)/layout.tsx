@@ -1,13 +1,43 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LayoutDashboard, ShoppingCart, Cake, Tag, LogOut, Home } from "lucide-react";
+import { LayoutDashboard, ShoppingCart, Cake, Tag, LogOut, Home, Loader2 } from "lucide-react";
 import Link from 'next/link';
 
-export default function AdminLayout({
+export default function AdminProtectedLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    const isAdminLoggedIn = localStorage.getItem('isAdminLoggedIn');
+    if (!isAdminLoggedIn) {
+      router.replace('/admin/login');
+    } else {
+      setIsCheckingAuth(false);
+    }
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAdminLoggedIn');
+    router.push('/admin/login');
+  };
+
+  if (isCheckingAuth) {
+    return (
+        <div className="flex min-h-screen items-center justify-center bg-muted/40">
+             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+    );
+  }
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-muted/40">
@@ -21,22 +51,22 @@ export default function AdminLayout({
           <SidebarContent className="p-2">
             <SidebarMenu>
               <SidebarMenuItem>
-                 <SidebarMenuButton asChild tooltip="Dashboard">
+                 <SidebarMenuButton asChild tooltip="Dashboard" isActive={pathname === '/admin/dashboard'}>
                     <Link href="/admin/dashboard"><LayoutDashboard /><span>Dashboard</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Orders">
+                <SidebarMenuButton asChild tooltip="Orders" isActive={pathname === '/admin/orders'}>
                     <Link href="/admin/orders"><ShoppingCart /><span>Orders</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Cakes">
+                <SidebarMenuButton asChild tooltip="Cakes" isActive={pathname === '/admin/cakes'}>
                     <Link href="/admin/cakes"><Cake /><span>Cakes</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="Special Offers">
+                <SidebarMenuButton asChild tooltip="Special Offers" isActive={pathname === '/admin/offers'}>
                     <Link href="/admin/offers"><Tag /><span>Offers</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -50,7 +80,7 @@ export default function AdminLayout({
                     </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                    <SidebarMenuButton tooltip="Logout">
+                    <SidebarMenuButton tooltip="Logout" onClick={handleLogout}>
                         <LogOut /><span>Logout</span>
                     </SidebarMenuButton>
                 </SidebarMenuItem>

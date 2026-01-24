@@ -12,6 +12,7 @@ import { useCart } from '@/hooks/use-cart';
 import { CartIcon } from '@/components/cake-paradise/cart-icon';
 import { CartSheet } from '@/components/cake-paradise/cart-sheet';
 import { useCakeData } from '@/hooks/use-cake-data';
+import { AppFooter } from '@/components/cake-paradise/footer';
 
 export default function Home() {
   const [view, setView] = useState<'cover' | 'offer' | 'menu'>('cover');
@@ -77,36 +78,39 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-background overflow-x-hidden">
-      <CartIcon />
-      <CartSheet />
-      
-      {view === 'cover' && <CoverPage />}
-      {view === 'offer' && (
-        <SpecialOffer
-          specialOffer={specialOffer}
-          onOrder={handleOrder}
-          onOrderCustom={handleOrderCustom}
-          onNavigateToMenu={handleNavigateToMenu}
-        />
-      )}
-      {view === 'menu' && (
-        <Menu
-          cakes={cakes}
-          onOrder={handleOrder}
-          onBack={handleNavigateToHome}
-        />
-      )}
+    <div className="min-h-screen bg-background overflow-x-hidden flex flex-col">
+      <main className="flex-grow">
+        <CartIcon />
+        <CartSheet />
+        
+        {view === 'cover' && <CoverPage />}
+        {view === 'offer' && (
+          <SpecialOffer
+            specialOffer={specialOffer}
+            onOrder={handleOrder}
+            onOrderCustom={handleOrderCustom}
+            onNavigateToMenu={handleNavigateToMenu}
+          />
+        )}
+        {view === 'menu' && (
+          <Menu
+            cakes={cakes}
+            onOrder={handleOrder}
+            onBack={handleNavigateToHome}
+          />
+        )}
 
-      {selectedCake && customizationOptions && (
-        <CustomizationModal
-          cake={selectedCake}
-          isOpen={showOrderModal}
-          onClose={handleCloseModal}
-          customizationOptions={customizationOptions}
-          isCustom={isOrderingCustom}
-        />
-      )}
-    </main>
+        {selectedCake && customizationOptions && (
+          <CustomizationModal
+            cake={selectedCake}
+            isOpen={showOrderModal}
+            onClose={handleCloseModal}
+            customizationOptions={customizationOptions}
+            isCustom={isOrderingCustom}
+          />
+        )}
+      </main>
+      <AppFooter />
+    </div>
   );
 }
