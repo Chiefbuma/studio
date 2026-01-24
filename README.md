@@ -211,10 +211,31 @@ This section provides the blueprint for your backend database and instructions o
 | `cake_id` | `VARCHAR(255)` | **Foreign Key** -> `cakes.id` |
 | `quantity` | `INT` | Not Null, Default: 1 |
 | `price_at_purchase` | `DECIMAL(10, 2)`| Not Null |
-| `customizations_json`| `JSON` | Nullable |
+| `customizations_json`| `JSON` | Nullable. **Crucial for storing customization data.** |
 
 ---
-### c. Customization Option Tables
+### c. How Customizations are Stored & Handled
+
+The database is designed to flexibly handle complex user customizations. Here's the data flow:
+
+1.  **Customer Selection**: The customer uses the `CustomizationModal` to select their desired flavor, size, color, and toppings. These selections are stored in the frontend's state.
+
+2.  **Order Payload**: When the order is placed, these selections are passed as a `customizations` object within each `CartItem`. For example:
+    ```json
+    {
+      "flavor": "f2",
+      "size": "s3",
+      "color": "c2",
+      "toppings": ["t1", "t2"]
+    }
+    ```
+
+3.  **Database Storage**: The backend API receives this payload. For each cake in the order, it creates a record in the `order_items` table. The `customizations` object is then serialized into a JSON string and saved in the `customizations_json` column.
+
+4.  **Admin View**: When an admin views an order's details, the backend retrieves the order, including its `order_items`. The frontend then parses the `customizations_json` string for each item and displays the chosen options in a human-readable format. This ensures the admin knows the exact specifications for preparing each cake.
+
+---
+### d. Customization Option Tables
 These tables store the available choices for building a custom cake.
 
 | Table Name | Column Name | Data Type | Constraints / Notes |
@@ -234,7 +255,7 @@ These tables store the available choices for building a custom cake.
 | | `name`| `VARCHAR(255)` | Not Null |
 | | `price`| `DECIMAL(10, 2)` | Not Null |
 
-### d. MS SQL Server Table Creation Scripts
+### e. MS SQL Server Table Creation Scripts
 
 You can use these SQL scripts to create the tables in a tool like SQL Server Management Studio (SSMS) or Azure Data Studio.
 
@@ -324,7 +345,7 @@ CREATE TABLE customization_toppings (
 );
 ```
 
-### e. MySQL / MariaDB Table Creation Scripts (for XAMPP users)
+### f. MySQL / MariaDB Table Creation Scripts (for XAMPP users)
 If you are using XAMPP, use these scripts in phpMyAdmin or a similar tool.
 
 ```sql
@@ -416,7 +437,7 @@ CREATE TABLE customization_toppings (
 );
 ```
 
-### f. Local Database Setup
+### g. Local Database Setup
 
 The Next.js frontend **should not** connect directly to the database for security reasons. It must communicate with a **backend API**. The following instructions are for setting up the database that your future backend API will connect to.
 
@@ -488,7 +509,7 @@ If you prefer to use XAMPP, you can use its included MySQL/MariaDB server.
    - Click the `Go` button to create all the tables.
 
 
-### g. Connecting a Backend to Your Database
+### h. Connecting a Backend to Your Database
 
 Your backend application (e.g., using Node.js/Express, ASP.NET) will handle the database operations. In that **separate backend project**, you would have an environment file (`.env`) with a connection string like this:
 

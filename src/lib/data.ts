@@ -144,7 +144,7 @@ export const orders: Order[] = [
     created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
     items: [
       {
-        id: 'special-offer-cake',
+        id: 'special-offer-cake-1',
         cakeId: 'special-offer-cake',
         name: 'Whiskey Delight',
         quantity: 1,
@@ -175,10 +175,10 @@ export const orders: Order[] = [
         price: 5300,
         image_id: 'custom-cake-placeholder',
         customizations: {
-          flavor: 'f2',
-          size: 's3',
-          color: 'c2',
-          toppings: ['t1', 't2'],
+          flavor: 'f2', // Rich Chocolate
+          size: 's3', // 10" Round
+          color: 'c2', // Pastel Pink
+          toppings: ['t1', 't2'], // Fresh Berries, Chocolate Drip
         },
       },
     ],
@@ -198,7 +198,7 @@ export const orders: Order[] = [
     created_at: new Date().toISOString(),
     items: [
       {
-        id: 'red-velvet-delight',
+        id: 'red-velvet-delight-1',
         cakeId: 'red-velvet-delight',
         name: 'Red Velvet Delight',
         quantity: 1,
@@ -206,7 +206,7 @@ export const orders: Order[] = [
         image_id: 'red-velvet-delight',
       },
        {
-        id: 'vanilla-bean-classic',
+        id: 'vanilla-bean-classic-1',
         cakeId: 'vanilla-bean-classic',
         name: 'Vanilla Bean Classic',
         quantity: 1,
