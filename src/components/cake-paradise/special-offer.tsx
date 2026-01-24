@@ -10,11 +10,12 @@ import { ArrowRight, CheckCircle, Clock, Crown, Star, Sparkles, Cake as CakeIcon
 
 interface SpecialOfferProps {
     specialOffer: SpecialOfferType | null;
-    onCustomize: (cake: Cake) => void;
+    onOrder: (cake: Cake) => void;
+    onOrderCustom: () => void;
     onNavigateToMenu: () => void;
 }
 
-export default function SpecialOffer({ specialOffer, onCustomize, onNavigateToMenu }: SpecialOfferProps) {
+export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onNavigateToMenu }: SpecialOfferProps) {
     if (!specialOffer || !specialOffer.cake) {
         return <SpecialOfferSkeleton onNavigateToMenu={onNavigateToMenu} hasError={!specialOffer} />;
     }
@@ -62,8 +63,11 @@ export default function SpecialOffer({ specialOffer, onCustomize, onNavigateToMe
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-4">
-                                <Button size="lg" className="w-full sm:w-auto shadow-lg hover:shadow-primary/50 transition-shadow" onClick={() => onCustomize(cake)}>
-                                    <CakeIcon className="mr-2" /> Order This Cake
+                                <Button size="lg" className="w-full sm:w-auto shadow-lg hover:shadow-primary/50 transition-shadow" onClick={() => onOrder(cake)}>
+                                    <CakeIcon className="mr-2" /> Order Now
+                                </Button>
+                                 <Button size="lg" variant="secondary" className="w-full sm:w-auto" onClick={onOrderCustom}>
+                                    <Sparkles className="mr-2" /> Create Your Own
                                 </Button>
                                 <Button size="lg" variant="outline" className="w-full sm:w-auto bg-card/10 border-primary/30 hover:bg-card/20" onClick={onNavigateToMenu}>
                                     View Full Menu <ArrowRight className="ml-2" />

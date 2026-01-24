@@ -6,14 +6,15 @@ import SpecialOffer from '@/components/cake-paradise/special-offer';
 import Menu from '@/components/cake-paradise/menu';
 import { CustomizationModal } from '@/components/cake-paradise/customization/customization-modal';
 import type { Cake, CustomizationOptions } from '@/lib/types';
-import { cakes as allCakes, specialOffer as mockSpecialOffer, customizationOptions as mockCustomizationOptions } from '@/lib/data';
+import { cakes as allCakes, specialOffer as mockSpecialOffer, customizationOptions as mockCustomizationOptions, customCake } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CakeSlice } from 'lucide-react';
 
 export default function Home() {
   const [view, setView] = useState<'cover' | 'offer' | 'menu'>('cover');
-  const [showCustomize, setShowCustomize] = useState(false);
+  const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedCake, setSelectedCake] = useState<Cake | null>(null);
+  const [isOrderingCustom, setIsOrderingCustom] = useState(false);
   const [cakes, setCakes] = useState<Cake[]>([]);
   const [specialOffer, setSpecialOffer] = useState<any>(null);
   const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions | null>(null);
@@ -43,9 +44,16 @@ export default function Home() {
     return () => clearTimeout(coverTimer);
   }, [view, loading]);
 
-  const handleCustomize = (cake: Cake) => {
+  const handleOrder = (cake: Cake) => {
     setSelectedCake(cake);
-    setShowCustomize(true);
+    setIsOrderingCustom(false);
+    setShowOrderModal(true);
+  };
+  
+  const handleOrderCustom = () => {
+    setSelectedCake(customCake);
+    setIsOrderingCustom(true);
+    setShowOrderModal(true);
   };
 
   const handleNavigateToMenu = () => {
@@ -57,7 +65,8 @@ export default function Home() {
   };
 
   const handleCloseModal = () => {
-    setShowCustomize(false);
+    setShowOrderModal(false);
+    setIsOrderingCustom(false);
     // Delay clearing selected cake to allow for exit animation
     setTimeout(() => {
       setSelectedCake(null);
@@ -84,14 +93,15 @@ export default function Home() {
       {view === 'offer' && (
         <SpecialOffer
           specialOffer={specialOffer}
-          onCustomize={handleCustomize}
+          onOrder={handleOrder}
+          onOrderCustom={handleOrderCustom}
           onNavigateToMenu={handleNavigateToMenu}
         />
       )}
       {view === 'menu' && (
         <Menu
           cakes={cakes}
-          onCustomize={handleCustomize}
+          onOrder={handleOrder}
           onBack={handleNavigateToHome}
         />
       )}
@@ -99,9 +109,10 @@ export default function Home() {
       {selectedCake && customizationOptions && (
         <CustomizationModal
           cake={selectedCake}
-          isOpen={showCustomize}
+          isOpen={showOrderModal}
           onClose={handleCloseModal}
           customizationOptions={customizationOptions}
+          isCustom={isOrderingCustom}
         />
       )}
     </main>

@@ -9,16 +9,16 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/utils';
 import { BackToHomeButton } from './back-to-home-button';
-import { Star, Clock, ShoppingCart, SlidersHorizontal, BookOpen } from 'lucide-react';
+import { Star, Clock, ShoppingCart, BookOpen } from 'lucide-react';
 import { AiRecommender } from './ai-recommender';
 
 interface MenuProps {
   cakes: Cake[];
-  onCustomize: (cake: Cake) => void;
+  onOrder: (cake: Cake) => void;
   onBack: () => void;
 }
 
-export default function Menu({ cakes, onCustomize, onBack }: MenuProps) {
+export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-background via-amber-50 to-background py-16 sm:py-24 px-4">
       <BackToHomeButton onBack={onBack} />
@@ -78,9 +78,9 @@ export default function Menu({ cakes, onCustomize, onBack }: MenuProps) {
                         <div className="flex items-center gap-2"><Clock className="w-3 h-3" /> {cake.ready_time}</div>
                       </div>
 
-                      <Button className="w-full mt-auto" onClick={() => onCustomize(cake)}>
-                        <SlidersHorizontal className="mr-2 h-4 w-4" />
-                        Customize
+                      <Button className="w-full mt-auto" onClick={() => onOrder(cake)}>
+                        <ShoppingCart className="mr-2 h-4 w-4" />
+                        Order Now
                       </Button>
                     </CardContent>
                   </Card>

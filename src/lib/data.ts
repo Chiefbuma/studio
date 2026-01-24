@@ -115,3 +115,15 @@ export const customizationOptions: CustomizationOptions = {
     { id: 't5', name: 'Gold Leaf Flakes', price: 600 },
   ],
 };
+
+export const customCake: Cake = {
+  id: 'custom-cake',
+  name: 'Custom Creation',
+  description: 'Design your own cake from scratch. Choose your flavor, size, colors, and toppings to create your perfect dessert.',
+  base_price: 0,
+  image_id: 'custom-cake-placeholder',
+  rating: 0,
+  category: 'Custom',
+  orders_count: 0,
+  ready_time: '48h+',
+};

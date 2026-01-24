@@ -20,9 +20,10 @@ interface CustomizationModalProps {
   isOpen: boolean;
   onClose: () => void;
   customizationOptions: CustomizationOptions;
+  isCustom: boolean;
 }
 
-export function CustomizationModal({ cake, isOpen, onClose, customizationOptions }: CustomizationModalProps) {
+export function CustomizationModal({ cake, isOpen, onClose, customizationOptions, isCustom }: CustomizationModalProps) {
   const [view, setView] = useState<'customizing' | 'delivery' | 'payment'>('customizing');
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -51,9 +52,9 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
   const [orderResponse, setOrderResponse] = useState<{orderNumber: string; depositAmount: number} | null>(null);
 
   useEffect(() => {
-    // Reset state when modal is opened for a new cake
+    // Reset state when modal is opened
     if (isOpen) {
-      setView('customizing');
+      setView(isCustom ? 'customizing' : 'delivery');
       setCustomizations({
         flavor: customizationOptions.flavors?.[0]?.id || null,
         size: customizationOptions.sizes?.[0]?.id || null,
@@ -62,10 +63,14 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
       });
       setOrderResponse(null);
     }
-  }, [isOpen, cake, customizationOptions]);
+  }, [isOpen, cake, customizationOptions, isCustom]);
 
   const totalPrice = useMemo(() => {
-    let total = cake.base_price;
+    if (!isCustom) {
+      return cake.base_price;
+    }
+
+    let total = cake.base_price; // Starts at 0 for custom cake
     const { flavors, sizes, colors, toppings } = customizationOptions;
 
     const selectedFlavor = flavors?.find(f => f.id === customizations.flavor);
@@ -83,7 +88,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
     });
 
     return total;
-  }, [customizations, cake.base_price, customizationOptions]);
+  }, [isCustom, cake, customizations, customizationOptions]);
   
   const depositAmount = totalPrice * 0.8;
 
@@ -116,7 +121,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
     setIsProcessing(true);
     const result = await placeOrder({
         cake,
-        customizations,
+        customizations: isCustom ? customizations : { flavor: null, size: null, color: null, toppings: [] },
         deliveryInfo,
         totalPrice,
         depositAmount
@@ -139,11 +144,11 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
     }
   };
 
-  const cakeImage = PlaceHolderImages.find(img => img.id === cake.id) || PlaceHolderImages[0];
+  const cakeImage = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
 
   const getTitle = () => {
     switch (view) {
-      case 'customizing': return `Customize Your ${cake.name}`;
+      case 'customizing': return 'Create Your Custom Cake';
       case 'delivery': return 'Delivery & Contact Information';
       case 'payment': return 'Complete Your Order';
       default: return 'Cake Paradise';
@@ -179,7 +184,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
           </div>
 
           <div className="flex flex-col">
-            {view === 'customizing' && (
+            {view === 'customizing' && isCustom && (
               <CustomizationForm
                 cake={cake}
                 customizationOptions={customizationOptions}
@@ -220,7 +225,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
                       </div>
                   </div>
 
-                  {view === 'customizing' && (
+                  {view === 'customizing' && isCustom && (
                       <Button onClick={handleProceedToDelivery} className="w-full" size="lg">
                           Proceed to Delivery
                           <ShoppingCart className="ml-2 h-5 w-5" />
@@ -229,7 +234,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
 
                   {view === 'delivery' && (
                       <div className="flex gap-4">
-                          <Button variant="outline" onClick={() => setView('customizing')} className="w-full" size="lg">Back</Button>
+                          {isCustom && <Button variant="outline" onClick={() => setView('customizing')} className="w-full" size="lg">Back</Button>}
                           <Button onClick={handlePlaceOrder} className="w-full" size="lg" disabled={isProcessing}>
                               {isProcessing ? <Loader2 className="animate-spin" /> : "Place Order"}
                           </Button>
