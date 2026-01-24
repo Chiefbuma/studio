@@ -11,6 +11,7 @@ export const cakes: Cake[] = [
     category: 'Classic',
     orders_count: 152,
     ready_time: '24h',
+    defaultFlavorId: 'f4', // Red Velvet
   },
   {
     id: 'strawberry-dream',
@@ -22,6 +23,7 @@ export const cakes: Cake[] = [
     category: 'Fruit',
     orders_count: 120,
     ready_time: '24h',
+    defaultFlavorId: 'f5', // Strawberry
   },
     {
     id: 'chocolate-fudge-bliss',
@@ -33,6 +35,7 @@ export const cakes: Cake[] = [
     category: 'Chocolate',
     orders_count: 210,
     ready_time: '48h',
+    defaultFlavorId: 'f2', // Rich Chocolate
   },
   {
     id: 'lemon-zest-creation',
@@ -44,6 +47,7 @@ export const cakes: Cake[] = [
     category: 'Citrus',
     orders_count: 98,
     ready_time: '24h',
+    defaultFlavorId: 'f3', // Zesty Lemon
   },
   {
     id: 'vanilla-bean-classic',
@@ -55,6 +59,7 @@ export const cakes: Cake[] = [
     category: 'Classic',
     orders_count: 180,
     ready_time: '24h',
+    defaultFlavorId: 'f1', // Classic Vanilla
   },
   {
     id: 'matcha-elegance',
@@ -66,6 +71,7 @@ export const cakes: Cake[] = [
     category: 'Exotic',
     orders_count: 75,
     ready_time: '48h',
+    defaultFlavorId: 'f6', // Matcha
   },
 ];
 
@@ -80,6 +86,7 @@ export const specialOffer: SpecialOffer = {
     category: 'Signature',
     orders_count: 88,
     ready_time: '48h',
+    defaultFlavorId: 'f7', // Whiskey Chocolate
   },
   discount_percentage: 20,
   original_price: 4000,
@@ -93,6 +100,9 @@ export const customizationOptions: CustomizationOptions = {
     { id: 'f2', name: 'Rich Chocolate', description: 'Deep and decadent', price: 200, color: '#5D4037' },
     { id: 'f3', name: 'Zesty Lemon', description: 'Bright and refreshing', price: 150, color: '#FFF59D' },
     { id: 'f4', name: 'Red Velvet', description: 'Classic Southern charm', price: 300, color: '#B71C1C' },
+    { id: 'f5', name: 'Fresh Strawberry', description: 'Sweet and fruity', price: 250, color: '#FF8A80' },
+    { id: 'f6', name: 'Matcha Green Tea', description: 'Earthy and sophisticated', price: 400, color: '#A5D6A7' },
+    { id: 'f7', name: 'Whiskey Chocolate', description: 'Bold and indulgent', price: 500, color: '#4E342E' },
   ],
   sizes: [
     { id: 's1', name: '6" Round', serves: '6-8 people', price: 0 },
@@ -191,8 +201,8 @@ export const orders: Order[] = [
     customer_email: 'peter@example.com',
     delivery_method: 'delivery',
     delivery_address: '123 Gitanga Road',
-    total_price: 5800,
-    deposit_amount: 4640,
+    total_price: 6650,
+    deposit_amount: 5320,
     payment_status: 'paid',
     order_status: 'processing',
     created_at: new Date().toISOString(),
@@ -202,15 +212,21 @@ export const orders: Order[] = [
         cakeId: 'red-velvet-delight',
         name: 'Red Velvet Delight',
         quantity: 1,
-        price: 3200,
+        price: 4350,
         image_id: 'red-velvet-delight',
+        customizations: {
+          flavor: 'f4', // Red Velvet (locked)
+          size: 's2', // 8" Round
+          color: 'c1', // Classic White
+          toppings: ['t2'], // Chocolate Drip
+        }
       },
        {
         id: 'vanilla-bean-classic-1',
         cakeId: 'vanilla-bean-classic',
         name: 'Vanilla Bean Classic',
         quantity: 1,
-        price: 2600,
+        price: 2300,
         image_id: 'vanilla-bean-classic',
       },
     ],

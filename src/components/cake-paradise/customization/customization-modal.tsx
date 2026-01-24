@@ -26,7 +26,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
   const { addToCart } = useCart();
   
   const [customizations, setCustomizations] = useState<Customizations>({
-    flavor: customizationOptions.flavors?.[0]?.id || null,
+    flavor: !isCustom ? cake.defaultFlavorId || null : customizationOptions.flavors?.[0]?.id || null,
     size: customizationOptions.sizes?.[0]?.id || null,
     color: customizationOptions.colors?.[0]?.id || null,
     toppings: []
@@ -36,20 +36,23 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
     if (isOpen) {
       // Reset customizations every time the modal opens
       setCustomizations({
-        flavor: customizationOptions.flavors?.[0]?.id || null,
+        flavor: !isCustom ? cake.defaultFlavorId || null : customizationOptions.flavors?.[0]?.id || null,
         size: customizationOptions.sizes?.[0]?.id || null,
         color: customizationOptions.colors?.[0]?.id || null,
         toppings: []
       });
     }
-  }, [isOpen, customizationOptions]);
+  }, [isOpen, customizationOptions, isCustom, cake.defaultFlavorId]);
 
   const totalPrice = useMemo(() => {
-    let total = cake.base_price;
+    let total = isCustom ? 0 : cake.base_price;
     const { flavors, sizes, colors, toppings } = customizationOptions;
 
     const selectedFlavor = flavors?.find(f => f.id === customizations.flavor);
-    if (selectedFlavor) total += selectedFlavor.price;
+    // Only add flavor price if it's a custom cake from scratch
+    if (isCustom && selectedFlavor) {
+      total += selectedFlavor.price;
+    }
 
     const selectedSize = sizes?.find(s => s.id === customizations.size);
     if (selectedSize) total += selectedSize.price;
@@ -63,9 +66,14 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
     });
 
     return total;
-  }, [cake, customizations, customizationOptions]);
+  }, [cake.base_price, customizations, customizationOptions, isCustom]);
 
   const handleCustomizationChange = (type: keyof Customizations, value: string) => {
+    // For a pre-defined cake, don't allow changing the flavor
+    if (type === 'flavor' && !isCustom) {
+      return;
+    }
+
     if (type === 'toppings') {
       setCustomizations(prev => ({
         ...prev,
@@ -124,6 +132,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
                 customizationOptions={customizationOptions}
                 customizations={customizations}
                 handleCustomizationChange={handleCustomizationChange}
+                isFlavorLocked={!isCustom}
               />
              
              <div className="mt-auto pt-4 space-y-4">

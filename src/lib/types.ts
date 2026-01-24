@@ -8,6 +8,7 @@ export interface Cake {
   category: string;
   orders_count: number;
   ready_time: string;
+  defaultFlavorId?: string;
 }
 
 export interface SpecialOffer {
