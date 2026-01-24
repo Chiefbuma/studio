@@ -6,8 +6,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { DeliveryInfo } from "@/lib/types";
-import { Store, Truck } from "lucide-react";
+import { Store, Truck, MapPin } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 
 interface DeliveryFormProps {
     deliveryInfo: DeliveryInfo;
@@ -15,8 +17,21 @@ interface DeliveryFormProps {
 }
 
 export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProps) {
+    const { toast } = useToast();
+
     const handleInputChange = (field: keyof DeliveryInfo, value: string) => {
         setDeliveryInfo(prev => ({ ...prev, [field]: value }));
+    };
+
+    const handleSetLocation = () => {
+        // In a real app, this would open a map modal.
+        // For this prototype, we'll simulate getting coordinates.
+        const mockCoordinates = { lat: -1.286389, lng: 36.817223 }; // Nairobi CBD
+        setDeliveryInfo(prev => ({ ...prev, coordinates: mockCoordinates }));
+        toast({
+            title: "Location Captured!",
+            description: `Coordinates set to: Lat: ${mockCoordinates.lat.toFixed(4)}, Lng: ${mockCoordinates.lng.toFixed(4)}`,
+        });
     };
 
     return (
@@ -69,6 +84,17 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
                     <div className="space-y-2">
                         <Label htmlFor="address">Delivery Address *</Label>
                         <Textarea id="address" placeholder="e.g., Vision Tower, 5th Floor, Muthithi Road" value={deliveryInfo.address} onChange={(e) => handleInputChange('address', e.target.value)} required />
+                         <div className="flex justify-between items-center pt-2">
+                            <Button type="button" variant="outline" size="sm" onClick={handleSetLocation}>
+                                <MapPin className="mr-2 h-4 w-4" />
+                                Set on Map
+                            </Button>
+                            {deliveryInfo.coordinates && (
+                                <p className="text-xs text-muted-foreground">
+                                    Lat: {deliveryInfo.coordinates.lat.toFixed(4)}, Lng: {deliveryInfo.coordinates.lng.toFixed(4)}
+                                </p>
+                            )}
+                        </div>
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="city">City</Label>

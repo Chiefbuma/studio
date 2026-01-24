@@ -13,6 +13,8 @@ import { CartIcon } from '@/components/cake-paradise/cart-icon';
 import { CartSheet } from '@/components/cake-paradise/cart-sheet';
 import { useCakeData } from '@/hooks/use-cake-data';
 import { AppFooter } from '@/components/cake-paradise/footer';
+import { SocialIcons } from '@/components/cake-paradise/social-icons';
+import { AIRecommender } from '@/components/cake-paradise/ai-recommender';
 
 export default function Home() {
   const [view, setView] = useState<'cover' | 'offer' | 'menu'>('cover');
@@ -86,6 +88,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background overflow-x-hidden flex flex-col">
       <main className="flex-grow">
+        <SocialIcons />
+        <AIRecommender />
         <CartIcon />
         <CartSheet />
         
@@ -100,7 +104,7 @@ export default function Home() {
         )}
         {view === 'menu' && (
           <Menu
-            cakes={cakes}
+            cakes={cakes.filter(c => c.id !== 'custom-cake')}
             onOrder={(cake) => handleOpenCustomizationModal(cake, false)}
             onBack={handleNavigateToHome}
           />

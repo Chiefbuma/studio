@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { SocialIcons } from "./social-icons";
 import { ArrowRight, CheckCircle, Clock, Crown, Star, Sparkles, Cake as CakeIcon, Trophy } from "lucide-react";
 
 interface SpecialOfferProps {
@@ -26,7 +25,6 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
     return (
         <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-50"></div>
-            <SocialIcons />
             
             <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:py-12 min-h-screen flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
                 
