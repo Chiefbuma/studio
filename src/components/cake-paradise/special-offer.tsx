@@ -35,9 +35,15 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                         <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-accent/10 rounded-full blur-3xl animate-pulse delay-500"></div>
                         
                         <div className="relative z-10">
-                            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-2 rounded-full mb-6 shadow-lg">
-                                <Crown className="w-4 h-4 text-amber-300" />
-                                <span className="font-bold text-xs uppercase tracking-wider">Today's Special</span>
+                            <div className="flex flex-col items-start gap-3 mb-6">
+                                <div className="bg-background/80 backdrop-blur-sm p-3 rounded-xl shadow-lg text-center border border-background/20">
+                                    <div className="text-2xl font-bold text-primary">#1</div>
+                                    <div className="text-xs text-foreground font-semibold uppercase tracking-wider">Best Seller</div>
+                                </div>
+                                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-2 rounded-full shadow-lg">
+                                    <Crown className="w-4 h-4 text-amber-300" />
+                                    <span className="font-bold text-xs uppercase tracking-wider">Today's Special</span>
+                                </div>
                             </div>
 
                             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-background mb-4 leading-tight text-balance">{cake.name}</h1>
@@ -90,11 +96,6 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                             
-                             <div className="absolute top-4 right-4 bg-background/80 backdrop-blur-sm p-3 rounded-xl shadow-lg text-center">
-                                <div className="text-2xl font-bold text-primary">#1</div>
-                                <div className="text-xs text-foreground font-semibold uppercase tracking-wider">Best Seller</div>
-                            </div>
-
                             <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm p-3 rounded-xl shadow-lg flex items-center gap-3">
                                 <CheckCircle className="w-5 h-5 text-primary" />
                                 <div>
