@@ -51,11 +51,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const newCart = [...prevCart];
               newCart[existingItemIndex].quantity += quantity;
               
-              toast({
+              // Schedule toast to avoid state update collision
+              setTimeout(() => toast({
                 title: "Cart Updated!",
                 description: `Quantity for ${cake.name} is now ${newCart[existingItemIndex].quantity}.`,
-              });
-              setIsCartOpen(true);
+              }), 0);
               
               return newCart;
           }
@@ -72,40 +72,48 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         customizations,
       };
 
-      toast({
+      // Schedule toast to avoid state update collision
+      setTimeout(() => toast({
         title: "Added to Cart!",
         description: `${quantity} x ${cake.name} added.`,
-      });
-      setIsCartOpen(true);
+      }), 0);
 
       return [...prevCart, newItem];
     });
+    setIsCartOpen(true);
   };
 
   const removeFromCart = (itemId: string) => {
     setCart(prevCart => prevCart.filter(item => item.id !== itemId));
-    toast({
+    // Schedule toast to avoid state update collision
+    setTimeout(() => toast({
         variant: 'destructive',
         title: "Item Removed",
         description: `Item has been removed from your cart.`,
-      });
+      }), 0);
   };
 
   const updateQuantity = (itemId: string, quantity: number) => {
-    setCart(prevCart => {
-        if (quantity <= 0) {
-            return prevCart.filter(item => item.id !== itemId);
-        }
-        return prevCart.map(item => (item.id === itemId ? { ...item, quantity } : item));
-    });
+    if (quantity <= 0) {
+      removeFromCart(itemId);
+    } else {
+      setCart(prevCart => {
+          return prevCart.map(item => (item.id === itemId ? { ...item, quantity } : item));
+      });
+    }
   };
 
   const clearCart = () => {
-    setCart([]);
-    toast({
-        title: "Cart Cleared",
-        description: `Your cart is now empty.`,
-      });
+    setCart(prevCart => {
+      if (prevCart.length > 0) {
+        // Schedule toast to avoid state update collision
+        setTimeout(() => toast({
+            title: "Cart Cleared",
+            description: `Your cart is now empty.`,
+        }), 0);
+      }
+      return [];
+    });
   };
 
   const itemCount = useMemo(() => cart.reduce((total, item) => total + item.quantity, 0), [cart]);
