@@ -28,9 +28,9 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-50"></div>
             <SocialIcons />
             
-            <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:py-12 min-h-screen flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
+            <div className="relative z-10 max-w-7xl mx-auto px-4 py-8 sm:py-12 min-h-screen flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-8 lg:gap-12">
                 <div className="lg:w-1/2 w-full">
-                    <div className="relative bg-card/5 backdrop-blur-sm rounded-2xl p-6 sm:p-8 lg:p-12 shadow-2xl border border-primary/20 overflow-hidden">
+                    <div className="relative bg-card/5 backdrop-blur-sm rounded-2xl p-6 sm:p-8 lg:p-12 shadow-2xl border border-primary/20 overflow-hidden flex flex-col justify-center">
                         <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
                         <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-accent/10 rounded-full blur-3xl animate-pulse delay-500"></div>
                         
@@ -62,14 +62,14 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                                 </div>
                             </div>
 
-                            <div className="flex flex-wrap justify-center gap-4">
-                                <Button size="lg" className="shadow-lg hover:shadow-primary/50 transition-shadow" onClick={() => onOrder(cake)}>
-                                    <CakeIcon className="mr-2 h-5 w-5" /> Order Now
+                            <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4">
+                                <Button className="shadow-lg hover:shadow-primary/50 transition-shadow" onClick={() => onOrder(cake)}>
+                                    <CakeIcon className="mr-2 h-5 w-5" /> Add to Cart
                                 </Button>
-                                 <Button size="lg" variant="secondary" onClick={onOrderCustom}>
+                                 <Button variant="secondary" onClick={onOrderCustom}>
                                     <Sparkles className="mr-2 h-5 w-5" /> Create Your Own
                                 </Button>
-                                <Button size="lg" variant="outline" className="bg-card/10 border-primary/30 hover:bg-card/20" onClick={onNavigateToMenu}>
+                                <Button variant="outline" className="bg-card/10 border-primary/30 hover:bg-card/20" onClick={onNavigateToMenu}>
                                     View Full Menu <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
                             </div>
@@ -77,15 +77,14 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                     </div>
                 </div>
 
-                <div className="lg:w-1/2 w-full mt-6 lg:mt-0">
-                    <div className="relative group">
+                <div className="lg:w-1/2 w-full mt-6 lg:mt-0 flex">
+                    <div className="relative group w-full">
                          <div className="absolute -inset-2 bg-gradient-to-r from-primary/50 to-accent/50 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-all duration-500 animate-pulse"></div>
-                        <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-background/10">
+                        <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-background/10 h-96 lg:h-full">
                             <Image
                                 src={cakeImage.imageUrl}
                                 alt={cake.name}
-                                width={800}
-                                height={600}
+                                fill
                                 className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
                                 data-ai-hint={cakeImage.imageHint}
                             />

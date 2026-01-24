@@ -74,9 +74,18 @@ export interface DeliveryInfo {
   coordinates: { lat: number; lng: number } | null;
 }
 
+export interface CartItem {
+  id: string; // Unique ID for each cart item instance
+  name: string;
+  quantity: number;
+  price: number; // Final price per item, including customizations
+  image_id: string;
+  cakeId: string;
+  customizations?: Customizations;
+}
+
 export interface OrderPayload {
-    cake: Cake;
-    customizations: Customizations;
+    items: CartItem[];
     deliveryInfo: DeliveryInfo;
     totalPrice: number;
     depositAmount: number;

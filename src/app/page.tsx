@@ -9,6 +9,9 @@ import type { Cake, CustomizationOptions } from '@/lib/types';
 import { cakes as allCakes, specialOffer as mockSpecialOffer, customizationOptions as mockCustomizationOptions, customCake } from '@/lib/data';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CakeSlice } from 'lucide-react';
+import { useCart } from '@/hooks/use-cart';
+import { CartIcon } from '@/components/cake-paradise/cart-icon';
+import { CartSheet } from '@/components/cake-paradise/cart-sheet';
 
 export default function Home() {
   const [view, setView] = useState<'cover' | 'offer' | 'menu'>('cover');
@@ -19,6 +22,7 @@ export default function Home() {
   const [specialOffer, setSpecialOffer] = useState<any>(null);
   const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions | null>(null);
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     // Simulate fetching data
@@ -45,9 +49,8 @@ export default function Home() {
   }, [view, loading]);
 
   const handleOrder = (cake: Cake) => {
-    setSelectedCake(cake);
-    setIsOrderingCustom(false);
-    setShowOrderModal(true);
+    const price = cake.id === 'special-offer-cake' ? mockSpecialOffer.special_price : cake.base_price;
+    addToCart(cake, 1, price);
   };
   
   const handleOrderCustom = () => {
@@ -89,6 +92,9 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-background overflow-x-hidden">
+      <CartIcon />
+      <CartSheet />
+      
       {view === 'cover' && <CoverPage />}
       {view === 'offer' && (
         <SpecialOffer

@@ -8,14 +8,14 @@ export async function placeOrder(payload: OrderPayload): Promise<{ success: bool
 
   // Simulate database insertion and order number generation
   try {
-    // In a real app, you would save the order to a database
+    // In a real app, you would save the order (with all its items) to a database
     // and get a real order number.
     const orderNumber = `CP-${Math.floor(Math.random() * 90000) + 10000}`;
     
     // Simulate a short delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    console.log(`Order ${orderNumber} placed successfully.`);
+    console.log(`Order ${orderNumber} placed successfully with ${payload.items.length} items.`);
 
     return { 
       success: true, 
