@@ -160,7 +160,6 @@ export default function CheckoutPage() {
         customer_phone: deliveryInfo.phone,
         payment_type: "M-PESA Deposit"
       },
-      channels: ['mobile_money'],
       callback: function(response: any) {
         // No need to setIsProcessing(false) here, as we navigate away
         handlePaymentSuccess(response, orderNumber);
