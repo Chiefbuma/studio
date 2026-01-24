@@ -1,4 +1,4 @@
-import type { Cake, SpecialOffer, CustomizationOptions } from './types';
+import type { Cake, SpecialOffer, CustomizationOptions, Order, CartItem } from './types';
 
 export const cakes: Cake[] = [
   {
@@ -127,3 +127,92 @@ export const customCake: Cake = {
   orders_count: 0,
   ready_time: '48h+',
 };
+
+export const orders: Order[] = [
+  {
+    id: 1,
+    order_number: 'CP-12345',
+    customer_name: 'John Doe',
+    customer_phone: '0712345678',
+    customer_email: 'john@example.com',
+    delivery_method: 'delivery',
+    delivery_address: 'Vision Tower, 5th Floor, Muthithi Road',
+    total_price: 3200,
+    deposit_amount: 2560,
+    payment_status: 'paid',
+    order_status: 'processing',
+    created_at: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+    items: [
+      {
+        id: 'special-offer-cake',
+        cakeId: 'special-offer-cake',
+        name: 'Whiskey Delight',
+        quantity: 1,
+        price: 3200,
+        image_id: 'special-offer-cake',
+      },
+    ],
+  },
+  {
+    id: 2,
+    order_number: 'CP-67890',
+    customer_name: 'Jane Smith',
+    customer_phone: '0787654321',
+    customer_email: 'jane@example.com',
+    delivery_method: 'pickup',
+    pickup_location: 'Westlands Branch',
+    total_price: 5300,
+    deposit_amount: 4240,
+    payment_status: 'paid',
+    order_status: 'complete',
+    created_at: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    items: [
+       {
+        id: 'custom-1662733487299',
+        cakeId: 'custom-cake',
+        name: 'Custom Creation',
+        quantity: 1,
+        price: 5300,
+        image_id: 'custom-cake-placeholder',
+        customizations: {
+          flavor: 'f2',
+          size: 's3',
+          color: 'c2',
+          toppings: ['t1', 't2'],
+        },
+      },
+    ],
+  },
+    {
+    id: 3,
+    order_number: 'CP-11223',
+    customer_name: 'Peter Jones',
+    customer_phone: '0711223344',
+    customer_email: 'peter@example.com',
+    delivery_method: 'delivery',
+    delivery_address: '123 Gitanga Road',
+    total_price: 5800,
+    deposit_amount: 4640,
+    payment_status: 'paid',
+    order_status: 'processing',
+    created_at: new Date().toISOString(),
+    items: [
+      {
+        id: 'red-velvet-delight',
+        cakeId: 'red-velvet-delight',
+        name: 'Red Velvet Delight',
+        quantity: 1,
+        price: 3200,
+        image_id: 'red-velvet-delight',
+      },
+       {
+        id: 'vanilla-bean-classic',
+        cakeId: 'vanilla-bean-classic',
+        name: 'Vanilla Bean Classic',
+        quantity: 1,
+        price: 2600,
+        image_id: 'vanilla-bean-classic',
+      },
+    ],
+  },
+];

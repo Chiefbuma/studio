@@ -1,5 +1,5 @@
-import { cakes, specialOffer, customizationOptions, customCake } from '@/lib/data';
-import type { Cake, SpecialOffer, CustomizationOptions } from '@/lib/types';
+import { cakes, specialOffer, customizationOptions, customCake, orders } from '@/lib/data';
+import type { Cake, SpecialOffer, CustomizationOptions, Order } from '@/lib/types';
 
 // This service simulates fetching data. In a real application, these functions
 // would make API calls to a backend.
@@ -37,4 +37,13 @@ export function getCustomCake(): Promise<Cake> {
             resolve(customCake);
         }, 100);
     });
+}
+
+export function getOrders(): Promise<Order[]> {
+  // Simulate network delay
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve(orders);
+    }, 500);
+  });
 }

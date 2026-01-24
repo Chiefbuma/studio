@@ -90,3 +90,22 @@ export interface OrderPayload {
     totalPrice: number;
     depositAmount: number;
 }
+
+export interface Order {
+  id: number;
+  order_number: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string;
+  delivery_method: 'delivery' | 'pickup';
+  delivery_address?: string;
+  pickup_location?: string;
+  delivery_date?: string;
+  special_instructions?: string;
+  total_price: number;
+  deposit_amount: number;
+  payment_status: 'pending' | 'paid';
+  order_status: 'processing' | 'complete' | 'cancelled';
+  created_at: string; // ISO date string
+  items: CartItem[];
+}
