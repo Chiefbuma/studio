@@ -140,3 +140,169 @@ This application was designed to make backend integration straightforward. You o
     1.  In `handlePaymentSuccess`, after a successful payment response from Paystack, make a call to your backend.
     2.  Send the payment `reference` and `orderNumber` to a secure backend endpoint (e.g., `/api/verify-payment`).
     3.  Your backend should then call the Paystack Verification API to confirm the payment is valid. If it is, update the order status to "Paid" in your database.
+
+## 5. Database Schema
+
+While this application currently uses mock data, it is designed to seamlessly transition to a real database. Below is the recommended database schema based on the application's data structures. When implementing a backend, these definitions can be used to create migration files with an ORM like Prisma, Drizzle, or TypeORM.
+
+### Core Tables
+
+**1. `cakes` Table**
+Stores the details for each standard cake available for sale.
+
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `id` | `VARCHAR(255)` | **Primary Key.** A unique identifier (e.g., 'red-velvet-delight'). |
+| `name` | `VARCHAR(255)` | The name of the cake. |
+| `description`| `TEXT` | A detailed description of the cake. |
+| `base_price` | `DECIMAL(10, 2)` | The starting price before any customization. |
+| `image_id` | `VARCHAR(255)` | Identifier for the cake's image (could be a foreign key to an `images` table). |
+| `rating` | `FLOAT` | The average customer rating (e.g., 4.8). |
+| `category` | `VARCHAR(255)` | The category of the cake (e.g., 'Classic', 'Chocolate'). |
+| `orders_count` | `INTEGER` | A counter for how many times the cake has been ordered. |
+| `ready_time` | `VARCHAR(50)` | Estimated time to prepare the cake (e.g., '24h'). |
+| `created_at` | `TIMESTAMP` | When the record was created. |
+| `updated_at` | `TIMESTAMP` | When the record was last updated. |
+
+---
+
+**2. `special_offers` Table**
+Manages the daily or weekly special offers.
+
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `id` | `INT` | **Primary Key.** Auto-incrementing unique identifier. |
+| `cake_id` | `VARCHAR(255)`| **Foreign Key** to the `cakes.id` table. |
+| `discount_percentage` | `INT` | The percentage discount offered (e.g., 20). |
+| `special_price`| `DECIMAL(10, 2)`| The final discounted price. |
+| `is_active` | `BOOLEAN` | A flag to easily enable or disable the offer. |
+| `start_date` | `DATE` | When the offer becomes active. |
+| `end_date` | `DATE` | When the offer expires. |
+
+---
+
+**3. `orders` Table**
+Stores customer order information, including delivery details.
+
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `id` | `INT` | **Primary Key.** Auto-incrementing unique identifier. |
+| `order_number`| `VARCHAR(255)` | The public-facing unique order number (e.g., 'CP-12345'). |
+| `customer_name` | `VARCHAR(255)` | The customer's full name. |
+| `customer_phone`| `VARCHAR(20)` | The customer's phone number. |
+| `customer_email`| `VARCHAR(255)` | The customer's email address. |
+| `delivery_method` | `ENUM('delivery', 'pickup')` | Whether the order is for delivery or pickup. |
+| `delivery_address`| `TEXT` | The full delivery address. Null if pickup. |
+| `pickup_location` | `VARCHAR(255)` | The selected pickup location. Null if delivery. |
+| `delivery_date`| `DATE` | The customer's preferred delivery/pickup date. |
+| `special_instructions` | `TEXT` | Any special notes from the customer. |
+| `total_price`| `DECIMAL(10, 2)`| The total cost of the entire order. |
+| `deposit_amount`| `DECIMAL(10, 2)`| The 80% deposit amount paid. |
+| `payment_status`| `ENUM('pending', 'paid')` | The current payment status. |
+| `order_status`| `ENUM('processing', 'complete', 'cancelled')` | The current status of the order preparation. |
+| `created_at` | `TIMESTAMP` | When the record was created. |
+
+---
+
+**4. `order_items` Table**
+A line item in an order. Connects an order to the cakes that were purchased.
+
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `id` | `INT` | **Primary Key.** Auto-incrementing unique identifier. |
+| `order_id` | `INT` | **Foreign Key** to the `orders.id` table. |
+| `cake_id` | `VARCHAR(255)` | **Foreign Key** to the `cakes.id` table (even for custom cakes). |
+| `quantity` | `INT` | The number of this specific cake item ordered. |
+| `price` | `DECIMAL(10, 2)`| The final price for this single item, including customizations. |
+| `customizations_json` | `JSON` | A JSON object storing the selected customizations (flavor, size, color, toppings). |
+
+---
+
+### Customization Option Tables
+
+These tables store the available choices for building a custom cake.
+
+**5. `customization_flavors`**
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `id` | `VARCHAR(255)` | **Primary Key.** Unique identifier (e.g., 'f1', 'f2'). |
+| `name` | `VARCHAR(255)` | Flavor name (e.g., 'Rich Chocolate'). |
+| `price` | `DECIMAL(10, 2)`| Additional cost for this flavor. |
+
+**6. `customization_sizes`**
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `id` | `VARCHAR(255)` | **Primary Key.** Unique identifier (e.g., 's1', 's2'). |
+| `name` | `VARCHAR(255)` | Size name (e.g., '8" Round'). |
+| `serves` | `VARCHAR(255)` | Estimated number of servings. |
+| `price` | `DECIMAL(10, 2)`| Additional cost for this size. |
+
+**7. `customization_colors`**
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `id` | `VARCHAR(255)` | **Primary Key.** Unique identifier (e.g., 'c1', 'c2'). |
+| `name` | `VARCHAR(255)` | Color name (e.g., 'Pastel Pink'). |
+| `hex_value` | `VARCHAR(7)` | The hex code for the color (e.g., '#FFCDD2'). |
+| `price` | `DECIMAL(10, 2)`| Additional cost for this color. |
+
+**8. `customization_toppings`**
+| Column Name | Data Type | Description |
+| :--- | :--- | :--- |
+| `id` | `VARCHAR(255)` | **Primary Key.** Unique identifier (e.g., 't1', 't2'). |
+| `name` | `VARCHAR(255)` | Topping name (e.g., 'Fresh Berries'). |
+| `price` | `DECIMAL(10, 2)`| Additional cost for this topping. |
+
+
+## 6. Local Development Setup
+
+Follow these instructions to get the application running on your local machine.
+
+### a. Prerequisites
+
+- **Node.js**: Version 20.x or higher.
+- **npm**: A Node.js package manager (v10+).
+- **Docker**: (Optional) For running the application in a containerized environment.
+
+### b. Environment Variables
+
+For the payment integration to work, you must provide your Paystack public key.
+
+1.  Create a new file named `.env` in the root of the project.
+2.  Add the following line to the file, replacing the placeholder with your actual key:
+
+    ```
+    NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxx
+    ```
+
+### c. Standard Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone <your-repository-url>
+    cd <repository-name>
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the development server:**
+    The application will be available at `http://localhost:9002`.
+    ```bash
+    npm run dev
+    ```
+
+### d. Running with Docker
+
+This is the recommended way to run the application to ensure a consistent environment.
+
+1.  **Build the Docker image and run the container:**
+    Make sure Docker Desktop is running on your machine. Then, from the root of the project, run:
+    ```bash
+    docker-compose up --build
+    ```
+2.  **Access the application:**
+    The application will be available at `http://localhost:3000`.
+
+To stop the application, press `CTRL+C` in the terminal.
