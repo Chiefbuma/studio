@@ -9,11 +9,53 @@ import type { DeliveryInfo } from '@/lib/types';
 import { placeOrder } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft } from 'lucide-react';
+import { Loader2, ArrowLeft, ShoppingCart, ChevronDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { Separator } from '@/components/ui/separator';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Card, CardContent } from '@/components/ui/card';
+
+// Component for Order Summary, now collapsible
+const OrderSummaryCollapsible = () => {
+    const { cart, totalPrice } = useCart();
+    const [isOpen, setIsOpen] = useState(false);
+    
+    return (
+        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full mb-8">
+            <CollapsibleTrigger asChild>
+                <div className="flex justify-between items-center w-full p-4 border rounded-lg bg-card cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div className="flex items-center gap-3">
+                         <ShoppingCart className="h-5 w-5 text-primary" />
+                         <span className="font-semibold">{isOpen ? 'Hide' : 'Show'} Order Summary</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <span className="font-bold text-primary">{formatPrice(totalPrice)}</span>
+                        <ChevronDown className={`h-5 w-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                </div>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+                 <div className="py-4 space-y-4">
+                    {cart.map(item => {
+                        const image = PlaceHolderImages.find(img => img.id === item.image_id) || PlaceHolderImages[0];
+                        return (
+                            <div key={item.id} className="flex items-start gap-4">
+                                <Image src={image.imageUrl} alt={item.name} width={64} height={64} className="rounded-md object-cover h-16 w-16" />
+                                <div className="flex-1">
+                                    <p className="font-medium">{item.name}</p>
+                                    <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
+                                </div>
+                                <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
+                            </div>
+                        );
+                    })}
+                </div>
+            </CollapsibleContent>
+        </Collapsible>
+    );
+}
 
 export default function CheckoutPage() {
   const { cart, totalPrice, clearCart } = useCart();
@@ -38,8 +80,9 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
+    // Redirect to home if cart is empty on mount.
     if (cart.length === 0) {
-        router.push('/');
+        router.replace('/');
     }
   }, [cart, router]);
 
@@ -90,82 +133,84 @@ export default function CheckoutPage() {
     clearCart();
     router.push('/');
   }
+  
+  const stageVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 },
+  };
 
   return (
     <div className="min-h-screen bg-background">
         <header className="bg-card border-b p-4 sticky top-0 z-20">
-            <div className="container mx-auto flex justify-between items-center">
-                <Button variant="ghost" onClick={() => router.push('/')}><ArrowLeft className="mr-2 h-4 w-4" /> Back to Shop</Button>
-                <h1 className="text-2xl font-bold font-headline">Checkout</h1>
-                <div></div>
+            <div className="container mx-auto flex items-center">
+                <Button variant="ghost" onClick={() => view === 'delivery' ? router.push('/') : setView('delivery')}>
+                    <ArrowLeft className="mr-2 h-4 w-4" /> 
+                    Back
+                </Button>
+                <div className="flex-1 text-center">
+                    <h1 className="text-xl md:text-2xl font-bold font-headline">
+                        {view === 'delivery' ? 'Checkout' : 'Payment'}
+                    </h1>
+                </div>
+                <div className="w-20"></div> {/* Spacer to balance the back button */}
             </div>
         </header>
-        <main className="container mx-auto p-4 md:p-8">
-            <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
-                <div className="md:col-span-1 order-2 md:order-1">
-                    {view === 'delivery' && (
-                        <div className="bg-card p-6 rounded-lg border">
-                            <h2 className="text-xl font-semibold mb-4">Delivery Information</h2>
-                            <DeliveryForm deliveryInfo={deliveryInfo} setDeliveryInfo={setDeliveryInfo} />
-                            <Button onClick={handlePlaceOrder} className="w-full mt-6" size="lg" disabled={isProcessing}>
-                                {isProcessing ? <Loader2 className="animate-spin" /> : "Proceed to Payment"}
-                            </Button>
-                        </div>
-                    )}
-                    {view === 'payment' && orderResponse && (
-                        <div>
-                             <h2 className="text-xl font-semibold mb-4">Payment</h2>
-                            <PaymentForm
-                                orderNumber={orderResponse.orderNumber}
-                                depositAmount={orderResponse.depositAmount}
-                                totalPrice={totalPrice}
-                                customerEmail={deliveryInfo.email}
-                                customerPhone={deliveryInfo.phone}
-                                onPaymentSuccess={handlePaymentSuccess}
-                                onBack={() => setView('delivery')}
-                            />
-                        </div>
-                    )}
+        
+        <main className="container mx-auto p-4 md:p-8 max-w-3xl">
+             <OrderSummaryCollapsible />
+
+             <div className="grid grid-cols-2 gap-4 text-center mb-8">
+                <div className={`p-3 rounded-lg border-2 transition-colors ${view === 'delivery' ? 'border-primary bg-primary/10' : 'border-border'}`}>
+                    <h3 className="font-semibold text-lg">1. Delivery Details</h3>
                 </div>
-                <div className="md:col-span-1 order-1 md:order-2 bg-card p-6 rounded-lg border self-start sticky top-24">
-                    <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
-                    <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
-                        {cart.map(item => {
-                            const image = PlaceHolderImages.find(img => img.id === item.image_id) || PlaceHolderImages[0];
-                            return (
-                                <div key={item.id} className="flex items-start gap-4">
-                                    <Image src={image.imageUrl} alt={item.name} width={64} height={64} className="rounded-md object-cover h-16 w-16" />
-                                    <div className="flex-1">
-                                        <p className="font-medium">{item.name}</p>
-                                        <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                                    </div>
-                                    <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
-                                </div>
-                            );
-                        })}
-                    </div>
-                    <Separator className="my-4" />
-                    <div className="space-y-2">
-                        <div className="flex justify-between">
-                            <span>Subtotal</span>
-                            <span>{formatPrice(totalPrice)}</span>
-                        </div>
-                         <div className="flex justify-between">
-                            <span>Delivery</span>
-                            <span className="font-medium text-primary">Free</span>
-                        </div>
-                        <Separator className="my-2" />
-                        <div className="flex justify-between font-bold text-lg">
-                            <span>Total</span>
-                            <span>{formatPrice(totalPrice)}</span>
-                        </div>
-                         <div className="flex justify-between text-primary mt-2">
-                            <span>80% Deposit to Pay</span>
-                            <span className="font-bold">{formatPrice(depositAmount)}</span>
-                        </div>
-                    </div>
+                 <div className={`p-3 rounded-lg border-2 transition-colors ${view === 'payment' ? 'border-primary bg-primary/10' : 'border-border'}`}>
+                    <h3 className="font-semibold text-lg">2. Payment</h3>
                 </div>
             </div>
+
+            <AnimatePresence mode="wait">
+                {view === 'delivery' && (
+                    <motion.div
+                        key="delivery"
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={stageVariants}
+                        transition={{ duration: 0.3 }}
+                    >
+                         <Card>
+                            <CardContent className="p-6">
+                                <DeliveryForm deliveryInfo={deliveryInfo} setDeliveryInfo={setDeliveryInfo} />
+                                <Button onClick={handlePlaceOrder} className="w-full mt-6" size="lg" disabled={isProcessing}>
+                                    {isProcessing ? <Loader2 className="animate-spin" /> : "Proceed to Payment"}
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                )}
+                
+                {view === 'payment' && orderResponse && (
+                     <motion.div
+                        key="payment"
+                        initial="hidden"
+                        animate="visible"
+                        exit="exit"
+                        variants={stageVariants}
+                        transition={{ duration: 0.3 }}
+                    >
+                        <PaymentForm
+                            orderNumber={orderResponse.orderNumber}
+                            depositAmount={orderResponse.depositAmount}
+                            totalPrice={totalPrice}
+                            customerEmail={deliveryInfo.email}
+                            customerPhone={deliveryInfo.phone}
+                            onPaymentSuccess={handlePaymentSuccess}
+                            onBack={() => setView('delivery')}
+                        />
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </main>
     </div>
   );

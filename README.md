@@ -45,12 +45,22 @@ The admin panel is a client-side rendered application within the Next.js framewo
 -   **Authentication**: It uses `localStorage` to persist the admin's login state. This is a simulation for local development. A real-world application would use secure, HTTP-only cookies with tokens managed by a backend server.
 -   **Data Management**: The admin panel reads and simulates "writing" to the mock data files (`src/lib/data.ts`). This allows for a fully interactive prototype without requiring a database. All UI components are ready to be wired to API calls to a real backend.
 
+### d. Checkout Flow
+
+The checkout process (`src/app/checkout/page.tsx`) is designed to be a smooth, responsive, and intuitive single-page experience.
+
+-   **Mobile-First Design**: The layout uses a single-column, centered design that works seamlessly on all screen sizes, from mobile phones to desktops.
+-   **Collapsible Order Summary**: On mobile, the order summary is collapsed by default into a single bar showing the total price. This saves valuable screen space while keeping the most important information accessible with a single tap.
+-   **Animated Transitions**: The transition between the "Delivery Information" step and the "Payment" step is handled with smooth fade-in/fade-out animations, providing a seamless user experience without jarring page reloads.
+-   **Clear Step-by-Step Process**: A simple visual indicator at the top of the form clearly shows the customer which step of the checkout process they are on.
+
 ## 3. File-by-File Breakdown
 
 Here is an explanation of the key files and directories in the project.
 
 -   `src/app/`
-    -   `layout.tsx`, `globals.css`, `page.tsx`, `checkout/page.tsx`: These files define the main customer-facing application layout, styles, and page views.
+    -   `layout.tsx`, `globals.css`, `page.tsx`: These files define the main customer-facing application layout, styles, and page views.
+    -   `checkout/page.tsx`: A responsive, single-page checkout flow with animated steps and a collapsible order summary.
 
 -   `src/app/admin/`
     -   `login/page.tsx`: The dedicated login page for the admin panel.
