@@ -151,10 +151,10 @@ This section provides the blueprint for your backend database and instructions o
 
 ### a. Table Relationships
 
--   **One-to-Many**: An `orders` record can have multiple `order_items`.
--   **Many-to-One**: Many `order_items` records point to one `orders` record.
--   **Many-to-One**: An `order_item` points to one `cakes` record.
--   **One-to-One**: A `special_offers` record points to one `cakes` record.
+-   **`orders` (1) -> (∞) `order_items`**: An order can have many items. `order_items.order_id` is a foreign key to `orders.id`.
+-   **`cakes` (1) -> (∞) `order_items`**: A specific cake can be part of many different order items. `order_items.cake_id` is a foreign key to `cakes.id`.
+-   **`cakes` (1) -> (1) `special_offers`**: A special offer is tied to a single cake. `special_offers.cake_id` is a foreign key to `cakes.id`.
+-   **`customization_*` Tables**: These are lookup tables (for flavors, sizes, etc.) and do not have direct relationships with the `orders` table. Customization choices for an order are stored in the `order_items.customizations_json` column.
 
 ### b. Core Tables
 
@@ -257,7 +257,7 @@ These tables store the available choices for building a custom cake.
 
 ### e. MS SQL Server Table Creation Scripts
 
-You can use these SQL scripts to create the tables in a tool like SQL Server Management Studio (SSMS) or Azure Data Studio.
+You can use these SQL scripts to create all required tables in a tool like SQL Server Management Studio (SSMS) or Azure Data Studio.
 
 ```sql
 -- This script is for Microsoft SQL Server.
