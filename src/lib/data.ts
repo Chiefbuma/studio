@@ -1,4 +1,4 @@
-import type { Cake, SpecialOffer, CustomizationOptions, Order, CartItem } from './types';
+import type { Cake, SpecialOffer, CustomizationOptions, Order } from './types';
 
 export const cakes: Cake[] = [
   {
@@ -12,11 +12,12 @@ export const cakes: Cake[] = [
     orders_count: 152,
     ready_time: '24h',
     defaultFlavorId: 'f4', // Red Velvet
+    customizable: true,
   },
   {
     id: 'strawberry-dream',
     name: 'Strawberry Dream',
-    description: 'Light vanilla sponge cake filled with fresh strawberries and whipped cream. A dreamy, refreshing treat for any occasion.',
+    description: 'Light vanilla sponge cake filled with fresh strawberries and whipped cream. Comes as an 8" Round cake with our Fresh Strawberry flavor.',
     base_price: 3000,
     image_id: 'strawberry-dream',
     rating: 4.7,
@@ -24,6 +25,7 @@ export const cakes: Cake[] = [
     orders_count: 120,
     ready_time: '24h',
     defaultFlavorId: 'f5', // Strawberry
+    customizable: false,
   },
     {
     id: 'chocolate-fudge-bliss',
@@ -36,11 +38,12 @@ export const cakes: Cake[] = [
     orders_count: 210,
     ready_time: '48h',
     defaultFlavorId: 'f2', // Rich Chocolate
+    customizable: true,
   },
   {
     id: 'lemon-zest-creation',
     name: 'Lemon Zest Creation',
-    description: 'A zesty and tangy lemon cake made with fresh lemon juice and zest, topped with a sweet lemon glaze.',
+    description: 'A zesty and tangy lemon cake made with fresh lemon juice and zest, topped with a sweet lemon glaze. Comes as a 6" Round cake with our Zesty Lemon flavor.',
     base_price: 2800,
     image_id: 'lemon-zest-creation',
     rating: 4.6,
@@ -48,6 +51,7 @@ export const cakes: Cake[] = [
     orders_count: 98,
     ready_time: '24h',
     defaultFlavorId: 'f3', // Zesty Lemon
+    customizable: false,
   },
   {
     id: 'vanilla-bean-classic',
@@ -60,6 +64,7 @@ export const cakes: Cake[] = [
     orders_count: 180,
     ready_time: '24h',
     defaultFlavorId: 'f1', // Classic Vanilla
+    customizable: true,
   },
   {
     id: 'matcha-elegance',
@@ -72,6 +77,7 @@ export const cakes: Cake[] = [
     orders_count: 75,
     ready_time: '48h',
     defaultFlavorId: 'f6', // Matcha
+    customizable: true,
   },
 ];
 
@@ -79,7 +85,7 @@ export const specialOffer: SpecialOffer = {
   cake: {
     id: 'special-offer-cake',
     name: 'Caramel Drizzle Dream',
-    description: 'A decadent chocolate cake layered with silky salted caramel buttercream, topped with a rich caramel drizzle. An unforgettable taste.',
+    description: 'A decadent chocolate cake layered with silky salted caramel buttercream, topped with a rich caramel drizzle. Comes as an 8" Round cake and cannot be customized.',
     base_price: 4000,
     image_id: 'special-offer-cake',
     rating: 4.9,
@@ -87,43 +93,12 @@ export const specialOffer: SpecialOffer = {
     orders_count: 88,
     ready_time: '48h',
     defaultFlavorId: 'f7',
+    customizable: false,
   },
   discount_percentage: 20,
   original_price: 4000,
   special_price: 3200,
   savings: 800,
-};
-
-export const customizationOptions: CustomizationOptions = {
-  flavors: [
-    { id: 'f1', name: 'Classic Vanilla', description: 'Sweet and aromatic', price: 0, color: '#F3E5AB' },
-    { id: 'f2', name: 'Rich Chocolate', description: 'Deep and decadent', price: 200, color: '#5D4037' },
-    { id: 'f3', name: 'Zesty Lemon', description: 'Bright and refreshing', price: 150, color: '#FFF59D' },
-    { id: 'f4', name: 'Red Velvet', description: 'Classic Southern charm', price: 300, color: '#B71C1C' },
-    { id: 'f5', name: 'Fresh Strawberry', description: 'Sweet and fruity', price: 250, color: '#FF8A80' },
-    { id: 'f6', name: 'Matcha Green Tea', description: 'Earthy and sophisticated', price: 400, color: '#A5D6A7' },
-    { id: 'f7', name: 'Salted Caramel Chocolate', description: 'Rich chocolate with a sweet & salty caramel twist', price: 500, color: '#6D4C41' },
-  ],
-  sizes: [
-    { id: 's1', name: '6" Round', serves: '6-8 people', price: 0 },
-    { id: 's2', name: '8" Round', serves: '10-12 people', price: 800 },
-    { id: 's3', name: '10" Round', serves: '15-20 people', price: 1500 },
-    { id: 's4', name: 'Two-Tier', serves: '25-30 people', price: 4000 },
-  ],
-  colors: [
-    { id: 'c1', name: 'Classic White', hex_value: '#FFFFFF', price: 0 },
-    { id: 'c2', name: 'Pastel Pink', hex_value: '#FFCDD2', price: 100 },
-    { id: 'c3', name: 'Sky Blue', hex_value: '#BBDEFB', price: 100 },
-    { id: 'c4', name: 'Golden Amber', hex_value: '#FFD54F', price: 200 },
-    { id: 'c5', name: 'Rich Chocolate', hex_value: '#5D4037', price: 250 },
-  ],
-  toppings: [
-    { id: 't1', name: 'Fresh Berries', price: 400 },
-    { id: 't2', name: 'Chocolate Drip', price: 300 },
-    { id: 't3', name: 'Macarons (3 pcs)', price: 500 },
-    { id: 't4', name: 'Edible Flowers', price: 350 },
-    { id: 't5', name: 'Gold Leaf Flakes', price: 600 },
-  ],
 };
 
 export const customCake: Cake = {
@@ -136,6 +111,7 @@ export const customCake: Cake = {
   category: 'Custom',
   orders_count: 0,
   ready_time: '48h+',
+  customizable: true,
 };
 
 export const orders: Order[] = [
@@ -233,3 +209,34 @@ export const orders: Order[] = [
     ],
   },
 ];
+
+export const customizationOptions: CustomizationOptions = {
+  flavors: [
+    { id: 'f1', name: 'Classic Vanilla', price: 0, color: '#f3e5ab' },
+    { id: 'f2', name: 'Rich Chocolate', price: 200, color: '#583e2e' },
+    { id: 'f3', name: 'Zesty Lemon', price: 150, color: '#fcf4a3' },
+    { id: 'f4', name: 'Red Velvet', price: 250, color: '#a02b37' },
+    { id: 'f5', name: 'Strawberry', price: 200, color: '#f7c5cc' },
+    { id: 'f6', name: 'Matcha', price: 300, color: '#a3b899' },
+    { id: 'f7', name: 'Caramel', price: 250, color: '#c68324' },
+  ],
+  sizes: [
+    { id: 's1', name: '6" Round', serves: '6-8', price: 0 },
+    { id: 's2', name: '8" Round', serves: '10-12', price: 800 },
+    { id: 's3', name: '10" Round', serves: '16-20', price: 1500 },
+    { id: 's4', name: 'Two-Tier', serves: '25-30', price: 4000 },
+  ],
+  colors: [
+    { id: 'c1', name: 'Classic White', hex_value: '#FFFFFF', price: 0 },
+    { id: 'c2', name: 'Pastel Pink', hex_value: '#FFD1DC', price: 150 },
+    { id: 'c3', name: 'Sky Blue', hex_value: '#87CEEB', price: 150 },
+    { id: 'c4', name: 'Gold Accent', hex_value: '#FFD700', price: 500 },
+  ],
+  toppings: [
+    { id: 't1', name: 'Fresh Berries', price: 400 },
+    { id: 't2', name: 'Chocolate Drip', price: 300 },
+    { id: 't3', name: 'Sprinkles', price: 100 },
+    { id: 't4', name: 'Edible Flowers', price: 500 },
+    { id: 't5', name: 'Macarons', price: 600 },
+  ],
+};

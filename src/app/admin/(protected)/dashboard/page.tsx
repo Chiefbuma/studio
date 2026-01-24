@@ -26,7 +26,7 @@ export default function DashboardPage() {
     const totalRevenue = orders.reduce((sum, order) => sum + order.total_price, 0);
     const totalOrders = orders.length;
     const totalCakes = cakes.length;
-    const uniqueCustomers = new Set(orders.map(o => o.customer_email)).size;
+    const uniqueCustomers = new Set(orders.map(o => o.customer_phone)).size;
 
     if (loading) {
         return (

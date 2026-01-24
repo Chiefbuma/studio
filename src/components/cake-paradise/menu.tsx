@@ -13,6 +13,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { useCart } from '@/hooks/use-cart';
 
 interface MenuProps {
   cakes: Cake[];
@@ -22,6 +23,16 @@ interface MenuProps {
 
 const CakeCard = ({ cake, onOrder }: { cake: Cake, onOrder: (cake: Cake) => void }) => {
     const cakeImage = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
+    const { addToCart } = useCart();
+
+    const handleOrderClick = () => {
+        if (cake.customizable) {
+            onOrder(cake); // Open customization modal
+        } else {
+            addToCart(cake, 1, cake.base_price); // Add directly to cart
+        }
+    };
+
     return (
         <Card className="overflow-hidden h-full flex flex-col transition-all duration-300 transform-gpu w-full shadow-xl">
             <div className="relative">
@@ -52,9 +63,18 @@ const CakeCard = ({ cake, onOrder }: { cake: Cake, onOrder: (cake: Cake) => void
                     <div className="flex items-center gap-2"><Clock className="w-3 h-3" /> {cake.ready_time}</div>
                 </div>
 
-                <Button className="w-full mt-auto" onClick={() => onOrder(cake)}>
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    Customize
+                <Button className="w-full mt-auto" onClick={handleOrderClick}>
+                    {cake.customizable ? (
+                        <>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Customize
+                        </>
+                    ) : (
+                        <>
+                            <ShoppingCart className="mr-2 h-4 w-4" />
+                            Order This Cake
+                        </>
+                    )}
                 </Button>
             </CardContent>
         </Card>

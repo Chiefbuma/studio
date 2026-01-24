@@ -178,6 +178,7 @@ This section provides the blueprint for your backend database and instructions o
 | `image_id` | `VARCHAR(255)` | |
 | `rating` | `FLOAT` | Default: 0 |
 | `category` | `VARCHAR(255)` | |
+| `customizable` | `BIT` / `BOOLEAN` | Default: `1` / `TRUE`. Determines if a user can customize the cake. |
 | `orders_count` | `INTEGER` | Default: 0 |
 | `ready_time` | `VARCHAR(50)` | |
 | `created_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` |
@@ -230,9 +231,11 @@ This section provides the blueprint for your backend database and instructions o
 
 The database is designed to flexibly handle complex user customizations. Here's the data flow:
 
-1.  **Customer Selection**: The customer uses the `CustomizationModal` to select their desired flavor, size, color, and toppings. These selections are stored in the frontend's state.
+1.  **Customizable Flag**: The process begins with the `cakes` table, where each cake has a `customizable` flag. If this flag is `false`, the customer can add the cake directly to their cart without customization. The following steps apply only to cakes marked as `customizable`.
 
-2.  **Order Payload**: When the order is placed, these selections are passed as a `customizations` object within each `CartItem`. For example:
+2.  **Customer Selection**: The customer uses the `CustomizationModal` to select their desired flavor, size, color, and toppings. These selections are stored in the frontend's state.
+
+3.  **Order Payload**: When the order is placed, these selections are passed as a `customizations` object within each `CartItem`. For example:
     ```json
     {
       "flavor": "f2",
@@ -242,9 +245,9 @@ The database is designed to flexibly handle complex user customizations. Here's 
     }
     ```
 
-3.  **Database Storage**: The backend API receives this payload. For each cake in the order, it creates a record in the `order_items` table. The `customizations` object is then serialized into a JSON string and saved in the `customizations_json` column.
+4.  **Database Storage**: The backend API receives this payload. For each cake in the order, it creates a record in the `order_items` table. The `customizations` object is then serialized into a JSON string and saved in the `customizations_json` column.
 
-4.  **Admin View**: When an admin views an order's details, the backend retrieves the order, including its `order_items`. The frontend then parses the `customizations_json` string for each item and displays the chosen options in a human-readable format. This ensures the admin knows the exact specifications for preparing each cake.
+5.  **Admin View**: When an admin views an order's details, the backend retrieves the order, including its `order_items`. The frontend then parses the `customizations_json` string for each item and displays the chosen options in a human-readable format. This ensures the admin knows the exact specifications for preparing each cake.
 
 ---
 ### d. Customization Option Tables
@@ -283,6 +286,7 @@ CREATE TABLE cakes (
     image_id NVARCHAR(255),
     rating FLOAT DEFAULT 0,
     category NVARCHAR(255),
+    customizable BIT DEFAULT 1,
     orders_count INT DEFAULT 0,
     ready_time NVARCHAR(50),
     created_at DATETIME2 DEFAULT GETDATE(),
@@ -374,6 +378,7 @@ CREATE TABLE cakes (
     image_id VARCHAR(255),
     rating FLOAT DEFAULT 0,
     category VARCHAR(255),
+    customizable BOOLEAN DEFAULT TRUE,
     orders_count INT DEFAULT 0,
     ready_time VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
