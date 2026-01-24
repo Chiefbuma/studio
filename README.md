@@ -39,203 +39,202 @@ Logic is clearly separated into different layers of the application.
 -   **Data Fetching (`src/services`):** The `cake-service.ts` file is responsible for all data retrieval. It abstracts the data source from the rest of the application. **This is the key to easy backend integration.**
 -   **Server-Side Logic (`src/lib/actions.ts`):** Next.js Server Actions are used to handle secure operations that should run on the server, such as placing an order. This avoids the need to create and expose traditional API endpoints.
 
+### c. Admin Panel Architecture
+
+The admin panel is a client-side rendered application within the Next.js framework.
+-   **Authentication**: It uses `localStorage` to persist the admin's login state. This is a simulation for local development. A real-world application would use secure, HTTP-only cookies with tokens managed by a backend server.
+-   **Data Management**: The admin panel reads and simulates "writing" to the mock data files (`src/lib/data.ts`). This allows for a fully interactive prototype without requiring a database. All UI components are ready to be wired to API calls to a real backend.
+
 ## 3. File-by-File Breakdown
 
 Here is an explanation of the key files and directories in the project.
 
 -   `src/app/`
-    -   `layout.tsx`: The root layout for the entire application. It includes the main HTML structure, font imports, and global providers like the `CartProvider`.
-    -   `globals.css`: The global stylesheet, which includes Tailwind CSS directives and the application's color theme (CSS variables for light/dark mode).
-    -   `page.tsx`: The entry point and main component for the homepage view. It controls which view (Cover, Offer, Menu) is displayed.
-    -   `checkout/page.tsx`: The component for the `/checkout` route. It manages the two-step checkout process (delivery and payment).
+    -   `layout.tsx`, `globals.css`, `page.tsx`, `checkout/page.tsx`: These files define the main customer-facing application layout, styles, and page views.
+
+-   `src/app/admin/`
+    -   `login/page.tsx`: The dedicated login page for the admin panel.
+    -   `(protected)/layout.tsx`: A special layout that protects all admin routes, redirecting unauthenticated users to the login page. It also contains the main sidebar navigation for the admin panel.
+    -   `(protected)/dashboard/page.tsx`: The main dashboard page for the admin, showing key metrics.
+    -   `(protected)/orders/page.tsx`: Renders a table of all orders.
+    -   `(protected)/cakes/page.tsx`: Renders a table of all available cakes.
+    -   `(protected)/offers/page.tsx`: Provides a form to manage the daily special offer.
+    -   `(protected)/customizations/page.tsx`: A tabbed interface to manage all cake customization options (flavors, sizes, etc.).
 
 -   `src/components/`
-    -   `cake-paradise/`: Contains all the custom components specific to this application.
-        -   `customization/`: Components related to the cake customization modal and forms.
-        -   `cart-icon.tsx` & `cart-sheet.tsx`: The floating cart button and the slide-out cart panel.
-        -   `cover-page.tsx`, `special-offer.tsx`, `menu.tsx`: The three main views of the homepage.
-    -   `ui/`: Contains the ShadCN/UI components (e.g., `Button.tsx`, `Card.tsx`, `Dialog.tsx`). These are general-purpose, reusable UI primitives.
+    -   `cake-paradise/`: Contains all custom components specific to this application, such as the cart, menu, and checkout forms.
+    -   `ui/`: Contains the ShadCN/UI components (e.g., `Button.tsx`, `Card.tsx`, `Dialog.tsx`).
 
--   `src/hooks/`
-    -   `use-cart.tsx`: The most important hook for client-side state. It provides the cart's state and functions to manipulate it to any component wrapped in `CartProvider`.
-    -   `use-cake-data.ts`: Fetches all initial cake data and handles the loading state, simplifying the main page component.
-    -   `use-toast.ts`: A hook for showing toast notifications.
+-   `src/hooks/`: Contains custom React hooks for shared logic, such as `useCart` and `useCakeData`.
 
 -   `src/lib/`
-    -   `actions.ts`: Contains Next.js Server Actions. `placeOrder` is defined here.
-    -   `data.ts`: **(Mock Backend)** Contains the hardcoded array of cakes, special offers, and customization options. This file acts as our temporary database.
-    -   `placeholder-images.ts` & `.json`: Defines and exports all placeholder image data to ensure consistency.
-    -   `types.ts`: Contains all TypeScript type definitions for the application's data structures (e.g., `Cake`, `CartItem`).
-    -   `utils.ts`: Utility functions, like `cn` for merging CSS classes and `formatPrice` for currency formatting.
+    -   `actions.ts`: Contains Next.js Server Actions.
+    -   `data.ts`: **(Mock Backend)** Contains the hardcoded array of cakes, offers, customizations, and orders. This file acts as our temporary database.
+    -   `types.ts`: Contains all TypeScript type definitions for the application's data structures.
 
--   `src/services/`
-    -   `cake-service.ts`: **(Data Access Layer)** This service contains functions (`getCakes`, `getSpecialOffer`, etc.) that simulate fetching data with a delay. It currently imports from `src/lib/data.ts`.
+-   `src/services/`:
+    -   `cake-service.ts`: **(Data Access Layer)** This service abstracts data fetching. It currently reads from the mock data but is the single point of modification needed to connect to a real API.
+
+-   `Dockerfile`, `docker-compose.yml`: Files required to build and run the application using Docker.
 
 -   `package.json`: Lists all project dependencies and scripts.
--   `.env`: **(Important)** This file is for environment variables. You must add your Paystack public key here for payments to work.
+-   `.env`: **(Important)** This file is for environment variables. You must create it for local development.
 
-## 4. How to Connect a Real Backend API
+## 4. The Admin Panel
 
-This application was designed to make backend integration straightforward. You only need to modify a few specific places.
+The application includes a comprehensive admin panel for managing the shop's data.
 
-### a. Fetching Data (Cakes, Offers)
+### a. Functionality
 
--   **File to Modify**: `src/services/cake-service.ts`
--   **Current Implementation**: Functions in this file return a `Promise` that resolves with mock data from `src/lib/data.ts`.
--   **Future Implementation**:
-    1.  Delete the import from `src/lib/data.ts`.
-    2.  Inside each function (e.g., `getCakes`), use the `fetch` API to call your real backend endpoint (e.g., `https://api.yourdomain.com/cakes`).
-    3.  Parse the JSON response and return it.
-    4.  The rest of the application, including the `useCakeData` hook and all components, will work without any changes because they rely on the service, not the data source itself.
+-   **Dashboard**: View key metrics like total revenue, total orders, and customer count.
+-   **Order Management**: View a list of all orders with customer details, status, and total price.
+-   **Cake Management**: View and manage all available cakes.
+-   **Offer Management**: Update the daily special offer.
+-   **Customization Management**: Add, view, or remove options for cake flavors, sizes, colors, and toppings.
 
-    ```typescript
-    // Example of future src/services/cake-service.ts
-    import type { Cake } from '@/lib/types';
+### b. How to Access and Log In
 
-    const API_BASE_URL = 'https://your-api-backend.com/api';
+1.  Navigate to the site's footer and click the "Admin Panel" link, or go directly to `/admin/login`.
+2.  Use the following credentials to log in:
+    -   **Email**: `admin@cakeparadise.com`
+    -   **Password**: `admin`
 
-    export async function getCakes(): Promise<Cake[]> {
-      const response = await fetch(`${API_BASE_URL}/cakes`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch cakes');
-      }
-      return response.json();
-    }
-    // ... implement for getSpecialOffer, etc.
-    ```
+This provides access to all the protected admin routes. The login state is stored in the browser's `localStorage` for the prototype.
 
-### b. Placing an Order
+## 5. How to Connect a Real Backend API
 
--   **File to Modify**: `src/lib/actions.ts` (the `placeOrder` function).
--   **Current Implementation**: This function simulates creating an order number and returns a success response.
--   **Future Implementation**:
-    1.  Inside `placeOrder`, make a `fetch` call to your backend with the `POST` method.
-    2.  Send the `payload` (containing cart items and delivery info) in the request body.
-    3.  Your backend will save the order to a database and return a real order number.
-    4.  Return the response from your backend.
+This application was designed to make backend integration straightforward. You only need to modify a few specific places to switch from mock data to a real API.
 
-### c. Verifying Payments
+### a. API Endpoint Blueprint
 
--   **File to Modify**: `src/app/checkout/page.tsx` (the `handlePaymentSuccess` function).
--   **Current Implementation**: When payment succeeds, it shows a toast message and clears the cart.
--   **Future Implementation**:
-    1.  In `handlePaymentSuccess`, after a successful payment response from Paystack, make a call to your backend.
-    2.  Send the payment `reference` and `orderNumber` to a secure backend endpoint (e.g., `/api/verify-payment`).
-    3.  Your backend should then call the Paystack Verification API to confirm the payment is valid. If it is, update the order status to "Paid" in your database.
+A real-world backend for this application would need to expose the following API endpoints. The frontend, including the admin panel, is ready to be connected to them.
 
-## 5. Database Schema
+| Method | Endpoint | Description | Used In |
+| :--- | :--- | :--- | :--- |
+| **Auth** | | |
+| `POST` | `/api/auth/login` | Authenticate an admin user and return a token. | Admin Login |
+| **Cakes** | | |
+| `GET` | `/api/cakes` | Get a list of all cakes. | Menu, Admin |
+| `POST`| `/api/cakes` | Create a new cake. | Admin |
+| `PUT` | `/api/cakes/:id` | Update an existing cake. | Admin |
+| `DELETE`| `/api/cakes/:id` | Delete a cake. | Admin |
+| **Special Offers** | | |
+| `GET` | `/api/special-offer` | Get the current active special offer. | Homepage, Admin |
+| `PUT` | `/api/special-offer` | Update the special offer. | Admin |
+| **Orders** | | |
+| `GET` | `/api/orders` | Get a list of all orders. | Admin |
+| `POST`| `/api/orders` | **Place a new customer order.** | Checkout |
+| `PUT` | `/api/orders/:id/status`| Update an order's status. | Admin |
+| `POST`| `/api/payments/verify` | Verify a payment with Paystack. | Checkout |
+| **Customizations**| | |
+| `GET` | `/api/customizations`| Get all customization options. | Customization Modal, Admin |
+| `POST`| `/api/customizations/flavors` | Add a new flavor. | Admin |
+| `PUT` | `/api/customizations/flavors/:id` | Update a flavor. | Admin |
+| `DELETE`| `/api/customizations/flavors/:id` | Delete a flavor. | Admin |
+| ... | *(similar endpoints for sizes, colors, toppings)* | | Admin |
 
-While this application currently uses mock data, it is designed to seamlessly transition to a real database. Below is the recommended database schema based on the application's data structures. When implementing a backend, these definitions can be used to create migration files with an ORM like Prisma, Drizzle, or TypeORM.
+### b. Implementation Steps
 
-### Core Tables
+1.  **Data Fetching (GET requests)**:
+    -   **File to Modify**: `src/services/cake-service.ts`
+    -   **Action**: Replace the mock data imports and `setTimeout` functions with `fetch` calls to your real API endpoints (e.g., `fetch('/api/cakes')`). The rest of the application, including all React components and hooks, will automatically start using the real data without any other changes.
+
+2.  **Data Mutation (POST, PUT, DELETE requests)**:
+    -   **File to Modify (Orders)**: `src/lib/actions.ts` (the `placeOrder` function).
+    -   **Action**: Modify this function to send the order payload to your `POST /api/orders` endpoint.
+    -   **File to Modify (Admin)**: The various admin pages in `src/app/admin/(protected)/`.
+    -   **Action**: Wire up the "Create", "Update", and "Delete" buttons in the admin panel to make API calls to the corresponding endpoints (e.g., `POST /api/cakes`).
+
+## 6. Database Schema & Migrations
+
+This schema is the recommended blueprint for your backend database. **Migration files** are scripts generated by a database toolkit (like Prisma, Drizzle, or TypeORM) that apply these definitions to a real database, creating the tables and relationships.
+
+### a. Table Relationships
+
+-   **One-to-Many**: An `orders` record can have multiple `order_items`.
+-   **Many-to-One**: Many `order_items` records point to one `orders` record.
+-   **Many-to-One**: An `order_item` points to one `cakes` record.
+-   **One-to-One**: A `special_offers` record points to one `cakes` record.
+
+### b. Core Tables
 
 **1. `cakes` Table**
-Stores the details for each standard cake available for sale.
-
-| Column Name | Data Type | Description |
+| Column Name | Data Type | Constraints / Notes |
 | :--- | :--- | :--- |
-| `id` | `VARCHAR(255)` | **Primary Key.** A unique identifier (e.g., 'red-velvet-delight'). |
-| `name` | `VARCHAR(255)` | The name of the cake. |
-| `description`| `TEXT` | A detailed description of the cake. |
-| `base_price` | `DECIMAL(10, 2)` | The starting price before any customization. |
-| `image_id` | `VARCHAR(255)` | Identifier for the cake's image (could be a foreign key to an `images` table). |
-| `rating` | `FLOAT` | The average customer rating (e.g., 4.8). |
-| `category` | `VARCHAR(255)` | The category of the cake (e.g., 'Classic', 'Chocolate'). |
-| `orders_count` | `INTEGER` | A counter for how many times the cake has been ordered. |
-| `ready_time` | `VARCHAR(50)` | Estimated time to prepare the cake (e.g., '24h'). |
-| `created_at` | `TIMESTAMP` | When the record was created. |
-| `updated_at` | `TIMESTAMP` | When the record was last updated. |
+| `id` | `VARCHAR(255)` | **Primary Key** |
+| `name` | `VARCHAR(255)` | Not Null |
+| `description`| `TEXT` | |
+| `base_price` | `DECIMAL(10, 2)`| Not Null |
+| `image_id` | `VARCHAR(255)` | |
+| `rating` | `FLOAT` | Default: 0 |
+| `category` | `VARCHAR(255)` | |
+| `orders_count` | `INTEGER` | Default: 0 |
+| `ready_time` | `VARCHAR(50)` | |
+| `created_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` |
+| `updated_at` | `TIMESTAMP` | Updates on change |
 
 ---
-
 **2. `special_offers` Table**
-Manages the daily or weekly special offers.
-
-| Column Name | Data Type | Description |
+| Column Name | Data Type | Constraints / Notes |
 | :--- | :--- | :--- |
-| `id` | `INT` | **Primary Key.** Auto-incrementing unique identifier. |
-| `cake_id` | `VARCHAR(255)`| **Foreign Key** to the `cakes.id` table. |
-| `discount_percentage` | `INT` | The percentage discount offered (e.g., 20). |
-| `special_price`| `DECIMAL(10, 2)`| The final discounted price. |
-| `is_active` | `BOOLEAN` | A flag to easily enable or disable the offer. |
-| `start_date` | `DATE` | When the offer becomes active. |
-| `end_date` | `DATE` | When the offer expires. |
+| `id` | `INT` | **Primary Key**, Auto-increment |
+| `cake_id` | `VARCHAR(255)`| **Foreign Key** -> `cakes.id` |
+| `discount_percentage` | `INT` | Not Null |
+| `is_active` | `BOOLEAN` | Default: `true` |
+| `start_date` | `DATE` | |
+| `end_date` | `DATE` | |
 
 ---
-
 **3. `orders` Table**
-Stores customer order information, including delivery details.
-
-| Column Name | Data Type | Description |
+| Column Name | Data Type | Constraints / Notes |
 | :--- | :--- | :--- |
-| `id` | `INT` | **Primary Key.** Auto-incrementing unique identifier. |
-| `order_number`| `VARCHAR(255)` | The public-facing unique order number (e.g., 'CP-12345'). |
-| `customer_name` | `VARCHAR(255)` | The customer's full name. |
-| `customer_phone`| `VARCHAR(20)` | The customer's phone number. |
-| `customer_email`| `VARCHAR(255)` | The customer's email address. |
-| `delivery_method` | `ENUM('delivery', 'pickup')` | Whether the order is for delivery or pickup. |
-| `delivery_address`| `TEXT` | The full delivery address. Null if pickup. |
-| `pickup_location` | `VARCHAR(255)` | The selected pickup location. Null if delivery. |
-| `delivery_date`| `DATE` | The customer's preferred delivery/pickup date. |
-| `special_instructions` | `TEXT` | Any special notes from the customer. |
-| `total_price`| `DECIMAL(10, 2)`| The total cost of the entire order. |
-| `deposit_amount`| `DECIMAL(10, 2)`| The 80% deposit amount paid. |
-| `payment_status`| `ENUM('pending', 'paid')` | The current payment status. |
-| `order_status`| `ENUM('processing', 'complete', 'cancelled')` | The current status of the order preparation. |
-| `created_at` | `TIMESTAMP` | When the record was created. |
+| `id` | `INT` | **Primary Key**, Auto-increment |
+| `order_number`| `VARCHAR(255)` | Unique, Not Null |
+| `customer_name`| `VARCHAR(255)` | Not Null |
+| `customer_phone`| `VARCHAR(20)` | Not Null |
+| `customer_email`| `VARCHAR(255)` | |
+| `delivery_method`| `ENUM('delivery', 'pickup')` | Not Null |
+| `delivery_address`| `TEXT` | Nullable |
+| `pickup_location`| `VARCHAR(255)` | Nullable |
+| `delivery_date`| `DATE` | Nullable |
+| `total_price`| `DECIMAL(10, 2)`| Not Null |
+| `payment_status`| `ENUM('pending', 'paid')` | Default: `'pending'` |
+| `order_status`| `ENUM('processing', 'complete', 'cancelled')` | Default: `'processing'` |
+| `created_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` |
 
 ---
-
 **4. `order_items` Table**
-A line item in an order. Connects an order to the cakes that were purchased.
-
-| Column Name | Data Type | Description |
+| Column Name | Data Type | Constraints / Notes |
 | :--- | :--- | :--- |
-| `id` | `INT` | **Primary Key.** Auto-incrementing unique identifier. |
-| `order_id` | `INT` | **Foreign Key** to the `orders.id` table. |
-| `cake_id` | `VARCHAR(255)` | **Foreign Key** to the `cakes.id` table (even for custom cakes). |
-| `quantity` | `INT` | The number of this specific cake item ordered. |
-| `price` | `DECIMAL(10, 2)`| The final price for this single item, including customizations. |
-| `customizations_json` | `JSON` | A JSON object storing the selected customizations (flavor, size, color, toppings). |
+| `id` | `INT` | **Primary Key**, Auto-increment |
+| `order_id` | `INT` | **Foreign Key** -> `orders.id` |
+| `cake_id` | `VARCHAR(255)` | **Foreign Key** -> `cakes.id` |
+| `quantity` | `INT` | Not Null, Default: 1 |
+| `price_at_purchase` | `DECIMAL(10, 2)`| Not Null |
+| `customizations_json`| `JSON` | Nullable |
 
 ---
-
-### Customization Option Tables
-
+### c. Customization Option Tables
 These tables store the available choices for building a custom cake.
 
-**5. `customization_flavors`**
-| Column Name | Data Type | Description |
-| :--- | :--- | :--- |
-| `id` | `VARCHAR(255)` | **Primary Key.** Unique identifier (e.g., 'f1', 'f2'). |
-| `name` | `VARCHAR(255)` | Flavor name (e.g., 'Rich Chocolate'). |
-| `price` | `DECIMAL(10, 2)`| Additional cost for this flavor. |
+| Table Name | Column Name | Data Type | Constraints / Notes |
+| :--- | :--- | :--- | :--- |
+| **customization_flavors** | `id` | `VARCHAR(255)` | **Primary Key** |
+| | `name`| `VARCHAR(255)` | Not Null |
+| | `price`| `DECIMAL(10, 2)` | Not Null |
+| **customization_sizes** | `id` | `VARCHAR(255)` | **Primary Key** |
+| | `name`| `VARCHAR(255)` | Not Null |
+| | `serves`| `VARCHAR(255)` | |
+| | `price`| `DECIMAL(10, 2)` | Not Null |
+| **customization_colors** | `id` | `VARCHAR(255)` | **Primary Key** |
+| | `name`| `VARCHAR(255)` | Not Null |
+| | `hex_value`| `VARCHAR(7)` | |
+| | `price`| `DECIMAL(10, 2)` | Not Null |
+| **customization_toppings**| `id` | `VARCHAR(255)` | **Primary Key** |
+| | `name`| `VARCHAR(255)` | Not Null |
+| | `price`| `DECIMAL(10, 2)` | Not Null |
 
-**6. `customization_sizes`**
-| Column Name | Data Type | Description |
-| :--- | :--- | :--- |
-| `id` | `VARCHAR(255)` | **Primary Key.** Unique identifier (e.g., 's1', 's2'). |
-| `name` | `VARCHAR(255)` | Size name (e.g., '8" Round'). |
-| `serves` | `VARCHAR(255)` | Estimated number of servings. |
-| `price` | `DECIMAL(10, 2)`| Additional cost for this size. |
-
-**7. `customization_colors`**
-| Column Name | Data Type | Description |
-| :--- | :--- | :--- |
-| `id` | `VARCHAR(255)` | **Primary Key.** Unique identifier (e.g., 'c1', 'c2'). |
-| `name` | `VARCHAR(255)` | Color name (e.g., 'Pastel Pink'). |
-| `hex_value` | `VARCHAR(7)` | The hex code for the color (e.g., '#FFCDD2'). |
-| `price` | `DECIMAL(10, 2)`| Additional cost for this color. |
-
-**8. `customization_toppings`**
-| Column Name | Data Type | Description |
-| :--- | :--- | :--- |
-| `id` | `VARCHAR(255)` | **Primary Key.** Unique identifier (e.g., 't1', 't2'). |
-| `name` | `VARCHAR(255)` | Topping name (e.g., 'Fresh Berries'). |
-| `price` | `DECIMAL(10, 2)`| Additional cost for this topping. |
-
-
-## 6. Local Development Setup
+## 7. Local Development Setup
 
 Follow these instructions to get the application running on your local machine.
 
@@ -257,7 +256,7 @@ For the application to run correctly, especially for payment integration, you mu
     NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxx
     ```
 
-### c. Standard Installation
+### c. Standard Installation (npm)
 
 1.  **Clone the repository:**
     ```bash
