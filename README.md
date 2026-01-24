@@ -1,5 +1,142 @@
-# Firebase Studio
+# Cake Paradise: Application Documentation
 
-This is a NextJS starter in Firebase Studio.
+Welcome to the full technical documentation for the Cake Paradise web application. This document provides a comprehensive overview of the technologies used, the core design principles applied, the project's file structure, and a clear roadmap for future backend integration.
 
-To get started, take a look at src/app/page.tsx.
+## 1. Technology Stack
+
+This application is built on a modern, robust, and scalable technology stack designed for performance and developer experience.
+
+-   **Next.js**: A React framework that provides a production-ready foundation. We use its App Router for file-based routing, Server Components for performance, and Server Actions for secure backend communication without creating separate API endpoints.
+
+-   **React**: The core library for building the user interface. The entire application is composed of interactive and reusable React components.
+
+-   **TypeScript**: A typed superset of JavaScript that enhances code quality, improves maintainability, and provides excellent editor support.
+
+-   **Tailwind CSS**: A utility-first CSS framework for rapidly building custom user interfaces. It's used for all styling in the application.
+
+-   **ShadCN/UI**: A collection of beautifully designed, accessible, and reusable UI components built on top of Radix UI and Tailwind CSS. This accelerates UI development and ensures consistency.
+
+-   **Genkit (with Google AI)**: An open-source framework from Google for building AI-powered features. It is used here for the "AI Recommender" feature to generate personalized cake suggestions.
+
+-   **Paystack**: A payment gateway integrated for processing M-Pesa payments securely. The integration uses the official Paystack inline popup.
+
+-   **Zod**: A TypeScript-first schema declaration and validation library. It's used in our AI flows to define and enforce the structure of data passed to and from the AI models.
+
+## 2. Design Principles & Architecture
+
+The application is structured following modern software design principles to ensure it is clean, scalable, and easy to maintain.
+
+### a. Component-Based Architecture
+
+The UI is broken down into small, reusable components located primarily in `src/components`. This is a core principle of React.
+-   **Presentational Components**: Most components are "dumb" and focus on rendering UI based on the props they receive (e.g., `Button`, `Card`).
+-   **Container Components**: Page-level components (`src/app/page.tsx`, `src/app/checkout/page.tsx`) act as containers that fetch data and manage the overall state for a view, passing it down to presentational components.
+
+### b. Separation of Concerns
+
+Logic is clearly separated into different layers of the application.
+
+-   **UI (`src/components`, `src/app`):** Responsible only for presentation and user interaction.
+-   **State Management (`src/hooks`):** Reusable, stateful logic is extracted into custom hooks.
+    -   `useCart`: Manages the global shopping cart state (adding, removing, updating items) and persists it to `localStorage`.
+    -   `useCakeData`: Manages the fetching and loading state of all initial cake data for the application.
+-   **Data Fetching (`src/services`):** The `cake-service.ts` file is responsible for all data retrieval. It abstracts the data source from the rest of the application. **This is the key to easy backend integration.**
+-   **Server-Side Logic (`src/lib/actions.ts`):** Next.js Server Actions are used to handle secure operations that should run on the server, such as placing an order or calling the AI service. This avoids the need to create and expose traditional API endpoints.
+-   **AI Logic (`src/ai/flows`):** All Genkit-related code, including prompts and flow definitions, is isolated in this directory.
+
+## 3. File-by-File Breakdown
+
+Here is an explanation of the key files and directories in the project.
+
+-   `src/app/`
+    -   `layout.tsx`: The root layout for the entire application. It includes the main HTML structure, font imports, and global providers like the `CartProvider`.
+    -   `globals.css`: The global stylesheet, which includes Tailwind CSS directives and the application's color theme (CSS variables for light/dark mode).
+    -   `page.tsx`: The entry point and main component for the homepage view. It controls which view (Cover, Offer, Menu) is displayed.
+    -   `checkout/page.tsx`: The component for the `/checkout` route. It manages the two-step checkout process (delivery and payment).
+
+-   `src/components/`
+    -   `cake-paradise/`: Contains all the custom components specific to this application.
+        -   `customization/`: Components related to the cake customization modal and forms.
+        -   `ai-recommender.tsx`: The component that interacts with the Genkit AI flow.
+        -   `cart-icon.tsx` & `cart-sheet.tsx`: The floating cart button and the slide-out cart panel.
+        -   `cover-page.tsx`, `special-offer.tsx`, `menu.tsx`: The three main views of the homepage.
+    -   `ui/`: Contains the ShadCN/UI components (e.g., `Button.tsx`, `Card.tsx`, `Dialog.tsx`). These are general-purpose, reusable UI primitives.
+
+-   `src/hooks/`
+    -   `use-cart.tsx`: The most important hook for client-side state. It provides the cart's state and functions to manipulate it to any component wrapped in `CartProvider`.
+    -   `use-cake-data.ts`: Fetches all initial cake data and handles the loading state, simplifying the main page component.
+    -   `use-toast.ts`: A hook for showing toast notifications.
+
+-   `src/lib/`
+    -   `actions.ts`: Contains Next.js Server Actions. These are server-side functions that can be called directly from client components. `placeOrder` and `personalizedCakeRecommendations` are defined here.
+    -   `data.ts`: **(Mock Backend)** Contains the hardcoded array of cakes, special offers, and customization options. This file acts as our temporary database.
+    -   `placeholder-images.ts` & `.json`: Defines and exports all placeholder image data to ensure consistency.
+    -   `types.ts`: Contains all TypeScript type definitions for the application's data structures (e.g., `Cake`, `CartItem`).
+    -   `utils.ts`: Utility functions, like `cn` for merging CSS classes and `formatPrice` for currency formatting.
+
+-   `src/services/`
+    -   `cake-service.ts`: **(Data Access Layer)** This service contains functions (`getCakes`, `getSpecialOffer`, etc.) that simulate fetching data with a delay. It currently imports from `src/lib/data.ts`.
+
+-   `src/ai/`
+    -   `genkit.ts`: Initializes and configures the Genkit `ai` instance.
+    -   `flows/personalized-cake-recommendations.ts`: Defines the Genkit flow for the AI recommender, including the Zod schemas for input/output and the prompt itself.
+
+-   `package.json`: Lists all project dependencies and scripts.
+-   `.env`: **(Important)** This file is for environment variables. You must add your Paystack public key here for payments to work.
+
+## 4. How to Connect a Real Backend API
+
+This application was designed to make backend integration straightforward. You only need to modify a few specific places.
+
+### a. Fetching Data (Cakes, Offers)
+
+-   **File to Modify**: `src/services/cake-service.ts`
+-   **Current Implementation**: Functions in this file return a `Promise` that resolves with mock data from `src/lib/data.ts`.
+-   **Future Implementation**:
+    1.  Delete the import from `src/lib/data.ts`.
+    2.  Inside each function (e.g., `getCakes`), use the `fetch` API to call your real backend endpoint (e.g., `https://api.yourdomain.com/cakes`).
+    3.  Parse the JSON response and return it.
+    4.  The rest of the application, including the `useCakeData` hook and all components, will work without any changes because they rely on the service, not the data source itself.
+
+    ```typescript
+    // Example of future src/services/cake-service.ts
+    import type { Cake } from '@/lib/types';
+
+    const API_BASE_URL = 'https://your-api-backend.com/api';
+
+    export async function getCakes(): Promise<Cake[]> {
+      const response = await fetch(`${API_BASE_URL}/cakes`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch cakes');
+      }
+      return response.json();
+    }
+    // ... implement for getSpecialOffer, etc.
+    ```
+
+### b. Placing an Order
+
+-   **File to Modify**: `src/lib/actions.ts` (the `placeOrder` function).
+-   **Current Implementation**: This function simulates creating an order number and returns a success response.
+-   **Future Implementation**:
+    1.  Inside `placeOrder`, make a `fetch` call to your backend with the `POST` method.
+    2.  Send the `payload` (containing cart items and delivery info) in the request body.
+    3.  Your backend will save the order to a database and return a real order number.
+    4.  Return the response from your backend.
+
+### c. AI Recommendations
+
+-   **File to Modify**: `src/lib/actions.ts` (the `personalizedCakeRecommendations` function).
+-   **Current Implementation**: It uses a hardcoded `MOCK_USER_ORDER_HISTORY`.
+-   **Future Implementation**:
+    1.  If a user is logged in, you would first fetch their real order history from your backend.
+    2.  Pass this real history to the `personalizedCakeRecommendationsFlow`.
+
+### d. Verifying Payments
+
+-   **File to Modify**: `src/app/checkout/page.tsx` (the `handlePaymentSuccess` function).
+-   **Current Implementation**: When payment succeeds, it shows a toast message and clears the cart.
+-   **Future Implementation**:
+    1.  In `handlePaymentSuccess`, after a successful payment response from Paystack, make a call to your backend.
+    2.  Send the payment `reference` and `orderNumber` to a secure backend endpoint (e.g., `/api/verify-payment`).
+    3.  Your backend should then call the Paystack Verification API to confirm the payment is valid. If it is, update the order status to "Paid" in your database.
