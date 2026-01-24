@@ -63,7 +63,6 @@ export interface Customizations {
 
 export interface DeliveryInfo {
   name: string;
-  email?: string;
   phone: string;
   address: string;
   delivery_date: string;
@@ -96,7 +95,6 @@ export interface Order {
   order_number: string;
   customer_name: string;
   customer_phone: string;
-  customer_email?: string;
   delivery_method: 'delivery' | 'pickup';
   delivery_address?: string;
   latitude?: number;

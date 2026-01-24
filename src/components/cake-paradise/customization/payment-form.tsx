@@ -60,7 +60,7 @@ export function PaymentForm({
     
         const handler = (window as any).PaystackPop.setup({
           key: paystackPublicKey,
-          email: customerEmail || 'customer@example.com',
+          email: customerEmail,
           amount: Math.round(depositAmount * 100), // Amount in kobo/cents
           currency: 'KES',
           ref: `WD_${orderNumber}_${Date.now()}`,
@@ -154,23 +154,6 @@ export function PaymentForm({
                     )}
                 </Button>
                 
-                <div className="flex items-center gap-4">
-                    <Separator className="flex-1" />
-                    <span className="text-xs text-muted-foreground">OR</span>
-                    <Separator className="flex-1" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-2">
-                    <Button variant="outline" onClick={() => toast({ title: 'Coming soon!'})}>
-                        <CreditCard className="mr-2" /> Stripe
-                    </Button>
-                    <Button variant="outline" onClick={() => toast({ title: 'Coming soon!'})}>
-                        <svg className="mr-2" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 8.5c0-2.5 2-5 5-5 .5 0 1 .5 1 1v12c0 .5-.5 1-1 1 -2.5 0-5-2.5-5-5Z" /><path d="M4 18c2.5 0 5-2.5 5-5 .5 0 1-.5 1-1V6c0-.5-.5-1-1-1 -2.5 0-5 2.5-5 5Z" /></svg>
-                        PayPal
-                    </Button>
-                </div>
-
-
                 <div className="pt-4">
                     <Button
                         onClick={onBack}

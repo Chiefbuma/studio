@@ -98,7 +98,7 @@ export default function OrdersPage() {
                                     <TableCell className="font-medium">{order.order_number}</TableCell>
                                     <TableCell>
                                         <div className="font-medium">{order.customer_name}</div>
-                                        <div className="text-sm text-muted-foreground">{order.customer_email}</div>
+                                        <div className="text-sm text-muted-foreground">{order.customer_phone}</div>
                                     </TableCell>
                                     <TableCell>{format(new Date(order.created_at), "MMM d, yyyy")}</TableCell>
                                     <TableCell>

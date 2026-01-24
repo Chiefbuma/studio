@@ -7,12 +7,9 @@ import type { OrderPayload } from './types';
 export async function placeOrder(payload: OrderPayload): Promise<{ success: boolean; orderNumber: string; error?: string; depositAmount: number }> {
   console.log('Placing order with payload:', JSON.stringify(payload, null, 2));
 
-  // Specifically log coordinates and email if they exist
+  // Specifically log coordinates if they exist
   if (payload.deliveryInfo.coordinates) {
     console.log('Coordinates received:', payload.deliveryInfo.coordinates);
-  }
-  if (payload.deliveryInfo.email) {
-    console.log('Email received:', payload.deliveryInfo.email);
   }
 
 

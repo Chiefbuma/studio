@@ -67,7 +67,6 @@ export default function CheckoutPage() {
 
   const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
     name: '',
-    email: '',
     phone: '',
     address: '',
     delivery_date: '',
@@ -86,7 +85,7 @@ export default function CheckoutPage() {
   }, [cart, router]);
 
   const depositAmount = totalPrice * 0.8;
-  const customerEmail = deliveryInfo.email || `${deliveryInfo.phone}@whiskedelights.com`; // Paystack requires an email.
+  const customerEmail = `${deliveryInfo.phone}@whiskedelights.com`; // Paystack requires an email.
 
   if (cart.length === 0) {
     return (
