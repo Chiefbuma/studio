@@ -37,13 +37,13 @@ export function PaymentForm({
     const [mpesaPhone, setMpesaPhone] = useState(customerPhone || '');
     
     const payWithPaystackMpesa = () => {
-        if (!paystackPublicKey || !paystackPublicKey.startsWith('pk_test_')) {
+        if (!paystackPublicKey || (!paystackPublicKey.startsWith('pk_test_') && !paystackPublicKey.startsWith('pk_live_'))) {
             toast({
                 variant: 'destructive',
                 title: 'Paystack Key Not Found',
                 description: 'Please add your Paystack public key to your .env file.',
             });
-            console.error("Paystack public key is missing or invalid. It should start with 'pk_test_'.");
+            console.error("Paystack public key is missing or invalid. It should start with 'pk_test_' or 'pk_live_'.");
             return;
         }
 
