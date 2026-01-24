@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { SidebarProvider, Sidebar, SidebarHeader, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarFooter, SidebarTrigger } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LayoutDashboard, ShoppingCart, Cake, Tag, LogOut, Home, Loader2 } from "lucide-react";
+import { LayoutDashboard, ShoppingCart, Cake, Tag, LogOut, Home, Loader2, ClipboardList } from "lucide-react";
 import Link from 'next/link';
 
 export default function AdminProtectedLayout({
@@ -68,6 +68,11 @@ export default function AdminProtectedLayout({
               <SidebarMenuItem>
                 <SidebarMenuButton asChild tooltip="Special Offers" isActive={pathname === '/admin/offers'}>
                     <Link href="/admin/offers"><Tag /><span>Offers</span></Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild tooltip="Customizations" isActive={pathname.startsWith('/admin/customizations')}>
+                    <Link href="/admin/customizations"><ClipboardList /><span>Customizations</span></Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
