@@ -1,15 +1,12 @@
 'use server';
 
 import { genkit } from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
 
 // Initialize Genkit and export the 'ai' object.
-// This object is used throughout the application to define AI flows, prompts, and tools.
+// This object can be used to define AI flows, prompts, and tools.
 export const ai = genkit({
   plugins: [
-    // The Google AI plugin is used to connect to models like Gemini.
-    // It will only be enabled if the GEMINI_API_KEY environment variable is set.
-    process.env.GEMINI_API_KEY ? googleAI() : [],
+    // AI plugins like Google AI would be configured here if needed.
   ],
   // Log level can be 'debug', 'info', 'warn', or 'error'.
   logLevel: 'info',

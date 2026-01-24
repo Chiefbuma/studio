@@ -14,7 +14,6 @@ import { CartSheet } from '@/components/cake-paradise/cart-sheet';
 import { useCakeData } from '@/hooks/use-cake-data';
 import { AppFooter } from '@/components/cake-paradise/footer';
 import { SocialIcons } from '@/components/cake-paradise/social-icons';
-import { AIRecommender } from '@/components/cake-paradise/ai-recommender';
 
 export default function Home() {
   const [view, setView] = useState<'cover' | 'offer' | 'menu'>('cover');
@@ -89,7 +88,6 @@ export default function Home() {
     <div className="min-h-screen bg-background overflow-x-hidden flex flex-col">
       <main className="flex-grow">
         <SocialIcons />
-        <AIRecommender />
         <CartIcon />
         <CartSheet />
         
