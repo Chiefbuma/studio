@@ -265,13 +265,17 @@ Follow these instructions to get the application running on your local machine.
 
 ### b. Environment Variables
 
-For the payment integration to work, you must provide your Paystack public key.
+For the application to run correctly, especially for payment integration and AI features, you must provide a few environment variables.
 
 1.  Create a new file named `.env` in the root of the project.
-2.  Add the following line to the file, replacing the placeholder with your actual key:
+2.  Add the following lines to the file, replacing the placeholders with your actual keys:
 
     ```
+    # Your public key from the Paystack dashboard (required for payments)
     NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxx
+
+    # Your API key from Google AI Studio (required for the AI Recommender)
+    GEMINI_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxx
     ```
 
 ### c. Standard Installation
