@@ -5,40 +5,25 @@ import CoverPage from '@/components/cake-paradise/cover-page';
 import SpecialOffer from '@/components/cake-paradise/special-offer';
 import Menu from '@/components/cake-paradise/menu';
 import { CustomizationModal } from '@/components/cake-paradise/customization/customization-modal';
-import type { Cake, CustomizationOptions } from '@/lib/types';
-import { cakes as allCakes, specialOffer as mockSpecialOffer, customizationOptions as mockCustomizationOptions, customCake } from '@/lib/data';
+import type { Cake } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { CakeSlice } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { CartIcon } from '@/components/cake-paradise/cart-icon';
 import { CartSheet } from '@/components/cake-paradise/cart-sheet';
+import { useCakeData } from '@/hooks/use-cake-data';
 
 export default function Home() {
   const [view, setView] = useState<'cover' | 'offer' | 'menu'>('cover');
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedCake, setSelectedCake] = useState<Cake | null>(null);
   const [isOrderingCustom, setIsOrderingCustom] = useState(false);
-  const [cakes, setCakes] = useState<Cake[]>([]);
-  const [specialOffer, setSpecialOffer] = useState<any>(null);
-  const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  const { cakes, specialOffer, customizationOptions, customCake, loading } = useCakeData();
   const { addToCart } = useCart();
 
   useEffect(() => {
-    // Simulate fetching data
-    const timer = setTimeout(() => {
-      setCakes(allCakes);
-      setSpecialOffer(mockSpecialOffer);
-      setCustomizationOptions(mockCustomizationOptions);
-      setLoading(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
     if (loading) return;
-    // After data loads, transition from cover to offer page
     const coverTimer = setTimeout(() => {
       if (view === 'cover') {
         setView('offer');
@@ -49,11 +34,13 @@ export default function Home() {
   }, [view, loading]);
 
   const handleOrder = (cake: Cake) => {
-    const price = cake.id === 'special-offer-cake' ? mockSpecialOffer.special_price : cake.base_price;
+    if (!specialOffer) return;
+    const price = cake.id === 'special-offer-cake' ? specialOffer.special_price : cake.base_price;
     addToCart(cake, 1, price);
   };
   
   const handleOrderCustom = () => {
+    if (!customCake) return;
     setSelectedCake(customCake);
     setIsOrderingCustom(true);
     setShowOrderModal(true);
@@ -70,7 +57,6 @@ export default function Home() {
   const handleCloseModal = () => {
     setShowOrderModal(false);
     setIsOrderingCustom(false);
-    // Delay clearing selected cake to allow for exit animation
     setTimeout(() => {
       setSelectedCake(null);
     }, 300);
