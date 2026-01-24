@@ -12,10 +12,14 @@ import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function CakesPage() {
     const [cakes, setCakes] = useState<Cake[]>([]);
     const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         async function fetchData() {
@@ -27,6 +31,64 @@ export default function CakesPage() {
         }
         fetchData();
     }, []);
+
+    const handleCreate = () => {
+        // In a real app, this would open a form/dialog to create a new cake.
+        // After submission, you would call an API like this:
+        /*
+        const newCakeData = { ... }; // from form
+        fetch(`${API_BASE_URL}/cakes`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
+            body: JSON.stringify(newCakeData),
+        }).then(response => {
+            if (response.ok) {
+                toast({ title: "Cake Created", description: "The new cake has been added." });
+                // Re-fetch cakes
+            } else {
+                toast({ variant: "destructive", title: "Error", description: "Could not create cake." });
+            }
+        });
+        */
+        toast({ title: "Prototype Action", description: "This would open a 'Create Cake' form." });
+    };
+
+    const handleEdit = (cakeId: string) => {
+        // This would open a form/dialog pre-filled with the cake's data.
+        toast({ title: "Prototype Action", description: `This would open an 'Edit' form for cake ${cakeId}.` });
+    };
+
+    const handleDelete = async (cakeId: string, cakeName: string) => {
+        // This would show a confirmation dialog first.
+        // On confirmation, call the delete API.
+        /*
+        try {
+            const response = await fetch(`${API_BASE_URL}/cakes/${cakeId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete cake.');
+            }
+
+            // Remove the cake from the local state to update the UI instantly
+            setCakes(prevCakes => prevCakes.filter(c => c.id !== cakeId));
+
+            toast({
+                title: 'Cake Deleted',
+                description: `"${cakeName}" has been successfully deleted.`,
+            });
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Deletion Failed',
+                description: error.message || 'An unknown error occurred.',
+            });
+        }
+        */
+        toast({ variant: "destructive", title: "Prototype Action", description: `This would delete "${cakeName}".` });
+    };
     
     return (
         <Card>
@@ -35,7 +97,7 @@ export default function CakesPage() {
                     <CardTitle>Cakes</CardTitle>
                     <CardDescription>Manage your available cakes.</CardDescription>
                 </div>
-                <Button>
+                <Button onClick={handleCreate}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Create Cake
                 </Button>
@@ -88,8 +150,8 @@ export default function CakesPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleEdit(cake.id)}>Edit</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDelete(cake.id, cake.name)} className="text-destructive">Delete</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>

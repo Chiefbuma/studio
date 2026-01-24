@@ -11,8 +11,10 @@ import { formatPrice } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 type CustomizationCategory = "flavors" | "sizes" | "colors" | "toppings";
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 const categoryTitles: Record<CustomizationCategory, string> = {
     flavors: "Flavors",
@@ -24,6 +26,7 @@ const categoryTitles: Record<CustomizationCategory, string> = {
 export default function CustomizationsPage() {
     const [options, setOptions] = useState<CustomizationOptions | null>(null);
     const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         async function fetchData() {
@@ -35,6 +38,49 @@ export default function CustomizationsPage() {
         fetchData();
     }, []);
 
+    const handleAdd = (category: CustomizationCategory) => {
+        // This would open a dialog/form to add a new item.
+        // On submission, an API call would be made.
+        /*
+        const newItemData = { ... }; // from form
+        fetch(`${API_BASE_URL}/customizations/${category}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
+            body: JSON.stringify(newItemData),
+        }).then(response => {
+            if (response.ok) {
+                toast({ title: 'Item Added' });
+                // Re-fetch options
+            } else {
+                toast({ variant: 'destructive', title: 'Error' });
+            }
+        });
+        */
+        toast({ title: 'Prototype Action', description: `This would open a form to add a new ${category.slice(0, -1)}.` });
+    };
+    
+    const handleEdit = (category: CustomizationCategory, itemId: string) => {
+        toast({ title: 'Prototype Action', description: `This would open an edit form for item ${itemId} in ${category}.` });
+    };
+
+    const handleDelete = (category: CustomizationCategory, itemId: string) => {
+        // This would show a confirmation dialog first.
+        /*
+        fetch(`${API_BASE_URL}/customizations/${category}/${itemId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
+        }).then(response => {
+            if (response.ok) {
+                toast({ title: 'Item Deleted' });
+                // Re-fetch options or update state locally
+            } else {
+                toast({ variant: 'destructive', title: 'Error' });
+            }
+        });
+        */
+        toast({ variant: 'destructive', title: 'Prototype Action', description: `This would delete item ${itemId} from ${category}.` });
+    };
+
     const renderTable = (category: CustomizationCategory, data: (Flavor | Size | Color | Topping)[]) => (
         <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -42,7 +88,7 @@ export default function CustomizationsPage() {
                     <CardTitle>{categoryTitles[category]}</CardTitle>
                     <CardDescription>Manage your available {category.toLowerCase()}.</CardDescription>
                 </div>
-                <Button>
+                <Button onClick={() => handleAdd(category)}>
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Add {categoryTitles[category].slice(0, -1)}
                 </Button>
@@ -94,8 +140,8 @@ export default function CustomizationsPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleEdit(category, item.id)}>Edit</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDelete(category, item.id)} className="text-destructive">Delete</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>

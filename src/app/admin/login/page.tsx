@@ -10,6 +10,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Cake, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -27,11 +29,49 @@ export default function AdminLoginPage() {
     }
   }, [router]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
+    
+    /*
+    // --- REAL API AUTHENTICATION LOGIC ---
+    // UNCOMMENT THIS BLOCK TO USE A REAL API
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
 
-    // Simulate API call with hardcoded credentials
+      if (!response.ok) {
+        throw new Error('Invalid email or password.');
+      }
+
+      const { token, admin } = await response.json();
+
+      // Store token and user data for authenticated requests
+      localStorage.setItem('authToken', token);
+      localStorage.setItem('adminUser', JSON.stringify(admin));
+      localStorage.setItem('isAdminLoggedIn', 'true'); // Keep this for the client-side auth check
+
+      toast({
+        title: 'Login Successful',
+        description: `Welcome back, ${admin.name}!`,
+      });
+      
+      router.push('/admin/dashboard');
+
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: error.message || 'An unknown error occurred.',
+      });
+      setIsLoggingIn(false);
+    }
+    */
+    
+    // --- MOCK AUTHENTICATION LOGIC (Current) ---
     setTimeout(() => {
       if (email === 'admin@cakeparadise.com' && password === 'admin') {
         try {

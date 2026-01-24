@@ -10,22 +10,98 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function OffersPage() {
     const [specialOffer, setSpecialOffer] = useState<SpecialOffer | null>(null);
     const [cakes, setCakes] = useState<Cake[]>([]);
     const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
+
+    // Local state to manage form changes before saving
+    const [selectedCakeId, setSelectedCakeId] = useState<string>('');
+    const [discount, setDiscount] = useState<number>(0);
 
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
             const [offerData, cakesData] = await Promise.all([getSpecialOffer(), getCakes()]);
             setSpecialOffer(offerData);
+            if (offerData) {
+                setSelectedCakeId(offerData.cake.id);
+                setDiscount(offerData.discount_percentage);
+            }
             setCakes(cakesData.filter(c => c.id !== 'custom-cake'));
             setLoading(false);
         }
         fetchData();
     }, []);
+
+    const selectedCake = cakes.find(c => c.id === selectedCakeId);
+    const originalPrice = selectedCake?.base_price || 0;
+    const discountedPrice = originalPrice - (originalPrice * (discount / 100));
+
+    const handleUpdateOffer = async () => {
+        if (!selectedCakeId || !discount) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Please select a cake and enter a discount.' });
+            return;
+        }
+
+        const payload = {
+            cake_id: selectedCakeId,
+            discount_percentage: discount,
+        };
+
+        /*
+        // --- REAL API UPDATE LOGIC ---
+        // UNCOMMENT THIS BLOCK TO USE A REAL API
+        try {
+            const response = await fetch(`${API_BASE_URL}/special-offer`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
+                body: JSON.stringify(payload),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to update the special offer.');
+            }
+
+            const updatedOffer = await response.json();
+            
+            // Update the local state with the new data from the server
+            setSpecialOffer(updatedOffer);
+            setSelectedCakeId(updatedOffer.cake.id);
+            setDiscount(updatedOffer.discount_percentage);
+
+            toast({
+                title: 'Special Offer Updated',
+                description: `The special offer has been successfully updated.`,
+            });
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Update Failed',
+                description: error.message || 'An unknown error occurred.',
+            });
+        }
+        */
+
+        // --- MOCK UPDATE LOGIC (Current) ---
+        toast({ title: 'Prototype: Offer Updated', description: 'In a real app, this would save to the database.' });
+        // Simulate update by setting the local state
+        if (selectedCake) {
+            const newOffer: SpecialOffer = {
+                cake: selectedCake,
+                discount_percentage: discount,
+                original_price: originalPrice,
+                special_price: discountedPrice,
+                savings: originalPrice - discountedPrice,
+            };
+            setSpecialOffer(newOffer);
+        }
+    };
 
     if (loading) {
         return (
@@ -56,7 +132,7 @@ export default function OffersPage() {
             <CardContent className="space-y-6">
                 <div className="space-y-2">
                     <Label htmlFor="cake-select">Select Cake for Offer</Label>
-                    <Select defaultValue={specialOffer.cake.id}>
+                    <Select value={selectedCakeId} onValueChange={setSelectedCakeId}>
                         <SelectTrigger id="cake-select">
                             <SelectValue placeholder="Select a cake" />
                         </SelectTrigger>
@@ -71,22 +147,22 @@ export default function OffersPage() {
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="discount">Discount Percentage (%)</Label>
-                    <Input id="discount" type="number" defaultValue={specialOffer.discount_percentage} />
+                    <Input id="discount" type="number" value={discount} onChange={e => setDiscount(Number(e.target.value))} />
                 </div>
                  <div className="space-y-2">
                     <Label>Calculated Prices</Label>
                     <div className="p-4 bg-muted/50 rounded-lg space-y-2 border">
                          <div className="flex justify-between items-center">
                             <span className="text-muted-foreground">Original Price:</span>
-                            <span className="font-medium">{formatPrice(specialOffer.original_price)}</span>
+                            <span className="font-medium">{formatPrice(originalPrice)}</span>
                         </div>
                          <div className="flex justify-between items-center">
                             <span className="text-muted-foreground">Discounted Price:</span>
-                            <span className="font-bold text-lg text-primary">{formatPrice(specialOffer.special_price)}</span>
+                            <span className="font-bold text-lg text-primary">{formatPrice(discountedPrice)}</span>
                         </div>
                     </div>
                 </div>
-                <Button>Update Special Offer</Button>
+                <Button onClick={handleUpdateOffer}>Update Special Offer</Button>
             </CardContent>
         </Card>
     );

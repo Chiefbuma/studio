@@ -12,10 +12,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
+    const { toast } = useToast();
 
     useEffect(() => {
         async function fetchData() {
@@ -26,6 +30,28 @@ export default function OrdersPage() {
         }
         fetchData();
     }, []);
+    
+    const handleUpdateStatus = (orderId: number, status: 'processing' | 'complete' | 'cancelled') => {
+        // In a real app, this would show a dialog to confirm and then make an API call.
+        /*
+        fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
+            body: JSON.stringify({ status }),
+        }).then(response => {
+            if (response.ok) {
+                toast({ title: "Status Updated", description: `Order status changed to ${status}.` });
+                // Re-fetch orders or update state locally
+                setOrders(prev => prev.map(o => o.id === orderId ? {...o, order_status: status} : o));
+            } else {
+                toast({ variant: "destructive", title: "Error", description: "Could not update status." });
+            }
+        });
+        */
+        toast({ title: "Prototype Action", description: `This would update order #${orderId} to "${status}".` });
+        // Optimistically update UI for prototype
+        setOrders(prev => prev.map(o => o.id === orderId ? {...o, order_status: status} : o));
+    };
 
     const getStatusVariant = (status: 'processing' | 'complete' | 'cancelled') => {
         switch (status) {
@@ -88,8 +114,9 @@ export default function OrdersPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem>View Details</DropdownMenuItem>
-                                                <DropdownMenuItem>Update Status</DropdownMenuItem>
-                                                <DropdownMenuItem className="text-destructive">Cancel Order</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, 'complete')}>Mark as Complete</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleUpdateStatus(order.id, 'processing')}>Mark as Processing</DropdownMenuItem>
+                                                <DropdownMenuItem className="text-destructive" onClick={() => handleUpdateStatus(order.id, 'cancelled')}>Cancel Order</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
