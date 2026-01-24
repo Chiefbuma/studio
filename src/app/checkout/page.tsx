@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/hooks/use-cart';
 import { formatPrice } from '@/lib/utils';
 import { DeliveryForm } from '@/components/cake-paradise/customization/delivery-form';
-import type { DeliveryInfo } from '@/lib/types';
+import type { DeliveryInfo, CustomizationOptions } from '@/lib/types';
 import { placeOrder } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
@@ -14,9 +14,12 @@ import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent } from '@/components/ui/card';
+import { getCustomizationOptions } from '@/services/cake-service';
 
 // Paystack public key from environment variables
 const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
+const ownerWhatsAppNumber = process.env.NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER || '';
+
 
 // Component for Order Summary, now collapsible
 const OrderSummaryCollapsible = () => {
@@ -63,6 +66,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions | null>(null);
 
   const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
     name: '',
@@ -83,17 +87,91 @@ export default function CheckoutPage() {
     }
   }, [cart, router]);
 
+  useEffect(() => {
+    // Fetch customization options to build the WhatsApp message
+    async function fetchOptions() {
+      const options = await getCustomizationOptions();
+      setCustomizationOptions(options);
+    }
+    fetchOptions();
+  }, []);
+
   const depositAmount = totalPrice * 0.8;
   const customerEmail = `${deliveryInfo.phone}@whiskedelights.com`; 
 
   const handlePaymentSuccess = (response: { reference: string }, orderNumber: string) => {
+    // Generate and send WhatsApp message
+    const message = generateWhatsAppMessage(orderNumber);
+    const whatsappUrl = `https://wa.me/${ownerWhatsAppNumber}?text=${encodeURIComponent(message)}`;
+    
+    if (ownerWhatsAppNumber) {
+      window.open(whatsappUrl, '_blank');
+    } else {
+      console.warn("Owner's WhatsApp number is not configured in .env file.");
+    }
+
     toast({
       title: "Payment Confirmed!",
       description: `Your order #${orderNumber} is being prepared. Ref: ${response.reference}`,
     });
+    
     clearCart();
     router.push('/');
   }
+
+  const generateWhatsAppMessage = (orderNumber: string): string => {
+    if (!customizationOptions) return 'Order details are incomplete.';
+
+    let message = `*New Cake Order!* 🎉\n\n`;
+    message += `*Order Number:* ${orderNumber}\n\n`;
+    message += `*--- Order Details ---*\n`;
+
+    cart.forEach(item => {
+      message += `*🎂 ${item.name} (x${item.quantity})*\n`;
+      message += `   - *Price:* ${formatPrice(item.price * item.quantity)}\n`;
+
+      if (item.customizations) {
+        const { flavor, size, color, toppings } = item.customizations;
+        const flavorName = customizationOptions.flavors.find(f => f.id === flavor)?.name;
+        const sizeName = customizationOptions.sizes.find(s => s.id === size)?.name;
+        const colorName = customizationOptions.colors.find(c => c.id === color)?.name;
+        const toppingNames = toppings.map(tId => customizationOptions.toppings.find(t => t.id === tId)?.name).filter(Boolean);
+
+        message += `   *Customizations:*\n`;
+        if (flavorName) message += `     - *Flavor:* ${flavorName}\n`;
+        if (sizeName) message += `     - *Size:* ${sizeName}\n`;
+        if (colorName) message += `     - *Color:* ${colorName}\n`;
+        if (toppingNames.length > 0) message += `     - *Toppings:* ${toppingNames.join(', ')}\n`;
+      }
+      message += '\n';
+    });
+
+    message += `*--- Delivery Info ---*\n`;
+    message += `*Customer:* ${deliveryInfo.name}\n`;
+    message += `*Phone:* ${deliveryInfo.phone}\n`;
+    message += `*Method:* ${deliveryInfo.delivery_method}\n`;
+
+    if (deliveryInfo.delivery_method === 'delivery') {
+      message += `*Address:* ${deliveryInfo.address}\n`;
+      if (deliveryInfo.coordinates) {
+        const { lat, lng } = deliveryInfo.coordinates;
+        message += `*Map Link:* https://maps.google.com/?q=${lat},${lng}\n`;
+      }
+    } else {
+      message += `*Pickup Location:* ${deliveryInfo.pickup_location}\n`;
+    }
+
+    if (deliveryInfo.delivery_date) message += `*Date:* ${deliveryInfo.delivery_date}\n`;
+    if (deliveryInfo.delivery_time) message += `*Time:* ${deliveryInfo.delivery_time}\n`;
+    if (deliveryInfo.special_instructions) message += `*Instructions:* ${deliveryInfo.special_instructions}\n`;
+
+    message += `\n*--- Payment ---*\n`;
+    message += `*Total Price:* ${formatPrice(totalPrice)}\n`;
+    message += `*Deposit Paid:* ${formatPrice(depositAmount)}\n`;
+    message += `*Status:* PAID ✅`;
+
+    return message;
+  };
 
   const handlePlaceOrderAndPay = async () => {
     // Basic validation

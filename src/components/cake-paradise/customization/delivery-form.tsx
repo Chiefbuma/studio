@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, Dispatch, SetStateAction, useEffect } from 'react';
+import { useState, useRef, Dispatch, SetStateAction, useEffect } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -10,6 +10,7 @@ import type { DeliveryInfo } from "@/lib/types";
 import { Store, Truck, MapPin, Loader2, LocateFixed, Search } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from '@/components/ui/button';
+import { format, addDays } from 'date-fns';
 
 interface LocationSearchInputProps {
     onLocationSelect: (address: string, lat: number, lng: number) => void;
@@ -25,33 +26,43 @@ function LocationSearchInput({ onLocationSelect, initialValue = '' }: LocationSe
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        if (query.trim().length < 3) {
+        setQuery(initialValue);
+    }, [initialValue]);
+
+    const handleSearch = async (searchQuery: string) => {
+        if (searchQuery.trim().length < 3) {
             setResults([]);
             return;
         }
 
+        setLoading(true);
+        try {
+            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery)}&countrycodes=ke&limit=5`, {
+                headers: { 'Accept-Language': 'en', 'User-Agent': 'WhiskeDelights/1.0' }
+            });
+            const data = await response.json();
+            setResults(data);
+            setShowResults(true);
+        } catch (error) {
+            console.error("Failed to fetch from Nominatim:", error);
+            toast({ variant: 'destructive', title: "Address search failed" });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newQuery = e.target.value;
+        setQuery(newQuery);
+        
         if (debounceTimeout.current) {
             clearTimeout(debounceTimeout.current);
         }
 
-        debounceTimeout.current = setTimeout(async () => {
-            setLoading(true);
-            try {
-                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=ke&limit=5`, {
-                    headers: { 'Accept-Language': 'en', 'User-Agent': 'WhiskeDelights/1.0' }
-                });
-                const data = await response.json();
-                setResults(data);
-                setShowResults(true);
-            } catch (error) {
-                console.error("Failed to fetch from Nominatim:", error);
-                toast({ variant: 'destructive', title: "Address search failed" });
-            } finally {
-                setLoading(false);
-            }
+        debounceTimeout.current = setTimeout(() => {
+            handleSearch(newQuery);
         }, 500); // 500ms debounce
-
-    }, [query, toast]);
+    }
     
     const handleSelectResult = (result: any) => {
         const address = result.display_name;
@@ -107,8 +118,8 @@ function LocationSearchInput({ onLocationSelect, initialValue = '' }: LocationSe
                         type="text"
                         placeholder="Search for your address, estate or building..."
                         value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onFocus={() => setShowResults(true)}
+                        onChange={handleQueryChange}
+                        onFocus={() => query.length > 2 && setShowResults(true)}
                         onBlur={() => setTimeout(() => setShowResults(false), 200)} // Delay hiding to allow click
                         className="pl-9"
                     />
@@ -160,6 +171,8 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
             description: `Location has been set successfully.`,
         });
     }
+
+    const minDate = format(addDays(new Date(), 2), 'yyyy-MM-dd');
 
     return (
         <div className="space-y-6 max-h-[65vh] overflow-y-auto pr-3">
@@ -235,7 +248,8 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                     <Label htmlFor="delivery_date">Preferred Date</Label>
-                    <Input id="delivery_date" type="date" value={deliveryInfo.delivery_date} onChange={(e) => handleInputChange('delivery_date', e.target.value)} />
+                    <Input id="delivery_date" type="date" value={deliveryInfo.delivery_date} onChange={(e) => handleInputChange('delivery_date', e.target.value)} min={minDate} />
+                    <p className="text-xs text-muted-foreground mt-1">Heads up: We require 48 hours to prepare your cake.</p>
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="delivery_time">Preferred Time</Label>
