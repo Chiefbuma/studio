@@ -234,6 +234,111 @@ These tables store the available choices for building a custom cake.
 | | `name`| `VARCHAR(255)` | Not Null |
 | | `price`| `DECIMAL(10, 2)` | Not Null |
 
+### d. MS SQL Server Table Creation Scripts
+
+While you can use a database migration tool to generate these tables from a schema definition (like Prisma or Drizzle), you can also create them directly using the following SQL scripts. You can execute these scripts in a tool like SQL Server Management Studio (SSMS) or Azure Data Studio.
+
+```sql
+-- This script is for Microsoft SQL Server.
+
+-- 1. Cakes Table
+CREATE TABLE cakes (
+    id NVARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    description NVARCHAR(MAX),
+    base_price DECIMAL(10, 2) NOT NULL,
+    image_id NVARCHAR(255),
+    rating FLOAT DEFAULT 0,
+    category NVARCHAR(255),
+    orders_count INT DEFAULT 0,
+    ready_time NVARCHAR(50),
+    created_at DATETIME2 DEFAULT GETDATE(),
+    updated_at DATETIME2 DEFAULT GETDATE()
+);
+
+-- 2. Special Offers Table
+CREATE TABLE special_offers (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    cake_id NVARCHAR(255) FOREIGN KEY REFERENCES cakes(id) ON DELETE SET NULL,
+    discount_percentage INT NOT NULL,
+    is_active BIT DEFAULT 1,
+    start_date DATE,
+    end_date DATE
+);
+
+-- 3. Orders Table
+CREATE TABLE orders (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    order_number NVARCHAR(255) NOT NULL UNIQUE,
+    customer_name NVARCHAR(255) NOT NULL,
+    customer_phone NVARCHAR(20) NOT NULL,
+    customer_email NVARCHAR(255),
+    delivery_method NVARCHAR(10) NOT NULL CHECK (delivery_method IN ('delivery', 'pickup')),
+    delivery_address NVARCHAR(MAX),
+    pickup_location NVARCHAR(255),
+    delivery_date DATE,
+    total_price DECIMAL(10, 2) NOT NULL,
+    payment_status NVARCHAR(10) DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid')),
+    order_status NVARCHAR(15) DEFAULT 'processing' CHECK (order_status IN ('processing', 'complete', 'cancelled')),
+    created_at DATETIME2 DEFAULT GETDATE()
+);
+
+-- 4. Order Items Table
+CREATE TABLE order_items (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    order_id INT NOT NULL FOREIGN KEY REFERENCES orders(id) ON DELETE CASCADE,
+    cake_id NVARCHAR(255) NOT NULL FOREIGN KEY REFERENCES cakes(id),
+    quantity INT NOT NULL DEFAULT 1,
+    price_at_purchase DECIMAL(10, 2) NOT NULL,
+    customizations_json NVARCHAR(MAX) CHECK (ISJSON(customizations_json) > 0)
+);
+
+-- 5. Customization Flavors Table
+CREATE TABLE customization_flavors (
+    id NVARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL
+);
+
+-- 6. Customization Sizes Table
+CREATE TABLE customization_sizes (
+    id NVARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    serves NVARCHAR(255),
+    price DECIMAL(10, 2) NOT NULL
+);
+
+-- 7. Customization Colors Table
+CREATE TABLE customization_colors (
+    id NVARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    hex_value NVARCHAR(7),
+    price DECIMAL(10, 2) NOT NULL
+);
+
+-- 8. Customization Toppings Table
+CREATE TABLE customization_toppings (
+    id NVARCHAR(255) PRIMARY KEY,
+    name NVARCHAR(255) NOT NULL,
+    price DECIMAL(10, 2) NOT NULL
+);
+
+-- Note on updated_at: For automatic updates on change, a trigger would be required in MS SQL.
+-- Example trigger for the 'cakes' table:
+/*
+CREATE TRIGGER trg_cakes_updated_at
+ON cakes
+AFTER UPDATE
+AS
+BEGIN
+    UPDATE cakes
+    SET updated_at = GETDATE()
+    FROM inserted
+    WHERE cakes.id = inserted.id;
+END;
+*/
+```
+
 ## 7. Local Development Setup
 
 Follow these instructions to get the application running on your local machine.
