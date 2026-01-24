@@ -4,18 +4,19 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/hooks/use-cart';
 import { formatPrice } from '@/lib/utils';
 import { DeliveryForm } from '@/components/cake-paradise/customization/delivery-form';
-import { PaymentForm } from '@/components/cake-paradise/customization/payment-form';
 import type { DeliveryInfo } from '@/lib/types';
 import { placeOrder } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, ShoppingCart, ChevronDown } from 'lucide-react';
+import { Loader2, ArrowLeft, ShoppingCart, ChevronDown, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { AnimatePresence, motion } from 'framer-motion';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent } from '@/components/ui/card';
+
+// Paystack public key from environment variables
+const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
 
 // Component for Order Summary, now collapsible
 const OrderSummaryCollapsible = () => {
@@ -61,9 +62,7 @@ export default function CheckoutPage() {
   const { cart, totalPrice, clearCart } = useCart();
   const router = useRouter();
   const { toast } = useToast();
-  const [view, setView] = useState<'delivery' | 'payment'>('delivery');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [orderResponse, setOrderResponse] = useState<{orderNumber: string; depositAmount: number} | null>(null);
 
   const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
     name: '',
@@ -85,7 +84,99 @@ export default function CheckoutPage() {
   }, [cart, router]);
 
   const depositAmount = totalPrice * 0.8;
-  const customerEmail = `${deliveryInfo.phone}@whiskedelights.com`; // Paystack requires an email.
+  const customerEmail = `${deliveryInfo.phone}@whiskedelights.com`; 
+
+  const handlePaymentSuccess = (response: { reference: string }, orderNumber: string) => {
+    toast({
+      title: "Payment Confirmed!",
+      description: `Your order #${orderNumber} is being prepared. Ref: ${response.reference}`,
+    });
+    clearCart();
+    router.push('/');
+  }
+
+  const handlePlaceOrderAndPay = async () => {
+    // Basic validation
+    if (!deliveryInfo.name.trim() || !deliveryInfo.phone.trim()) {
+        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please enter your name and phone number.' });
+        return;
+    }
+     if (deliveryInfo.delivery_method === 'delivery' && !deliveryInfo.address.trim()) {
+        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please provide a delivery address.' });
+        return;
+    }
+     if (deliveryInfo.delivery_method === 'pickup' && !deliveryInfo.pickup_location.trim()) {
+        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please select a pickup location.' });
+        return;
+    }
+
+    setIsProcessing(true);
+
+    const result = await placeOrder({
+        items: cart,
+        deliveryInfo,
+        totalPrice,
+        depositAmount
+    });
+
+    if (result.success) {
+      // Order placed successfully, now trigger payment
+      toast({
+        title: "Order Placed!",
+        description: `Your order #${result.orderNumber} is ready for payment.`,
+      });
+      triggerPaystackPayment(result.orderNumber, result.depositAmount);
+    } else {
+      // Order failed
+      toast({
+        variant: "destructive",
+        title: "Order Failed",
+        description: result.error || "An unknown error occurred.",
+      });
+      setIsProcessing(false);
+    }
+  };
+
+  const triggerPaystackPayment = (orderNumber: string, amount: number) => {
+     if (!paystackPublicKey || (!paystackPublicKey.startsWith('pk_test_') && !paystackPublicKey.startsWith('pk_live_'))) {
+        toast({
+            variant: 'destructive',
+            title: 'Payment Gateway Error',
+            description: 'The payment gateway is not configured correctly.',
+        });
+        console.error("Paystack public key is missing or invalid.");
+        setIsProcessing(false);
+        return;
+    }
+
+    const handler = (window as any).PaystackPop.setup({
+      key: paystackPublicKey,
+      email: customerEmail,
+      amount: Math.round(amount * 100), // Amount in kobo/cents
+      phone: deliveryInfo.phone,
+      ref: `WD_${orderNumber}_${Date.now()}`,
+      metadata: {
+        order_number: orderNumber,
+        customer_phone: deliveryInfo.phone,
+        payment_type: "M-PESA Deposit"
+      },
+      channels: ['mobile_money'],
+      callback: function(response: any) {
+        // No need to setIsProcessing(false) here, as we navigate away
+        handlePaymentSuccess(response, orderNumber);
+      },
+      onClose: function() {
+        setIsProcessing(false);
+        toast({
+          variant: "destructive",
+          title: 'Payment Cancelled',
+          description: 'Your order has been saved. You can try again later.',
+        });
+      }
+    });
+
+    handler.openIframe();
+  }
 
   if (cart.length === 0) {
     return (
@@ -98,118 +189,40 @@ export default function CheckoutPage() {
     );
   }
 
-  const handlePlaceOrder = async () => {
-    setIsProcessing(true);
-    const result = await placeOrder({
-        items: cart,
-        deliveryInfo,
-        totalPrice,
-        depositAmount
-    });
-    setIsProcessing(false);
-
-    if (result.success) {
-      toast({
-        title: "Order Placed!",
-        description: `Your order #${result.orderNumber} is ready for payment.`,
-      });
-      setOrderResponse({ orderNumber: result.orderNumber, depositAmount: result.depositAmount });
-      setView('payment');
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Order Failed",
-        description: result.error || "An unknown error occurred.",
-      });
-    }
-  };
-
-  const handlePaymentSuccess = (response: { reference: string }) => {
-    toast({
-      title: "Payment Confirmed!",
-      description: `Your order is being prepared. Ref: ${response.reference}`,
-    });
-    clearCart();
-    router.push('/');
-  }
-  
-  const stageVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 },
-  };
-
   return (
     <div className="min-h-screen bg-background">
         <header className="bg-card border-b p-4 sticky top-0 z-20">
             <div className="container mx-auto flex items-center">
-                <Button variant="ghost" onClick={() => view === 'delivery' ? router.push('/') : setView('delivery')}>
+                <Button variant="ghost" onClick={() => router.push('/')}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> 
-                    Back
+                    Back to Shop
                 </Button>
                 <div className="flex-1 text-center">
                     <h1 className="text-xl md:text-2xl font-bold font-headline">
-                        {view === 'delivery' ? 'Checkout' : 'Payment'}
+                        Checkout
                     </h1>
                 </div>
-                <div className="w-20"></div> {/* Spacer to balance the back button */}
+                <div className="w-32"></div> {/* Spacer to balance the back button */}
             </div>
         </header>
         
         <main className="container mx-auto p-4 md:p-8 max-w-3xl">
              <OrderSummaryCollapsible />
 
-             <div className="grid grid-cols-2 gap-4 text-center mb-8">
-                <div className={`p-3 rounded-lg border-2 transition-colors ${view === 'delivery' ? 'border-primary bg-primary/10' : 'border-border'}`}>
-                    <h3 className="font-semibold text-lg">1. Delivery Details</h3>
-                </div>
-                 <div className={`p-3 rounded-lg border-2 transition-colors ${view === 'payment' ? 'border-primary bg-primary/10' : 'border-border'}`}>
-                    <h3 className="font-semibold text-lg">2. Payment</h3>
-                </div>
-            </div>
-
-            <AnimatePresence mode="wait">
-                {view === 'delivery' && (
-                    <motion.div
-                        key="delivery"
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        variants={stageVariants}
-                        transition={{ duration: 0.3 }}
-                    >
-                         <Card>
-                            <CardContent className="p-6">
-                                <DeliveryForm deliveryInfo={deliveryInfo} setDeliveryInfo={setDeliveryInfo} />
-                                <Button onClick={handlePlaceOrder} className="w-full mt-6" size="lg" disabled={isProcessing}>
-                                    {isProcessing ? <Loader2 className="animate-spin" /> : "Proceed to Payment"}
-                                </Button>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-                )}
-                
-                {view === 'payment' && orderResponse && (
-                     <motion.div
-                        key="payment"
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
-                        variants={stageVariants}
-                        transition={{ duration: 0.3 }}
-                    >
-                        <PaymentForm
-                            orderNumber={orderResponse.orderNumber}
-                            depositAmount={orderResponse.depositAmount}
-                            totalPrice={totalPrice}
-                            customerEmail={customerEmail}
-                            customerPhone={deliveryInfo.phone}
-                            onPaymentSuccess={handlePaymentSuccess}
-                            onBack={() => setView('delivery')}
-                        />
-                    </motion.div>
-                )}
-            </AnimatePresence>
+             <Card>
+                <CardContent className="p-6">
+                    <h3 className="text-xl font-bold mb-4">Delivery Details</h3>
+                    <DeliveryForm deliveryInfo={deliveryInfo} setDeliveryInfo={setDeliveryInfo} />
+                    <Button onClick={handlePlaceOrderAndPay} className="w-full mt-6" size="lg" disabled={isProcessing}>
+                        {isProcessing ? <Loader2 className="animate-spin" /> : (
+                          <>
+                            <Lock className="mr-2 h-5 w-5" />
+                            {`Place Order & Pay ${formatPrice(depositAmount)}`}
+                          </>
+                        )}
+                    </Button>
+                </CardContent>
+            </Card>
         </main>
     </div>
   );

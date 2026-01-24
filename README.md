@@ -51,11 +51,10 @@ The admin panel is a client-side rendered application within the Next.js framewo
 
 The checkout process (`src/app/checkout/page.tsx`) is designed to be a smooth, responsive, and intuitive single-page experience.
 
--   **Mobile-First Design**: The layout uses a single-column, centered design that works seamlessly on all screen sizes, from mobile phones to desktops.
--   **Collapsible Order Summary**: On mobile, the order summary is collapsed by default into a single bar showing the total price. This saves valuable screen space while keeping the most important information accessible with a single tap.
--   **OpenStreetMap Address Search**: To improve accuracy and speed, the address field uses OpenStreetMap's Nominatim service for autocomplete. As the customer types, a list of suggested addresses appears. Selecting an address automatically fills in the full details and captures the precise GPS coordinates for delivery.
--   **Animated Transitions**: The transition between the "Delivery Information" step and the "Payment" step is handled with smooth fade-in/fade-out animations, providing a seamless user experience without jarring page reloads.
--   **Clear Step-by-Step Process**: A simple visual indicator at the top of the form clearly shows the customer which step of the checkout process they are on.
+-   **Streamlined Single-Page Flow**: The entire checkout process happens on a single, responsive page, ensuring a seamless experience on all devices.
+-   **Collapsible Order Summary**: The order summary is tucked into a collapsible section at the top, saving screen space while keeping the total price visible and accessible with a single tap.
+-   **Intelligent Address Search**: The address field uses OpenStreetMap's free Nominatim service for autocomplete suggestions. It also includes a "Use my location" button to automatically detect the user's address and coordinates, making address entry fast and accurate.
+-   **Direct Payment**: After filling out their delivery details, the customer clicks a single "Place Order & Pay" button. This action securely creates their order in the system and immediately opens the Paystack M-Pesa payment interface, removing the need for an extra payment review step and creating a faster, more seamless transaction.
 
 ## 3. File-by-File Breakdown
 
@@ -63,7 +62,7 @@ Here is an explanation of the key files and directories in the project.
 
 -   `src/app/`
     -   `layout.tsx`, `globals.css`, `page.tsx`: These files define the main customer-facing application layout, styles, and page views.
-    -   `checkout/page.tsx`: A responsive, single-page checkout flow with animated steps, a collapsible order summary, and OpenStreetMap address search.
+    -   `checkout/page.tsx`: A responsive, single-page checkout flow with a collapsible order summary and OpenStreetMap address search.
 
 -   `src/app/admin/`
     -   `login/page.tsx`: The dedicated login page for the admin panel.
@@ -204,7 +203,6 @@ This section provides the blueprint for your backend database and instructions o
 | `id` | `INT` | **Primary Key**, Auto-increment |
 | `order_number`| `VARCHAR(255)` | Unique, Not Null |
 | `customer_name`| `VARCHAR(255)` | Not Null |
-| `customer_email`| `VARCHAR(255)` | Nullable |
 | `customer_phone`| `VARCHAR(20)` | Not Null |
 | `delivery_method`| `ENUM('delivery', 'pickup')` | Not Null |
 | `delivery_address`| `TEXT` | Nullable |
@@ -308,7 +306,6 @@ CREATE TABLE orders (
     id INT PRIMARY KEY IDENTITY(1,1),
     order_number NVARCHAR(255) NOT NULL UNIQUE,
     customer_name NVARCHAR(255) NOT NULL,
-    customer_email NVARCHAR(255) NULL,
     customer_phone NVARCHAR(20) NOT NULL,
     delivery_method NVARCHAR(10) NOT NULL CHECK (delivery_method IN ('delivery', 'pickup')),
     delivery_address NVARCHAR(MAX),
@@ -401,7 +398,6 @@ CREATE TABLE orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_number VARCHAR(255) NOT NULL UNIQUE,
     customer_name VARCHAR(255) NOT NULL,
-    customer_email VARCHAR(255) NULL,
     customer_phone VARCHAR(20) NOT NULL,
     delivery_method ENUM('delivery', 'pickup') NOT NULL,
     delivery_address TEXT,
@@ -561,7 +557,7 @@ The application ensures payment security by delegating all sensitive operations 
 
 -   **No Sensitive Data Handled**: The application **never** sees, handles, or stores any M-Pesa PINs or credit card numbers. All payment information is entered directly into a secure iframe controlled by Paystack.
 -   **Transaction Verification (The Critical Step)**:
-    -   The `onPaymentSuccess` callback in the frontend (`src/components/cake-paradise/customization/payment-form.tsx`) is only for providing immediate UI feedback (e.g., "Payment successful!"). It **cannot be trusted** as a definitive confirmation of payment.
+    -   The `callback` function in the Paystack popup is only for providing immediate UI feedback (e.g., "Payment successful!"). It **cannot be trusted** as a definitive confirmation of payment.
     -   **True verification must happen on the backend**. For every payment, Paystack can send a **webhook** to a secure endpoint on your backend API. Your backend code must:
         1.  Receive this webhook and verify its authenticity using the signature provided by Paystack.
         2.  Check the event type (e.g., `charge.success`).
