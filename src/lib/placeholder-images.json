@@ -2,9 +2,9 @@
   "placeholderImages": [
     {
       "id": "special-offer-cake",
-      "description": "A beautiful and delicious chocolate fudge cake, the special offer of the day.",
+      "description": "A beautiful and delicious chocolate fudge cake with caramel drizzle.",
       "imageUrl": "https://images.unsplash.com/photo-1602351447937-745cb720612f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjaG9jb2xhdGUlMjBjYWtlfGVufDB8fHx8MTc2OTE0NTM0OHww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "chocolate cake"
+      "imageHint": "caramel cake"
     },
     {
       "id": "red-velvet-delight",

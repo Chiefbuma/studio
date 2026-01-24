@@ -4,7 +4,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { CartProvider } from '@/hooks/use-cart';
 
 export const metadata: Metadata = {
-  title: 'Cake Paradise',
+  title: 'WhiskeDelights',
   description: 'Premium Artisan Cakes & Custom Creations',
 };
 

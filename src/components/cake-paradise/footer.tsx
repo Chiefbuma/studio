@@ -10,10 +10,10 @@ export function AppFooter() {
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 font-bold text-lg text-primary">
             <Cake className="h-6 w-6" />
-            <span>Cake Paradise</span>
+            <span>WhiskeDelights</span>
           </div>
           <div className="text-sm text-muted-foreground text-center sm:text-right">
-            <p>© {new Date().getFullYear()} Cake Paradise. All Rights Reserved.</p>
+            <p>© {new Date().getFullYear()} WhiskeDelights. All Rights Reserved.</p>
             <p>
               <Link href="/admin" className="hover:text-primary transition-colors text-xs">
                 Admin Panel

@@ -45,7 +45,7 @@ export default function AdminProtectedLayout({
           <SidebarHeader className="h-14 flex items-center justify-center">
              <Link href="/" className="flex items-center gap-2 font-bold text-lg text-primary">
                 <Cake className="h-6 w-6" />
-                <span className="group-data-[collapsible=icon]:hidden">Cake Paradise</span>
+                <span className="group-data-[collapsible=icon]:hidden">WhiskeDelights</span>
              </Link>
           </SidebarHeader>
           <SidebarContent className="p-2">

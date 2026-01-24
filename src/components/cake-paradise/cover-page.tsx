@@ -19,7 +19,7 @@ export default function CoverPage() {
         {/* Title */}
         <div className="mb-8">
           <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold text-white mb-4 tracking-tight drop-shadow-lg">
-            Cake Paradise
+            WhiskeDelights
           </h1>
         </div>
 

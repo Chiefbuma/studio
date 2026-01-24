@@ -73,7 +73,7 @@ export default function AdminLoginPage() {
     
     // --- MOCK AUTHENTICATION LOGIC (Current) ---
     setTimeout(() => {
-      if (email === 'admin@cakeparadise.com' && password === 'admin') {
+      if (email === 'admin@whiskedelights.com' && password === 'admin') {
         try {
           localStorage.setItem('isAdminLoggedIn', 'true');
           toast({
@@ -115,7 +115,7 @@ export default function AdminLoginPage() {
           <CardHeader className="text-center">
              <div className="flex items-center gap-2 justify-center font-bold text-lg text-primary mb-4">
                 <Cake className="h-6 w-6" />
-                <span>Cake Paradise</span>
+                <span>WhiskeDelights</span>
              </div>
             <CardTitle className="text-2xl">Admin Login</CardTitle>
             <CardDescription>Enter your credentials to access the admin panel.</CardDescription>
@@ -126,7 +126,7 @@ export default function AdminLoginPage() {
               <Input
                 id="email"
                 type="email"
-                placeholder="admin@cakeparadise.com"
+                placeholder="admin@whiskedelights.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

@@ -89,7 +89,7 @@ export default function DashboardPage() {
                         <CardTitle>Welcome Admin!</CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p>This is your central hub for managing Cake Paradise. You can view recent orders, manage your cakes and special offers, and see key statistics about your store. Use the navigation on the left to get started.</p>
+                        <p>This is your central hub for managing WhiskeDelights. You can view recent orders, manage your cakes and special offers, and see key statistics about your store. Use the navigation on the left to get started.</p>
                         <p className="mt-4 text-sm text-muted-foreground">Note: This is a prototype admin panel. Changes made here will not be saved permanently as it currently operates on mock data.</p>
                     </CardContent>
                 </Card>

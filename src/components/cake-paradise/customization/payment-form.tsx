@@ -63,7 +63,7 @@ export function PaymentForm({
           email: customerEmail || 'customer@example.com',
           amount: Math.round(depositAmount * 100), // Amount in kobo/cents
           currency: 'KES',
-          ref: `CP_${orderNumber}_${Date.now()}`,
+          ref: `WD_${orderNumber}_${Date.now()}`,
           phone: mpesaPhone,
           metadata: {
             order_number: orderNumber,

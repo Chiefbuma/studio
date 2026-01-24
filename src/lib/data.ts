@@ -78,15 +78,15 @@ export const cakes: Cake[] = [
 export const specialOffer: SpecialOffer = {
   cake: {
     id: 'special-offer-cake',
-    name: 'Whiskey Delight',
-    description: 'Our signature creation. A rich chocolate cake infused with a hint of premium whiskey, layered with a salted caramel buttercream. An unforgettable taste.',
+    name: 'Caramel Drizzle Dream',
+    description: 'A decadent chocolate cake layered with silky salted caramel buttercream, topped with a rich caramel drizzle. An unforgettable taste.',
     base_price: 4000,
     image_id: 'special-offer-cake',
     rating: 4.9,
     category: 'Signature',
     orders_count: 88,
     ready_time: '48h',
-    defaultFlavorId: 'f7', // Whiskey Chocolate
+    defaultFlavorId: 'f7',
   },
   discount_percentage: 20,
   original_price: 4000,
@@ -102,7 +102,7 @@ export const customizationOptions: CustomizationOptions = {
     { id: 'f4', name: 'Red Velvet', description: 'Classic Southern charm', price: 300, color: '#B71C1C' },
     { id: 'f5', name: 'Fresh Strawberry', description: 'Sweet and fruity', price: 250, color: '#FF8A80' },
     { id: 'f6', name: 'Matcha Green Tea', description: 'Earthy and sophisticated', price: 400, color: '#A5D6A7' },
-    { id: 'f7', name: 'Whiskey Chocolate', description: 'Bold and indulgent', price: 500, color: '#4E342E' },
+    { id: 'f7', name: 'Salted Caramel Chocolate', description: 'Rich chocolate with a sweet & salty caramel twist', price: 500, color: '#6D4C41' },
   ],
   sizes: [
     { id: 's1', name: '6" Round', serves: '6-8 people', price: 0 },
@@ -141,7 +141,7 @@ export const customCake: Cake = {
 export const orders: Order[] = [
   {
     id: 1,
-    order_number: 'CP-12345',
+    order_number: 'WD-12345',
     customer_name: 'John Doe',
     customer_phone: '0712345678',
     customer_email: 'john@example.com',
@@ -156,7 +156,7 @@ export const orders: Order[] = [
       {
         id: 'special-offer-cake-1',
         cakeId: 'special-offer-cake',
-        name: 'Whiskey Delight',
+        name: 'Caramel Drizzle Dream',
         quantity: 1,
         price: 3200,
         image_id: 'special-offer-cake',
@@ -165,7 +165,7 @@ export const orders: Order[] = [
   },
   {
     id: 2,
-    order_number: 'CP-67890',
+    order_number: 'WD-67890',
     customer_name: 'Jane Smith',
     customer_phone: '0787654321',
     customer_email: 'jane@example.com',
@@ -195,7 +195,7 @@ export const orders: Order[] = [
   },
     {
     id: 3,
-    order_number: 'CP-11223',
+    order_number: 'WD-11223',
     customer_name: 'Peter Jones',
     customer_phone: '0711223344',
     customer_email: 'peter@example.com',

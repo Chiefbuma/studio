@@ -1,6 +1,6 @@
-# Cake Paradise: Application Documentation
+# WhiskeDelights: Application Documentation
 
-Welcome to the full technical documentation for the Cake Paradise web application. This document provides a comprehensive overview of the technologies used, the core design principles applied, the project's file structure, and a clear roadmap for future backend integration.
+Welcome to the full technical documentation for the WhiskeDelights web application. This document provides a comprehensive overview of the technologies used, the core design principles applied, the project's file structure, and a clear roadmap for future backend integration.
 
 ## 1. Technology Stack
 
@@ -96,7 +96,7 @@ The application includes a comprehensive admin panel for managing the shop's dat
 
 1.  Navigate to the site's footer and click the "Admin Panel" link, or go directly to `/admin/login`.
 2.  Use the following credentials to log in:
-    -   **Email**: `admin@cakeparadise.com`
+    -   **Email**: `admin@whiskedelights.com`
     -   **Password**: `admin`
 
 This provides access to all the protected admin routes. The login state is stored in the browser's `localStorage` for the prototype.
@@ -489,7 +489,7 @@ The easiest way to run a local MS SQL database is with Docker.
 
 4.  **Create the Database and Tables:**
     -   Open a new query editor.
-    -   Run `CREATE DATABASE CakeParadiseDB;`
+    -   Run `CREATE DATABASE WhiskeDelightsDB;`
     -   Switch your connection to use this new database.
     -   Copy and run the **MS SQL Server** `CREATE TABLE` scripts from the section above.
 
@@ -501,9 +501,9 @@ If you prefer to use XAMPP, you can use its included MySQL/MariaDB server.
 2. **Open phpMyAdmin**: Click the `Admin` button next to the MySQL module. This will open phpMyAdmin in your browser.
 3. **Create the Database**:
    - In phpMyAdmin, click on the `Databases` tab.
-   - Enter `CakeParadiseDB` in the "Create database" field and click `Create`.
+   - Enter `WhiskeDelightsDB` in the "Create database" field and click `Create`.
 4. **Run SQL Scripts**:
-   - Select the `CakeParadiseDB` database from the left-hand sidebar.
+   - Select the `WhiskeDelightsDB` database from the left-hand sidebar.
    - Click on the `SQL` tab.
    - Copy all the **MySQL/MariaDB** `CREATE TABLE` scripts from the section above and paste them into the query box.
    - Click the `Go` button to create all the tables.
@@ -515,11 +515,11 @@ Your backend application (e.g., using Node.js/Express, ASP.NET) will handle the 
 
 **For MS SQL Server:**
 ```
-DATABASE_URL="sqlserver://localhost:1433;database=CakeParadiseDB;user=sa;password=your_Strong_Password123;encrypt=false;trustServerCertificate=true"
+DATABASE_URL="sqlserver://localhost:1433;database=WhiskeDelightsDB;user=sa;password=your_Strong_Password123;encrypt=false;trustServerCertificate=true"
 ```
 **For MySQL/MariaDB (XAMPP):**
 ```
-DATABASE_URL="mysql://root:@localhost:3306/CakeParadiseDB"
+DATABASE_URL="mysql://root:@localhost:3306/WhiskeDelightsDB"
 ```
 Your backend code would then use this string to connect to the database and expose the API endpoints listed in section 5a.
 

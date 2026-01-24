@@ -109,7 +109,7 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                         Our Collection
                     </Badge>
                     <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
-                        Signature Creations
+                        Our Signature Collection
                     </h2>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto text-balance">
                         Explore our exclusive range of artisan cakes, handcrafted with love and the finest ingredients.
@@ -171,8 +171,8 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                                 );
                             })}
                         </AnimatePresence>
-                        <Button onClick={prevSlide} size="icon" variant="outline" className="absolute -left-8 top-1/2 -translate-y-1/2 z-[11] rounded-full h-12 w-12" disabled={currentSlide === 0}><ChevronLeft /></Button>
-                        <Button onClick={nextSlide} size="icon" variant="outline" className="absolute -right-8 top-1/2 -translate-y-1/2 z-[11] rounded-full h-12 w-12" disabled={currentSlide === cakes.length - 1}><ChevronRight /></Button>
+                        <Button onClick={prevSlide} size="icon" variant="outline" className="absolute -left-8 top-1/2 -translate-y-1/2 z-[11]" disabled={currentSlide === 0}><ChevronLeft /></Button>
+                        <Button onClick={nextSlide} size="icon" variant="outline" className="absolute -right-8 top-1/2 -translate-y-1/2 z-[11]" disabled={currentSlide === cakes.length - 1}><ChevronRight /></Button>
                     </div>
                 )}
                  <div className="flex justify-center gap-2 mt-8">
