@@ -62,15 +62,15 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <Button size="lg" className="w-full sm:w-auto shadow-lg hover:shadow-primary/50 transition-shadow" onClick={() => onOrder(cake)}>
-                                    <CakeIcon className="mr-2" /> Order Now
+                            <div className="flex flex-wrap justify-center gap-4">
+                                <Button size="lg" className="shadow-lg hover:shadow-primary/50 transition-shadow" onClick={() => onOrder(cake)}>
+                                    <CakeIcon className="mr-2 h-5 w-5" /> Order Now
                                 </Button>
-                                 <Button size="lg" variant="secondary" className="w-full sm:w-auto" onClick={onOrderCustom}>
-                                    <Sparkles className="mr-2" /> Create Your Own
+                                 <Button size="lg" variant="secondary" onClick={onOrderCustom}>
+                                    <Sparkles className="mr-2 h-5 w-5" /> Create Your Own
                                 </Button>
-                                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-card/10 border-primary/30 hover:bg-card/20" onClick={onNavigateToMenu}>
-                                    View Full Menu <ArrowRight className="ml-2" />
+                                <Button size="lg" variant="outline" className="bg-card/10 border-primary/30 hover:bg-card/20" onClick={onNavigateToMenu}>
+                                    View Full Menu <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
                             </div>
                         </div>

@@ -202,16 +202,21 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
               <PaymentForm
                 orderNumber={orderResponse.orderNumber}
                 depositAmount={orderResponse.depositAmount}
+                totalPrice={totalPrice}
                 customerEmail={deliveryInfo.email}
                 customerPhone={deliveryInfo.phone}
-                onPaymentSuccess={() => {
-                  toast({ title: "Payment Confirmed!", description: "Your order is being prepared." });
+                onPaymentSuccess={(response) => {
+                  toast({
+                    title: "Payment Confirmed!",
+                    description: `Your order is being prepared. Ref: ${response.reference}`,
+                  });
                   onClose();
                 }}
+                onBack={() => setView('delivery')}
               />
             )}
              
-             {!orderResponse && (
+             {!orderResponse && view !== 'payment' && (
                 <div className="mt-auto pt-4 space-y-4">
                   <Separator />
                   <div className="p-4 bg-muted/50 rounded-lg space-y-2">
