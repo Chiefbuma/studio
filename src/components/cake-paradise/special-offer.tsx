@@ -60,13 +60,13 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                         
                         <div className="relative z-10">
                             <div className="flex flex-col items-start gap-3 mb-6">
-                                <div className="bg-background/80 backdrop-blur-sm p-3 rounded-xl shadow-lg text-center border border-background/20">
-                                    <div className="text-2xl font-bold text-primary">#1</div>
-                                    <div className="text-xs text-foreground font-semibold uppercase tracking-wider">Best Seller</div>
-                                </div>
                                 <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-2 rounded-full shadow-lg">
                                     <Crown className="w-4 h-4 text-amber-300" />
                                     <span className="font-bold text-xs uppercase tracking-wider">Today's Special</span>
+                                </div>
+                                <div className="bg-background/80 backdrop-blur-sm p-3 rounded-xl shadow-lg text-center border border-background/20">
+                                    <div className="text-2xl font-bold text-primary">#1</div>
+                                    <div className="text-xs text-foreground font-semibold uppercase tracking-wider">Best Seller</div>
                                 </div>
                             </div>
 
@@ -98,7 +98,7 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                                 </Button>
                                  <Button variant="secondary" onClick={onOrderCustom}>
                                     <Sparkles className="mr-2 h-5 w-5" /> Create Your Own
-                                </Button>
+                                 </Button>
                                 <Button variant="outline" className="bg-card/10 border-primary/30 hover:bg-card/20" onClick={onNavigateToMenu}>
                                     View Full Menu <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
