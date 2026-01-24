@@ -4,8 +4,6 @@ Welcome to the full technical documentation for the WhiskeDelights web applicati
 
 ## 1. Technology Stack
 
-This application is built on a modern, robust, and scalable technology stack designed for performance and developer experience.
-
 -   **Next.js**: A React framework that provides a production-ready foundation. We use its App Router for file-based routing, Server Components for performance, and Server Actions for secure backend communication without creating separate API endpoints.
 
 -   **React**: The core library for building the user interface. The entire application is composed of interactive and reusable React components.
@@ -618,7 +616,7 @@ For the application to run correctly, especially for payment integration, you mu
     ```
 
 3.  **Run the development server:**
-    The application will be available at `http://localhost:9002`.
+    The application will be available at `http://localhost:3000`.
     ```bash
     npm run dev
     ```
