@@ -1,15 +1,84 @@
 'use client';
 
+import { useState, useRef, useCallback, Dispatch, SetStateAction } from 'react';
+import { useJsApiLoader, Autocomplete } from '@react-google-maps/api';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { DeliveryInfo } from "@/lib/types";
-import { Store, Truck, MapPin } from "lucide-react";
-import { Dispatch, SetStateAction } from "react";
-import { Button } from "@/components/ui/button";
+import { Store, Truck, MapPin, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+const libraries: ('places' | 'drawing' | 'geometry' | 'visualization')[] = ['places'];
+
+interface LocationSearchInputProps {
+    onLocationSelect: (address: string, lat: number, lng: number) => void;
+    initialValue?: string;
+}
+
+function LocationSearchInput({ onLocationSelect, initialValue = '' }: LocationSearchInputProps) {
+    const { isLoaded, loadError } = useJsApiLoader({
+        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+        libraries,
+    });
+
+    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
+    const onLoad = useCallback((autocompleteInstance: google.maps.places.Autocomplete) => {
+        autocompleteRef.current = autocompleteInstance;
+    }, []);
+
+    const onUnmount = useCallback(() => {
+        autocompleteRef.current = null;
+    }, []);
+
+    const onPlaceChanged = () => {
+        const autocomplete = autocompleteRef.current;
+        if (autocomplete !== null) {
+            const place = autocomplete.getPlace();
+            const address = place.formatted_address || '';
+            const lat = place.geometry?.location?.lat();
+            const lng = place.geometry?.location?.lng();
+
+            if (address && lat && lng) {
+                onLocationSelect(address, lat, lng);
+            }
+        } else {
+            console.log('Autocomplete is not loaded yet!');
+        }
+    };
+
+    if (loadError) {
+        return <div className="text-destructive text-sm p-2 bg-destructive/10 rounded-md">Error loading maps. Please check your Google Maps API key.</div>;
+    }
+
+    if (!isLoaded) {
+        return (
+            <div className="flex items-center gap-2 text-muted-foreground p-2 bg-muted/50 rounded-md h-10">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading map search...</span>
+            </div>
+        );
+    }
+
+    return (
+        <Autocomplete
+            onLoad={onLoad}
+            onPlaceChanged={onPlaceChanged}
+            onUnmount={onUnmount}
+            fields={['formatted_address', 'geometry.location']}
+            options={{ componentRestrictions: { country: 'ke' } }} // Restrict to Kenya
+        >
+            <Input
+                type="text"
+                placeholder="Search for your address, estate or building..."
+                defaultValue={initialValue}
+            />
+        </Autocomplete>
+    );
+}
 
 interface DeliveryFormProps {
     deliveryInfo: DeliveryInfo;
@@ -22,17 +91,18 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
     const handleInputChange = (field: keyof DeliveryInfo, value: string) => {
         setDeliveryInfo(prev => ({ ...prev, [field]: value }));
     };
-
-    const handleSetLocation = () => {
-        // In a real app, this would open a map modal.
-        // For this prototype, we'll simulate getting coordinates.
-        const mockCoordinates = { lat: -1.286389, lng: 36.817223 }; // Nairobi CBD
-        setDeliveryInfo(prev => ({ ...prev, coordinates: mockCoordinates }));
+    
+    const handleLocationSelect = (address: string, lat: number, lng: number) => {
+        setDeliveryInfo(prev => ({
+            ...prev,
+            address: address,
+            coordinates: { lat, lng }
+        }));
         toast({
-            title: "Location Captured!",
-            description: `Coordinates set to: Lat: ${mockCoordinates.lat.toFixed(4)}, Lng: ${mockCoordinates.lng.toFixed(4)}`,
+            title: "Address Selected!",
+            description: `Address set successfully.`,
         });
-    };
+    }
 
     return (
         <div className="space-y-6 max-h-[65vh] overflow-y-auto pr-3">
@@ -72,43 +142,23 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
                         <Input id="phone" type="tel" placeholder="0712345678" value={deliveryInfo.phone} onChange={(e) => handleInputChange('phone', e.target.value)} required />
                     </div>
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" placeholder="for-receipts@example.com" value={deliveryInfo.email} onChange={(e) => handleInputChange('email', e.target.value)} />
-                    <p className="text-xs text-muted-foreground">Optional, for order confirmation and receipts.</p>
-                </div>
             </div>
 
             {deliveryInfo.delivery_method === 'delivery' ? (
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="address">Delivery Address *</Label>
-                        <Textarea id="address" placeholder="e.g., Vision Tower, 5th Floor, Muthithi Road" value={deliveryInfo.address} onChange={(e) => handleInputChange('address', e.target.value)} required />
-                         <div className="flex justify-between items-center pt-2">
-                            <Button type="button" variant="outline" size="sm" onClick={handleSetLocation}>
-                                <MapPin className="mr-2 h-4 w-4" />
-                                Set on Map
-                            </Button>
-                            {deliveryInfo.coordinates && (
-                                <p className="text-xs text-muted-foreground">
-                                    Lat: {deliveryInfo.coordinates.lat.toFixed(4)}, Lng: {deliveryInfo.coordinates.lng.toFixed(4)}
-                                </p>
-                            )}
-                        </div>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="city">City</Label>
-                        <Select value={deliveryInfo.city} onValueChange={(value) => handleInputChange('city', value)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select a city" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="Nairobi">Nairobi</SelectItem>
-                                <SelectItem value="Mombasa">Mombasa</SelectItem>
-                                <SelectItem value="Kisumu">Kisumu</SelectItem>
-                                <SelectItem value="Other">Other</SelectItem>
-                            </SelectContent>
-                        </Select>
+                <div className="space-y-2">
+                    <Label htmlFor="address">Delivery Address *</Label>
+                    <LocationSearchInput 
+                        onLocationSelect={handleLocationSelect}
+                        initialValue={deliveryInfo.address}
+                    />
+                    <div className="flex justify-between items-center pt-1">
+                        <p className="text-xs text-muted-foreground">Search and select your delivery location.</p>
+                        {deliveryInfo.coordinates && (
+                            <p className="text-xs text-green-600 font-medium flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                Location Captured
+                            </p>
+                        )}
                     </div>
                 </div>
             ) : (

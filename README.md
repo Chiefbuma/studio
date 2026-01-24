@@ -16,6 +16,8 @@ This application is built on a modern, robust, and scalable technology stack des
 
 -   **ShadCN/UI**: A collection of beautifully designed, accessible, and reusable UI components built on top of Radix UI and Tailwind CSS. This accelerates UI development and ensures consistency.
 
+-   **Google Maps API**: Integrated via `@react-google-maps/api` to provide an intelligent address search with autocomplete for accurate delivery location capture.
+
 -   **Paystack**: A payment gateway integrated for processing M-Pesa payments securely. The integration uses the official Paystack inline popup.
 
 ## 2. Design Principles & Architecture
@@ -51,6 +53,7 @@ The checkout process (`src/app/checkout/page.tsx`) is designed to be a smooth, r
 
 -   **Mobile-First Design**: The layout uses a single-column, centered design that works seamlessly on all screen sizes, from mobile phones to desktops.
 -   **Collapsible Order Summary**: On mobile, the order summary is collapsed by default into a single bar showing the total price. This saves valuable screen space while keeping the most important information accessible with a single tap.
+-   **Google Maps Address Search**: To improve accuracy and speed, the address field uses Google Maps Places Autocomplete. As the customer types, a list of suggested addresses appears. Selecting an address automatically fills in the full details and captures the precise GPS coordinates for delivery.
 -   **Animated Transitions**: The transition between the "Delivery Information" step and the "Payment" step is handled with smooth fade-in/fade-out animations, providing a seamless user experience without jarring page reloads.
 -   **Clear Step-by-Step Process**: A simple visual indicator at the top of the form clearly shows the customer which step of the checkout process they are on.
 
@@ -60,7 +63,7 @@ Here is an explanation of the key files and directories in the project.
 
 -   `src/app/`
     -   `layout.tsx`, `globals.css`, `page.tsx`: These files define the main customer-facing application layout, styles, and page views.
-    -   `checkout/page.tsx`: A responsive, single-page checkout flow with animated steps and a collapsible order summary.
+    -   `checkout/page.tsx`: A responsive, single-page checkout flow with animated steps, a collapsible order summary, and Google Maps address search.
 
 -   `src/app/admin/`
     -   `login/page.tsx`: The dedicated login page for the admin panel.
@@ -202,9 +205,10 @@ This section provides the blueprint for your backend database and instructions o
 | `order_number`| `VARCHAR(255)` | Unique, Not Null |
 | `customer_name`| `VARCHAR(255)` | Not Null |
 | `customer_phone`| `VARCHAR(20)` | Not Null |
-| `customer_email`| `VARCHAR(255)` | |
 | `delivery_method`| `ENUM('delivery', 'pickup')` | Not Null |
 | `delivery_address`| `TEXT` | Nullable |
+| `latitude` | `DECIMAL(10, 8)` | Nullable, for map coordinates |
+| `longitude`| `DECIMAL(11, 8)` | Nullable, for map coordinates |
 | `pickup_location`| `VARCHAR(255)` | Nullable |
 | `delivery_date`| `DATE` | Nullable |
 | `total_price`| `DECIMAL(10, 2)`| Not Null |
@@ -303,9 +307,10 @@ CREATE TABLE orders (
     order_number NVARCHAR(255) NOT NULL UNIQUE,
     customer_name NVARCHAR(255) NOT NULL,
     customer_phone NVARCHAR(20) NOT NULL,
-    customer_email NVARCHAR(255),
     delivery_method NVARCHAR(10) NOT NULL CHECK (delivery_method IN ('delivery', 'pickup')),
     delivery_address NVARCHAR(MAX),
+    latitude DECIMAL(10, 8) NULL,
+    longitude DECIMAL(11, 8) NULL,
     pickup_location NVARCHAR(255),
     delivery_date DATE,
     total_price DECIMAL(10, 2) NOT NULL,
@@ -393,9 +398,10 @@ CREATE TABLE orders (
     order_number VARCHAR(255) NOT NULL UNIQUE,
     customer_name VARCHAR(255) NOT NULL,
     customer_phone VARCHAR(20) NOT NULL,
-    customer_email VARCHAR(255),
     delivery_method ENUM('delivery', 'pickup') NOT NULL,
     delivery_address TEXT,
+    latitude DECIMAL(10, 8),
+    longitude DECIMAL(11, 8),
     pickup_location VARCHAR(255),
     delivery_date DATE,
     total_price DECIMAL(10, 2) NOT NULL,
@@ -541,7 +547,7 @@ This section details the security architecture of the application, measures take
 
 -   **Frontend/Backend Separation**: The most critical security principle is the strict separation between the Next.js frontend and a backend API. The frontend never connects directly to the database. This prevents exposure of database credentials and other sensitive information to the client's browser.
 -   **Next.js Server Actions**: Operations that involve business logic (like placing an order) are implemented as Server Actions (`src/lib/actions.ts`). These actions run securely on the server, not the client, making it impossible for a user to tamper with logic such as prices or product details.
--   **Environment Variable Management**: Sensitive keys (like payment provider secret keys or database connection strings) are **not** stored in this project. They belong exclusively in the backend API's environment. The only key stored in the frontend `.env` file is `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`, which is a public key designed to be safely used in the browser.
+-   **Environment Variable Management**: Sensitive keys (like payment provider secret keys or database connection strings) are **not** stored in this project. They belong exclusively in the backend API's environment. The frontend `.env` file requires public keys, which are designed to be safely used in the browser.
 
 ### b. Payment Security (Paystack Integration)
 
@@ -586,14 +592,17 @@ Follow these instructions to get the application running on your local machine.
 
 ### b. Environment Variables
 
-For the application to run correctly, especially for payment integration, you must provide an environment variable.
+For the application to run correctly, especially for payment and map integrations, you must provide environment variables.
 
 1.  Create a new file named `.env` in the root of the project.
-2.  Add the following line to the file, replacing the placeholder with your actual key:
+2.  Add the following lines to the file, replacing the placeholders with your actual keys:
 
     ```
     # Your public key from the Paystack dashboard (required for payments)
     NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxx
+
+    # Your public key from Google Cloud Console with Maps & Places APIs enabled
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxx
     ```
 
 ### c. Standard Installation (npm)

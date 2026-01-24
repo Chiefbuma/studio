@@ -67,10 +67,8 @@ export default function CheckoutPage() {
 
   const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
     name: '',
-    email: '',
     phone: '',
     address: '',
-    city: 'Nairobi',
     delivery_date: '',
     delivery_time: '',
     delivery_method: 'delivery',
@@ -87,6 +85,7 @@ export default function CheckoutPage() {
   }, [cart, router]);
 
   const depositAmount = totalPrice * 0.8;
+  const customerEmail = deliveryInfo.phone + '@whiskedelights.com'; // Paystack requires an email.
 
   if (cart.length === 0) {
     return (
@@ -203,7 +202,7 @@ export default function CheckoutPage() {
                             orderNumber={orderResponse.orderNumber}
                             depositAmount={orderResponse.depositAmount}
                             totalPrice={totalPrice}
-                            customerEmail={deliveryInfo.email}
+                            customerEmail={customerEmail}
                             customerPhone={deliveryInfo.phone}
                             onPaymentSuccess={handlePaymentSuccess}
                             onBack={() => setView('delivery')}
