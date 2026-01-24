@@ -204,6 +204,7 @@ This section provides the blueprint for your backend database and instructions o
 | `id` | `INT` | **Primary Key**, Auto-increment |
 | `order_number`| `VARCHAR(255)` | Unique, Not Null |
 | `customer_name`| `VARCHAR(255)` | Not Null |
+| `customer_email`| `VARCHAR(255)` | Nullable |
 | `customer_phone`| `VARCHAR(20)` | Not Null |
 | `delivery_method`| `ENUM('delivery', 'pickup')` | Not Null |
 | `delivery_address`| `TEXT` | Nullable |
@@ -211,6 +212,7 @@ This section provides the blueprint for your backend database and instructions o
 | `longitude`| `DECIMAL(11, 8)` | Nullable, for map coordinates |
 | `pickup_location`| `VARCHAR(255)` | Nullable |
 | `delivery_date`| `DATE` | Nullable |
+| `special_instructions`| `TEXT` | Nullable |
 | `total_price`| `DECIMAL(10, 2)`| Not Null |
 | `payment_status`| `ENUM('pending', 'paid')` | Default: `'pending'` |
 | `order_status`| `ENUM('processing', 'complete', 'cancelled')` | Default: `'processing'` |
@@ -306,6 +308,7 @@ CREATE TABLE orders (
     id INT PRIMARY KEY IDENTITY(1,1),
     order_number NVARCHAR(255) NOT NULL UNIQUE,
     customer_name NVARCHAR(255) NOT NULL,
+    customer_email NVARCHAR(255) NULL,
     customer_phone NVARCHAR(20) NOT NULL,
     delivery_method NVARCHAR(10) NOT NULL CHECK (delivery_method IN ('delivery', 'pickup')),
     delivery_address NVARCHAR(MAX),
@@ -313,6 +316,7 @@ CREATE TABLE orders (
     longitude DECIMAL(11, 8) NULL,
     pickup_location NVARCHAR(255),
     delivery_date DATE,
+    special_instructions NVARCHAR(MAX) NULL,
     total_price DECIMAL(10, 2) NOT NULL,
     payment_status NVARCHAR(10) DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid')),
     order_status NVARCHAR(15) DEFAULT 'processing' CHECK (order_status IN ('processing', 'complete', 'cancelled')),
@@ -397,6 +401,7 @@ CREATE TABLE orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_number VARCHAR(255) NOT NULL UNIQUE,
     customer_name VARCHAR(255) NOT NULL,
+    customer_email VARCHAR(255) NULL,
     customer_phone VARCHAR(20) NOT NULL,
     delivery_method ENUM('delivery', 'pickup') NOT NULL,
     delivery_address TEXT,
@@ -404,6 +409,7 @@ CREATE TABLE orders (
     longitude DECIMAL(11, 8),
     pickup_location VARCHAR(255),
     delivery_date DATE,
+    special_instructions TEXT,
     total_price DECIMAL(10, 2) NOT NULL,
     payment_status ENUM('pending', 'paid') DEFAULT 'pending',
     order_status ENUM('processing', 'complete', 'cancelled') DEFAULT 'processing',

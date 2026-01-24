@@ -132,15 +132,18 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
             </div>
 
             <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="name">Full Name *</Label>
-                        <Input id="name" placeholder="John Doe" value={deliveryInfo.name} onChange={(e) => handleInputChange('name', e.target.value)} required />
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number *</Label>
-                        <Input id="phone" type="tel" placeholder="0712345678" value={deliveryInfo.phone} onChange={(e) => handleInputChange('phone', e.target.value)} required />
-                    </div>
+                <div className="space-y-2">
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input id="name" placeholder="John Doe" value={deliveryInfo.name} onChange={(e) => handleInputChange('name', e.target.value)} required />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="phone">Phone Number *</Label>
+                    <Input id="phone" type="tel" placeholder="0712345678" value={deliveryInfo.phone} onChange={(e) => handleInputChange('phone', e.target.value)} required />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email Address (Optional)</Label>
+                    <Input id="email" type="email" placeholder="your@email.com" value={deliveryInfo.email} onChange={(e) => handleInputChange('email', e.target.value)} />
+                    <p className="text-xs text-muted-foreground">For order confirmation and receipt.</p>
                 </div>
             </div>
 

@@ -63,6 +63,7 @@ export interface Customizations {
 
 export interface DeliveryInfo {
   name: string;
+  email?: string;
   phone: string;
   address: string;
   delivery_date: string;
