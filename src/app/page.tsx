@@ -12,7 +12,7 @@ import { useCart } from '@/hooks/use-cart';
 import { CartSheet } from '@/components/cake-paradise/cart-sheet';
 import { useCakeData } from '@/hooks/use-cake-data';
 import { SocialIcons } from '@/components/cake-paradise/social-icons';
-import { AppHeader } from '@/components/cake-paradise/header';
+import { CartIcon } from '@/components/cake-paradise/cart-icon';
 
 export default function Home() {
   const [view, setView] = useState<'cover' | 'offer' | 'menu'>('cover');
@@ -85,9 +85,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
-      <AppHeader />
       <main>
         <SocialIcons />
+        <CartIcon />
         <CartSheet />
         
         {view === 'cover' && <CoverPage />}

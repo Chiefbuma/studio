@@ -5,8 +5,10 @@ import { Button } from '@/components/ui/button';
 import { ShoppingCart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-// THIS COMPONENT IS NO LONGER USED ON THE MAIN PAGE.
-// It has been replaced by the cart button in the new AppHeader component.
+/**
+ * A floating icon that displays the number of items in the cart
+ * and opens the cart sheet when clicked.
+ */
 export function CartIcon() {
   const { itemCount, setIsCartOpen } = useCart();
 
@@ -15,9 +17,9 @@ export function CartIcon() {
       onClick={() => setIsCartOpen(true)}
       variant="outline"
       size="icon"
-      className="fixed bottom-4 right-4 z-50 bg-card/80 backdrop-blur-sm rounded-full shadow-lg h-16 w-16 hover:scale-110 transition-transform"
+      className="fixed top-5 right-5 z-50 bg-card/80 backdrop-blur-sm rounded-full shadow-lg h-14 w-14 hover:scale-110 transition-transform"
     >
-      <ShoppingCart className="h-8 w-8 text-primary" />
+      <ShoppingCart className="h-7 w-7 text-primary" />
       {itemCount > 0 && (
         <Badge
           variant="destructive"
