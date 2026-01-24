@@ -8,7 +8,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { DeliveryInfo } from "@/lib/types";
-import { Store, Truck, MapPin, Loader2 } from "lucide-react";
+import { Store, Truck, MapPin, Loader2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const libraries: ('places' | 'drawing' | 'geometry' | 'visualization')[] = ['places'];
@@ -19,8 +19,19 @@ interface LocationSearchInputProps {
 }
 
 function LocationSearchInput({ onLocationSelect, initialValue = '' }: LocationSearchInputProps) {
+    const googleMapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    
+    if (!googleMapsApiKey) {
+        return (
+            <div className="flex items-center gap-2 text-destructive text-sm p-2 bg-destructive/10 rounded-md h-10 border border-destructive/50">
+                <AlertTriangle className="h-4 w-4" />
+                <span>Map search disabled: API key is missing.</span>
+            </div>
+        );
+    }
+
     const { isLoaded, loadError } = useJsApiLoader({
-        googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+        googleMapsApiKey: googleMapsApiKey,
         libraries,
     });
 
@@ -51,7 +62,12 @@ function LocationSearchInput({ onLocationSelect, initialValue = '' }: LocationSe
     };
 
     if (loadError) {
-        return <div className="text-destructive text-sm p-2 bg-destructive/10 rounded-md">Error loading maps. Please check your Google Maps API key.</div>;
+        return (
+            <div className="flex items-center gap-2 text-destructive text-sm p-2 bg-destructive/10 rounded-md h-10 border border-destructive/50">
+                <AlertTriangle className="h-4 w-4" />
+                <span>Error loading Google Maps.</span>
+            </div>
+        );
     }
 
     if (!isLoaded) {
