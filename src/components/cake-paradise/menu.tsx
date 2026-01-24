@@ -147,7 +147,7 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                                 }
 
                                 const isCenter = distance === 0;
-                                const zIndex = 100 - Math.abs(distance);
+                                const zIndex = 10 - Math.abs(distance);
                                 const scale = 1 - Math.abs(distance) * 0.15;
                                 const translateX = distance * 65; // Percentage for overlap
                                 const opacity = isCenter ? 1 : 0.5;
@@ -171,8 +171,8 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                                 );
                             })}
                         </AnimatePresence>
-                        <Button onClick={prevSlide} size="icon" variant="outline" className="absolute -left-8 top-1/2 -translate-y-1/2 z-[101] rounded-full h-12 w-12" disabled={currentSlide === 0}><ChevronLeft /></Button>
-                        <Button onClick={nextSlide} size="icon" variant="outline" className="absolute -right-8 top-1/2 -translate-y-1/2 z-[101] rounded-full h-12 w-12" disabled={currentSlide === cakes.length - 1}><ChevronRight /></Button>
+                        <Button onClick={prevSlide} size="icon" variant="outline" className="absolute -left-8 top-1/2 -translate-y-1/2 z-[11] rounded-full h-12 w-12" disabled={currentSlide === 0}><ChevronLeft /></Button>
+                        <Button onClick={nextSlide} size="icon" variant="outline" className="absolute -right-8 top-1/2 -translate-y-1/2 z-[11] rounded-full h-12 w-12" disabled={currentSlide === cakes.length - 1}><ChevronRight /></Button>
                     </div>
                 )}
                  <div className="flex justify-center gap-2 mt-8">
