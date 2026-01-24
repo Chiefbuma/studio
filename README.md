@@ -502,7 +502,48 @@ DATABASE_URL="mysql://root:@localhost:3306/CakeParadiseDB"
 ```
 Your backend code would then use this string to connect to the database and expose the API endpoints listed in section 5a.
 
-## 7. Local Development Setup
+## 7. Security Overview
+
+This section details the security architecture of the application, measures taken to protect user data, and best practices for a production environment.
+
+### a. Core Architectural Principles
+
+-   **Frontend/Backend Separation**: The most critical security principle is the strict separation between the Next.js frontend and a backend API. The frontend never connects directly to the database. This prevents exposure of database credentials and other sensitive information to the client's browser.
+-   **Next.js Server Actions**: Operations that involve business logic (like placing an order) are implemented as Server Actions (`src/lib/actions.ts`). These actions run securely on the server, not the client, making it impossible for a user to tamper with logic such as prices or product details.
+-   **Environment Variable Management**: Sensitive keys (like payment provider secret keys or database connection strings) are **not** stored in this project. They belong exclusively in the backend API's environment. The only key stored in the frontend `.env` file is `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`, which is a public key designed to be safely used in the browser.
+
+### b. Payment Security (Paystack Integration)
+
+The application ensures payment security by delegating all sensitive operations to Paystack, a PCI-DSS compliant Payment Service Provider.
+
+-   **No Sensitive Data Handled**: The application **never** sees, handles, or stores any M-Pesa PINs or credit card numbers. All payment information is entered directly into a secure iframe controlled by Paystack.
+-   **Transaction Verification (The Critical Step)**:
+    -   The `onPaymentSuccess` callback in the frontend (`src/components/cake-paradise/customization/payment-form.tsx`) is only for providing immediate UI feedback (e.g., "Payment successful!"). It **cannot be trusted** as a definitive confirmation of payment.
+    -   **True verification must happen on the backend**. For every payment, Paystack can send a **webhook** to a secure endpoint on your backend API. Your backend code must:
+        1.  Receive this webhook and verify its authenticity using the signature provided by Paystack.
+        2.  Check the event type (e.g., `charge.success`).
+        3.  Verify the transaction amount and currency match the order total.
+        4.  Update the `payment_status` in your `orders` table from `pending` to `paid`.
+    -   This webhook-based approach prevents a malicious user from simply triggering the success function on the frontend to get an order for free and ensures no duplicate orders are processed.
+
+### c. Admin Panel & Authentication
+
+-   **Brute-Force Attack Prevention**: The current mock login is for demonstration only. A production backend must implement measures to prevent brute-force attacks on the admin login page, including:
+    -   **Rate Limiting**: Block an IP address after a set number of failed login attempts.
+    -   **Account Lockout**: Temporarily lock the `admin` account after too many consecutive failures.
+    -   **CAPTCHA**: Introduce a CAPTCHA challenge after several failed attempts.
+-   **Authentication Method**: A production system should use secure, HTTP-only cookies with JWTs (JSON Web Tokens) to manage admin sessions, rather than `localStorage`.
+
+### d. Threat Mitigation Strategies
+
+-   **DDoS (Distributed Denial-of-Service) Attacks**: The primary defense against DDoS attacks is the hosting infrastructure. Deploying this application on a modern cloud platform like Firebase App Hosting, Vercel, or AWS provides significant, built-in protection at the network edge. Additionally, the backend API should implement its own rate-limiting rules.
+-   **Cross-Site Scripting (XSS)**: React and Next.js provide strong, built-in protection against XSS attacks by automatically escaping data rendered in JSX. This prevents malicious scripts injected into data fields (e.g., a cake description) from being executed in the browser.
+-   **Cross-Site Request Forgery (CSRF)**: Next.js Server Actions have built-in CSRF protection. When a form is submitted, Next.js automatically creates and validates a unique token, ensuring that the request legitimately originated from your application.
+-   **Data Validation**: All data coming from the client must be re-validated on the backend API before being processed or saved to the database. Never trust client-side input, as it can be manipulated.
+
+By following this layered security approach, the application ensures a robust defense against common web vulnerabilities.
+
+## 8. Local Development Setup
 
 Follow these instructions to get the application running on your local machine.
 
