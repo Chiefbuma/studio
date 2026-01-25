@@ -4,6 +4,7 @@ services:
   app:
     build:
       context: .
+      dockerfile: Dockerfile
       args:
         # Pass public keys as build-time arguments for the Dockerfile
         - NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
@@ -12,11 +13,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      # Mount the entire project directory into /app to allow for hot-reloading
+      # Mount the source code for hot-reloading, but not node_modules
       - .:/app
-      # Use a volume for node_modules to avoid it being overwritten by the host
       - /app/node_modules
-    working_dir: /app
     # Load variables from the .env file for runtime access
     env_file:
       - .env

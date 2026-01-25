@@ -1,27 +1,20 @@
-# Git
+# git files
 .git
 .gitignore
 
-# Docker
+# Docker files
+.dockerignore
 Dockerfile
 docker-compose.yml
-docker-compose.*.yml
 
-# Node
-node_modules
-npm-debug.log
-.npm
-
-# Next.js
-.next/
-out/
-
-# Env
+# Environment files
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env*.local
 
-# Editor
-.vscode
+# Next.js build output
+.next
+node_modules
+
+# Misc
+README.md
+*.md
