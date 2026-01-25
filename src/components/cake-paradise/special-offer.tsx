@@ -23,19 +23,19 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
     const cakeImage = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-50"></div>
+        <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-8">
+            <div className="absolute inset-0 bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white"></div>
             
-            <div className="relative z-10 w-full max-w-md mx-auto">
-                <div className="relative bg-card/5 backdrop-blur-sm rounded-2xl shadow-2xl border border-primary/20 overflow-hidden group">
+            <div className="relative z-10 w-full max-w-6xl mx-auto">
+                <div className="relative bg-card/5 backdrop-blur-lg rounded-2xl shadow-2xl border border-primary/20 overflow-hidden group grid md:grid-cols-2 md:items-center">
                     
-                    {/* Image at the top */}
-                    <div className="relative h-80">
+                    {/* Image section */}
+                    <div className="relative h-80 md:h-full min-h-[300px] md:min-h-[600px]">
                         <Image
                             src={cakeImage.imageUrl}
                             alt={cake.name}
                             fill
-                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                            className="w-full h-full object-cover transform md:group-hover:scale-105 transition-transform duration-500"
                             data-ai-hint={cakeImage.imageHint}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
@@ -56,17 +56,17 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                         </div>
                     </div>
                     
-                    {/* Text content below */}
-                    <div className="p-6 sm:p-8 text-center">
+                    {/* Text content section */}
+                    <div className="p-6 sm:p-8 md:p-12 text-center md:text-left">
                         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-2 rounded-full shadow-lg mb-6">
                             <Crown className="w-4 h-4 text-amber-300" />
                             <span className="font-bold text-xs uppercase tracking-wider">Today's Special</span>
                         </div>
 
-                        <h1 className="text-3xl sm:text-4xl font-bold text-background mb-3 leading-tight text-balance">{cake.name}</h1>
-                        <p className="text-muted-foreground text-sm sm:text-base mb-6 max-w-xl text-balance mx-auto">{cake.description}</p>
+                        <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 leading-tight text-balance">{cake.name}</h1>
+                        <p className="text-muted-foreground text-sm sm:text-base mb-6 max-w-xl text-balance mx-auto md:mx-0">{cake.description}</p>
                         
-                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 mb-6 text-sm">
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-3 mb-6 text-sm text-white">
                             <div className="flex items-center gap-2">
                                 <Star className="w-4 h-4 text-accent" />
                                 <span className="font-bold">{cake.rating.toFixed(1)} Rating</span>
@@ -77,10 +77,10 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                             </div>
                         </div>
                         
-                        <div className="flex flex-wrap items-end justify-center gap-4 mb-8">
+                        <div className="flex flex-wrap items-end justify-center md:justify-start gap-4 mb-8">
                             <div className="text-3xl sm:text-4xl font-bold text-accent">{formatPrice(special_price)}</div>
                             <div className="text-lg text-muted-foreground line-through">{formatPrice(cake.base_price)}</div>
-                            <div className="bg-primary/20 text-primary-foreground px-3 py-1 rounded-full font-bold text-sm border border-primary">
+                            <div className="bg-primary/20 text-white px-3 py-1 rounded-full font-bold text-sm border border-primary">
                                 {discount_percentage}% OFF
                             </div>
                         </div>
@@ -93,7 +93,7 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                                 <Sparkles className="mr-2 h-5 w-5" /> Create Your Own
                              </Button>
                         </div>
-                        <Button variant="outline" className="bg-card/10 border-primary/30 hover:bg-card/20 w-full mt-3" onClick={onNavigateToMenu}>
+                        <Button variant="outline" className="bg-card/10 border-primary/30 hover:bg-card/20 w-full mt-3 text-white" onClick={onNavigateToMenu}>
                             View Full Menu <ArrowRight className="ml-2 h-5 w-5" />
                         </Button>
                     </div>
@@ -112,7 +112,7 @@ function SpecialOfferSkeleton({ onNavigateToMenu, hasError }: { onNavigateToMenu
                 ) : (
                     <div className="w-12 h-12 border-4 border-primary/50 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
                 )}
-                <h3 className="text-2xl font-bold text-background mb-3">
+                <h3 className="text-2xl font-bold text-white mb-3">
                     {hasError ? "No Special Offer Today" : "Loading Today's Special..."}
                 </h3>
                 <p className="text-muted-foreground mb-8 max-w-md mx-auto">
