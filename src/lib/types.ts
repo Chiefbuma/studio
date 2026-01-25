@@ -1,3 +1,4 @@
+
 export interface Cake {
   id: string;
   name: string;
@@ -55,6 +56,8 @@ export interface CustomizationOptions {
   toppings: Topping[];
 }
 
+export type CustomizationCategory = 'flavors' | 'sizes' | 'colors' | 'toppings';
+
 export interface Customizations {
   flavor: string | null;
   size: string | null;
@@ -109,4 +112,14 @@ export interface Order {
   order_status: 'processing' | 'complete' | 'cancelled';
   created_at: string; // ISO date string
   items: CartItem[];
+}
+
+export interface LoginCredentials {
+    email: string;
+    password: string;
+}
+
+export interface SpecialOfferUpdatePayload {
+    cake_id: string;
+    discount_percentage: number;
 }
