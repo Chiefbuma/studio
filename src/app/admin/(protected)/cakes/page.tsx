@@ -36,7 +36,7 @@ export default function CakesPage() {
         // In a real app, this would open a form/dialog to create a new cake.
         // After submission, you would call an API like this:
         /*
-        const newCakeData = { ... }; // from form
+        const newCakeData = { name: "New Cake", base_price: 3000, customizable: true, ... }; // from form
         fetch(`${API_BASE_URL}/cakes`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
@@ -55,6 +55,7 @@ export default function CakesPage() {
 
     const handleEdit = (cakeId: string) => {
         // This would open a form/dialog pre-filled with the cake's data.
+        // The form would include a toggle for the 'customizable' field.
         toast({ title: "Prototype Action", description: `This would open an 'Edit' form for cake ${cakeId}.` });
     };
 

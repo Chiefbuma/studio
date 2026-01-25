@@ -125,8 +125,8 @@ A real-world backend for this application would need to expose the following API
 | `POST` | `/api/auth/login` | Authenticate an admin user and return a token. | Admin Login |
 | **Cakes** | | |
 | `GET` | `/api/cakes` | Get a list of all cakes. | Menu, Admin |
-| `POST`| `/api/cakes` | Create a new cake. | Admin |
-| `PUT` | `/api/cakes/:id` | Update an existing cake. | Admin |
+| `POST`| `/api/cakes` | Create a new cake. Payload should include the `customizable` flag. | Admin |
+| `PUT` | `/api/cakes/:id` | Update an existing cake. Payload can include the `customizable` flag. | Admin |
 | `DELETE`| `/api/cakes/:id` | Delete a cake. | Admin |
 | **Special Offers** | | |
 | `GET` | `/api/special-offer` | Get the current active special offer. | Homepage, Admin |
