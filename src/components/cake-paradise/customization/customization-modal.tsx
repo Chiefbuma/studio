@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -45,7 +46,7 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
   }, [isOpen, customizationOptions, isCustom, cake.defaultFlavorId]);
 
   const totalPrice = useMemo(() => {
-    let total = isCustom ? 0 : cake.base_price;
+    let total = cake.base_price;
     const { flavors, sizes, colors, toppings } = customizationOptions;
 
     const selectedFlavor = flavors?.find(f => f.id === customizations.flavor);
