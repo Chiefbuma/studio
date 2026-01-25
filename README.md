@@ -1,22 +1,16 @@
 # WhiskeDelights: Application Documentation
 
-Welcome to the full technical documentation for the WhiskeDelights web application. This document provides a comprehensive overview of the technologies used, the core design principles applied, the project's file structure, and a clear roadmap for future backend integration.
+Welcome to the full technical documentation for the WhiskeDelights web application. This document provides a comprehensive overview of the technologies used, the core design principles applied, and the project's file structure. This version of the application operates on mock data for frontend development and prototyping.
 
 ## 1. Technology Stack
 
--   **Next.js**: A React framework that provides a production-ready foundation. We use its App Router for file-based routing, Server Components for performance, and Server Actions for secure backend communication without creating separate API endpoints.
-
+-   **Next.js**: A React framework that provides a production-ready foundation. We use its App Router for file-based routing and Server Components for performance.
 -   **React**: The core library for building the user interface. The entire application is composed of interactive and reusable React components.
-
 -   **TypeScript**: A typed superset of JavaScript that enhances code quality, improves maintainability, and provides excellent editor support.
-
 -   **Tailwind CSS**: A utility-first CSS framework for rapidly building custom user interfaces. It's used for all styling in the application.
-
--   **ShadCN/UI**: A collection of beautifully designed, accessible, and reusable UI components built on top of Radix UI and Tailwind CSS. This accelerates UI development and ensures consistency.
-
--   **OpenStreetMap (Nominatim)**: Integrated for an intelligent address search with autocomplete. This provides a free and open-source alternative to other mapping services for accurate delivery location capture.
-
--   **Paystack**: A payment gateway integrated for processing M-Pesa payments securely. The integration uses the official Paystack inline popup.
+-   **ShadCN/UI**: A collection of beautifully designed, accessible, and reusable UI components built on top of Radix UI and Tailwind CSS.
+-   **OpenStreetMap (Nominatim)**: Integrated for an intelligent address search with autocomplete.
+-   **Paystack**: A payment gateway integrated for processing M-Pesa payments securely.
 
 ## 2. Design Principles & Architecture
 
@@ -24,710 +18,65 @@ The application is structured following modern software design principles to ens
 
 ### a. Component-Based Architecture
 
-The UI is broken down into small, reusable components located primarily in `src/components`. This is a core principle of React.
--   **Presentational Components**: Most components are "dumb" and focus on rendering UI based on the props they receive (e.g., `Button`, `Card`).
--   **Container Components**: Page-level components (`src/app/page.tsx`, `src/app/checkout/page.tsx`) act as containers that fetch data and manage the overall state for a view, passing it down to presentational components.
+The UI is broken down into small, reusable components located in `src/components`.
+-   **Presentational Components**: Most components are "dumb" and focus on rendering UI based on the props they receive.
+-   **Container Components**: Page-level components (`src/app/page.tsx`) act as containers that manage state and pass it down.
 
 ### b. Separation of Concerns
 
-Logic is clearly separated into different layers of the application.
+-   **UI (`src/components`, `src/app`):** Responsible for presentation and user interaction.
+-   **State Management (`src/hooks`):**
+    -   `useCart`: Manages the global shopping cart state and persists it to `localStorage`.
+    -   `useCakeData`: Manages the fetching and loading state of all mock cake data.
+-   **Data Fetching (`src/services`):** The `cake-service.ts` file abstracts the data source. Currently, it retrieves data from the mock data file (`src/lib/data.ts`).
+-   **Server-Side Logic (`src/lib/actions.ts`):** Next.js Server Actions are used to simulate backend operations like placing an order.
 
--   **UI (`src/components`, `src/app`):** Responsible only for presentation and user interaction.
--   **State Management (`src/hooks`):** Reusable, stateful logic is extracted into custom hooks.
-    -   `useCart`: Manages the global shopping cart state (adding, removing, updating items) and persists it to `localStorage`.
-    -   `useCakeData`: Manages the fetching and loading state of all initial cake data for the application.
--   **Data Fetching (`src/services`):** The `cake-service.ts` file is responsible for all data retrieval. It abstracts the data source from the rest of the application. **This is the key to easy backend integration.**
--   **Server-Side Logic (`src/lib/actions.ts`):** Next.js Server Actions are used to handle secure operations that should run on the server, such as placing an order. This avoids the need to create and expose traditional API endpoints.
+### c. Admin Panel Architecture (Prototype)
 
-### c. Admin Panel Architecture
-
-The admin panel is a client-side rendered application within the Next.js framework.
--   **Authentication**: It uses `localStorage` to persist the admin's login state. This is a simulation for local development. A real-world application would use secure, HTTP-only cookies with tokens managed by a backend server.
--   **Data Management**: The admin panel reads and simulates "writing" to the mock data files (`src/lib/data.ts`). This allows for a fully interactive prototype without requiring a database. All UI components are ready to be wired to API calls to a real backend.
-
-### d. Checkout Flow
-
-The checkout process (`src/app/checkout/page.tsx`) is designed to be a smooth, responsive, and intuitive single-page experience.
-
--   **Streamlined Single-Page Flow**: The entire checkout process happens on a single, responsive page, ensuring a seamless experience on all devices.
--   **Collapsible Order Summary**: The order summary is tucked into a collapsible section at the top, saving screen space while keeping the total price visible and accessible with a single tap.
--   **Intelligent Address Search**: The address field uses OpenStreetMap's free Nominatim service for autocomplete suggestions. It also includes a "Use my location" button to automatically detect the user's address and coordinates, making address entry fast and accurate.
--   **Direct Payment**: After filling out their delivery details, the customer clicks a single "Place Order & Pay" button. This action securely creates their order in the system and immediately opens the Paystack M-Pesa payment interface, removing the need for an extra payment review step and creating a faster, more seamless transaction.
+The admin panel is a client-side application that simulates data management.
+-   **Authentication**: It uses `localStorage` to persist the admin's login state for local development.
+-   **Data Management**: The admin panel reads from the mock data files (`src/lib/data.ts`). Actions like "Create," "Update," and "Delete" are simulated and show toast notifications, but do not permanently alter the mock data as it is read-only.
 
 ## 3. File-by-File Breakdown
 
-Here is an explanation of the key files and directories in the project.
-
--   `src/app/`
-    -   `layout.tsx`, `globals.css`, `page.tsx`: These files define the main customer-facing application layout, styles, and page views.
-    -   `checkout/page.tsx`: A responsive, single-page checkout flow with a collapsible order summary and OpenStreetMap address search.
-
--   `src/app/admin/`
-    -   `login/page.tsx`: The dedicated login page for the admin panel.
-    -   `(protected)/layout.tsx`: A special layout that protects all admin routes, redirecting unauthenticated users to the login page. It also contains the main sidebar navigation for the admin panel.
-    -   `(protected)/dashboard/page.tsx`: The main dashboard page for the admin, showing key metrics.
-    -   `(protected)/orders/page.tsx`: Renders a table of all orders, including their payment and order status.
-    -   `(protected)/cakes/page.tsx`: Renders a table of all available cakes.
-    -   `(protected)/offers/page.tsx`: Provides a form to manage the daily special offer.
-    -   `(protected)/customizations/page.tsx`: A tabbed interface to manage all cake customization options (flavors, sizes, etc.).
-
--   `src/components/`
-    -   `cake-paradise/`: Contains all custom components specific to this application, such as the cart, menu, and checkout forms.
-    -   `ui/`: Contains the ShadCN/UI components (e.g., `Button.tsx`, `Card.tsx`, `Dialog.tsx`).
-
--   `src/hooks/`: Contains custom React hooks for shared logic, such as `useCart` and `useCakeData`.
-
--   `src/lib/`
-    -   `actions.ts`: Contains Next.js Server Actions.
-    -   `data.ts`: **(Mock Backend - Deprecated)** This file is no longer used. All data is now fetched from a live backend API.
-    -   `types.ts`: Contains all TypeScript type definitions for the application's data structures.
-
+-   `src/app/`: Contains all routing, pages, and layouts.
+    -   `checkout/page.tsx`: A responsive, single-page checkout flow.
+    -   `admin/`: Contains the prototype admin panel.
+        -   `login/page.tsx`: The mock login page.
+        -   `(protected)/...`: The protected admin pages.
+-   `src/components/`: Contains all UI components.
+    -   `cake-paradise/`: Custom components for this application.
+    -   `ui/`: ShadCN/UI components.
+-   `src/hooks/`: Contains custom React hooks for shared logic.
+-   `src/lib/`:
+    -   `actions.ts`: Contains mock Server Actions.
+    -   `data.ts`: **(Mock Backend)** This file contains all the mock data for the application.
+    -   `types.ts`: Contains all TypeScript type definitions.
 -   `src/services/`:
-    -   `cake-service.ts`: **(Data Access Layer)** This service abstracts data fetching. It now contains the `fetch` calls to a real backend API.
+    -   `cake-service.ts`: This service abstracts data fetching from the mock data file.
 
--   `Dockerfile`, `docker-compose.yml`: Files required to build and run the application using Docker.
+## 4. The Admin Panel (Prototype)
 
--   `package.json`: Lists all project dependencies and scripts.
--   `.env`: **(Important)** This file is for environment variables. You must create it for local development.
-
-## 4. The Admin Panel
-
-The application includes a comprehensive admin panel for managing the shop's data.
+The application includes a comprehensive admin panel for demonstrating management functionality.
 
 ### a. Functionality
 
--   **Dashboard**: View key metrics like total revenue, total orders, and customer count.
--   **Order Management**: View a list of all orders with customer details, payment status, and order status.
--   **Cake Management**: View and manage all available cakes, including their "customizable" status.
+-   **Dashboard**: View key metrics based on mock data.
+-   **Order Management**: View a list of mock orders.
+-   **Cake Management**: View and manage available cakes.
 -   **Offer Management**: Update the daily special offer.
--   **Customization Management**: Add, view, or remove options for cake flavors, sizes, colors, and toppings.
+-   **Customization Management**: Manage cake customization options.
+
+**Note:** All data management in the admin panel is a simulation. Changes are not persisted.
 
 ### b. How to Access and Log In
 
 1.  Navigate to the site's footer and click the "Admin Panel" link, or go directly to `/admin/login`.
-2.  Use the following credentials to log in:
+2.  Use the following credentials:
     -   **Email**: `admin@whiskedelights.com`
     -   **Password**: `admin`
 
-This provides access to all the protected admin routes. The login state is stored in the browser's `localStorage` for the prototype.
-
-## 5. How to Connect a Real Backend API
-
-This application was designed to make backend integration straightforward. You only need to modify a few specific places to switch from mock data to a real API.
-
-### a. API Endpoint Blueprint
-
-A real-world backend for this application would need to expose the following API endpoints. The frontend, including the admin panel, is ready to be connected to them.
-
-| Method | Endpoint | Description | Used In |
-| :--- | :--- | :--- | :--- |
-| **Auth** | | |
-| `POST` | `/api/auth/login` | Authenticate an admin user against the `admins` table and return a token. | Admin Login |
-| **Cakes** | | |
-| `GET` | `/api/cakes` | Get a list of all cakes. | Menu, Admin |
-| `POST`| `/api/cakes` | Create a new cake. Payload should include the `customizable` flag. | Admin |
-| `PUT` | `/api/cakes/:id` | Update an existing cake. Payload can include the `customizable` flag. | Admin |
-| `DELETE`| `/api/cakes/:id` | Delete a cake. | Admin |
-| **Special Offers** | | |
-| `GET` | `/api/special-offer` | Get the current active special offer. | Homepage, Admin |
-| `PUT` | `/api/special-offer` | Update the special offer. | Admin |
-| **Orders** | | |
-| `GET` | `/api/orders` | Get a list of all orders. | Admin |
-| `POST`| `/api/orders` | **Place a new customer order.** The order should be created with `payment_status: 'pending'`. | Checkout |
-| `PUT` | `/api/orders/:id/status`| Update an order's status (e.g., to 'complete'). | Admin |
-| `POST`| `/api/payments/verify` | **[Webhook Endpoint]** Verify a payment with Paystack. Updates `payment_status` to `'paid'`. | Paystack |
-| **Customizations**| | |
-| `GET` | `/api/customizations`| Get all customization options. | Customization Modal, Admin |
-| `POST`| `/api/customizations/flavors` | Add a new flavor. | Admin |
-| `PUT` | `/api/customizations/flavors/:id` | Update a flavor. | Admin |
-| `DELETE`| `/api/customizations/flavors/:id` | Delete a flavor. | Admin |
-| ... | *(similar endpoints for sizes, colors, toppings)* | | Admin |
-
-### b. Implementation Steps
-
-1.  **Data Fetching (GET requests)**:
-    -   **File to Modify**: `src/services/cake-service.ts`
-    -   **Action**: This file has been updated to use `fetch` calls to your real API endpoints (e.g., `fetch('/api/cakes')`). The application will automatically use the real data.
-
-2.  **Data Mutation (POST, PUT, DELETE requests)**:
-    -   **File to Modify (Orders)**: `src/lib/actions.ts` (the `placeOrder` function).
-    -   **Action**: This function has been updated to send the order payload to your `POST /api/orders` endpoint.
-    -   **File to Modify (Admin)**: The various admin pages in `src/app/admin/(protected)/`.
-    -   **Action**: The "Create", "Update", and "Delete" buttons in the admin panel have been wired up to make API calls to the corresponding endpoints (e.g., `POST /api/cakes`).
-
-## 6. Database Setup & Schema
-
-This section provides the blueprint for your backend database and instructions on how to set it up locally.
-
-### a. Table Relationships
-
--   **`orders` (1) -> (∞) `order_items`**: An order can have many items. `order_items.order_id` is a foreign key to `orders.id`.
--   **`cakes` (1) -> (∞) `order_items`**: A specific cake can be part of many different order items. `order_items.cake_id` is a foreign key to `cakes.id`.
--   **`cakes` (1) -> (1) `special_offers`**: A special offer is tied to a single cake. `special_offers.cake_id` is a foreign key to `cakes.id`.
--   **`customization_*` Tables**: These are lookup tables (for flavors, sizes, etc.) and do not have direct relationships with the `orders` table. Customization choices for an order are stored in the `order_items.customizations_json` column.
--   **`admins` table**: This table is standalone and used for admin authentication.
-
-### b. Core Tables
-
-**1. `admins` Table**
-| Column Name | Data Type | Constraints / Notes |
-| :--- | :--- | :--- |
-| `id` | `INT` | **Primary Key**, Auto-increment |
-| `name` | `VARCHAR(255)` | Not Null |
-| `email` | `VARCHAR(255)` | Not Null, Unique |
-| `password_hash`| `VARCHAR(255)` | Not Null. In production, this should be a securely hashed password. |
-| `created_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` |
-
----
-**2. `cakes` Table**
-| Column Name | Data Type | Constraints / Notes |
-| :--- | :--- | :--- |
-| `id` | `VARCHAR(255)` | **Primary Key** |
-| `name` | `VARCHAR(255)` | Not Null |
-| `description`| `TEXT` | |
-| `base_price` | `DECIMAL(10, 2)`| Not Null |
-| `image_id` | `VARCHAR(255)` | |
-| `rating` | `FLOAT` | Default: 0 |
-| `category` | `VARCHAR(255)` | |
-| `customizable` | `BIT` / `BOOLEAN` | Default: `1` / `TRUE`. Determines if a user can customize the cake. |
-| `orders_count` | `INTEGER` | Default: 0 |
-| `ready_time` | `VARCHAR(50)` | |
-| `created_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` |
-| `updated_at` | `TIMESTAMP` | Updates on change |
-
----
-**3. `special_offers` Table**
-| Column Name | Data Type | Constraints / Notes |
-| :--- | :--- | :--- |
-| `id` | `INT` | **Primary Key**, Auto-increment |
-| `cake_id` | `VARCHAR(255)`| **Foreign Key** -> `cakes.id` |
-| `discount_percentage` | `INT` | Not Null |
-| `is_active` | `BOOLEAN` | Default: `true` |
-| `start_date` | `DATE` | |
-| `end_date` | `DATE` | |
-
----
-**4. `orders` Table**
-| Column Name | Data Type | Constraints / Notes |
-| :--- | :--- | :--- |
-| `id` | `INT` | **Primary Key**, Auto-increment |
-| `order_number`| `VARCHAR(255)` | Unique, Not Null |
-| `customer_name`| `VARCHAR(255)` | Not Null |
-| `customer_phone`| `VARCHAR(20)` | Not Null |
-| `delivery_method`| `ENUM('delivery', 'pickup')` | Not Null |
-| `delivery_address`| `TEXT` | Nullable |
-| `latitude` | `DECIMAL(10, 8)` | Nullable, for map coordinates |
-| `longitude`| `DECIMAL(11, 8)` | Nullable, for map coordinates |
-| `pickup_location`| `VARCHAR(255)` | Nullable |
-| `delivery_date`| `DATE` | Nullable |
-| `special_instructions`| `TEXT` | Nullable |
-| `total_price`| `DECIMAL(10, 2)`| Not Null |
-| `payment_status`| `ENUM('pending', 'paid')` | Default: `'pending'` |
-| `order_status`| `ENUM('processing', 'complete', 'cancelled')` | Default: `'processing'` |
-| `created_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` |
-
----
-**5. `order_items` Table**
-| Column Name | Data Type | Constraints / Notes |
-| :--- | :--- | :--- |
-| `id` | `INT` | **Primary Key**, Auto-increment |
-| `order_id` | `INT` | **Foreign Key** -> `orders.id` |
-| `cake_id` | `VARCHAR(255)` | **Foreign Key** -> `cakes.id` |
-| `quantity` | `INT` | Not Null, Default: 1 |
-| `price_at_purchase` | `DECIMAL(10, 2)`| Not Null |
-| `customizations_json`| `JSON` | Nullable. **Crucial for storing customization data.** |
-
----
-### c. How Customizations are Stored & Handled
-
-The database is designed to flexibly handle complex user customizations. Here's the data flow:
-
-1.  **Customizable Flag**: The process begins with the `cakes` table, where each cake has a `customizable` flag. If this flag is `false`, the customer can add the cake directly to their cart without customization. The following steps apply only to cakes marked as `customizable`.
-
-2.  **Customer Selection**: The customer uses the `CustomizationModal` to select their desired flavor, size, color, and toppings. These selections are stored in the frontend's state.
-
-3.  **Order Payload**: When the order is placed, these selections are passed as a `customizations` object within each `CartItem`. For example:
-    ```json
-    {
-      "flavor": "f2",
-      "size": "s3",
-      "color": "c2",
-      "toppings": ["t1", "t2"]
-    }
-    ```
-
-4.  **Database Storage**: The backend API receives this payload. For each cake in the order, it creates a record in the `order_items` table. The `customizations` object is then serialized into a JSON string and saved in the `customizations_json` column.
-
-5.  **Admin View**: When an admin views an order's details, the backend retrieves the order, including its `order_items`. The frontend then parses the `customizations_json` string for each item and displays the chosen options in a human-readable format. This ensures the admin knows the exact specifications for preparing each cake.
-
----
-### d. Customization Option Tables
-These tables store the available choices for building a custom cake.
-
-| Table Name | Column Name | Data Type | Constraints / Notes |
-| :--- | :--- | :--- | :--- |
-| **customization_flavors** | `id` | `VARCHAR(255)` | **Primary Key** |
-| | `name`| `VARCHAR(255)` | Not Null |
-| | `price`| `DECIMAL(10, 2)` | Not Null |
-| **customization_sizes** | `id` | `VARCHAR(255)` | **Primary Key** |
-| | `name`| `VARCHAR(255)` | Not Null |
-| | `serves`| `VARCHAR(255)` | |
-| | `price`| `DECIMAL(10, 2)` | Not Null |
-| **customization_colors** | `id` | `VARCHAR(255)` | **Primary Key** |
-| | `name`| `VARCHAR(255)` | Not Null |
-| | `hex_value`| `VARCHAR(7)` | |
-| | `price`| `DECIMAL(10, 2)` | Not Null |
-| **customization_toppings**| `id` | `VARCHAR(255)` | **Primary Key** |
-| | `name`| `VARCHAR(255)` | Not Null |
-| | `price`| `DECIMAL(10, 2)` | Not Null |
-
-### e. MS SQL Server Table Creation Scripts
-
-You can use these SQL scripts to create all required tables in a tool like SQL Server Management Studio (SSMS) or Azure Data Studio.
-
-```sql
--- This script is for Microsoft SQL Server.
-
--- 1. Admins Table
-CREATE TABLE admins (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    name NVARCHAR(255) NOT NULL,
-    email NVARCHAR(255) NOT NULL UNIQUE,
-    password_hash NVARCHAR(255) NOT NULL,
-    created_at DATETIME2 DEFAULT GETDATE()
-);
-
--- 2. Cakes Table
-CREATE TABLE cakes (
-    id NVARCHAR(255) PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    description NVARCHAR(MAX),
-    base_price DECIMAL(10, 2) NOT NULL,
-    image_id NVARCHAR(255),
-    rating FLOAT DEFAULT 0,
-    category NVARCHAR(255),
-    customizable BIT DEFAULT 1,
-    orders_count INT DEFAULT 0,
-    ready_time NVARCHAR(50),
-    created_at DATETIME2 DEFAULT GETDATE(),
-    updated_at DATETIME2 DEFAULT GETDATE()
-);
-
--- 3. Special Offers Table
-CREATE TABLE special_offers (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    cake_id NVARCHAR(255) FOREIGN KEY REFERENCES cakes(id) ON DELETE SET NULL,
-    discount_percentage INT NOT NULL,
-    is_active BIT DEFAULT 1,
-    start_date DATE,
-    end_date DATE
-);
-
--- 4. Orders Table
-CREATE TABLE orders (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    order_number NVARCHAR(255) NOT NULL UNIQUE,
-    customer_name NVARCHAR(255) NOT NULL,
-    customer_phone NVARCHAR(20) NOT NULL,
-    delivery_method NVARCHAR(10) NOT NULL CHECK (delivery_method IN ('delivery', 'pickup')),
-    delivery_address NVARCHAR(MAX),
-    latitude DECIMAL(10, 8) NULL,
-    longitude DECIMAL(11, 8) NULL,
-    pickup_location NVARCHAR(255),
-    delivery_date DATE,
-    special_instructions NVARCHAR(MAX) NULL,
-    total_price DECIMAL(10, 2) NOT NULL,
-    payment_status NVARCHAR(10) DEFAULT 'pending' CHECK (payment_status IN ('pending', 'paid')),
-    order_status NVARCHAR(15) DEFAULT 'processing' CHECK (order_status IN ('processing', 'complete', 'cancelled')),
-    created_at DATETIME2 DEFAULT GETDATE()
-);
-
--- 5. Order Items Table
-CREATE TABLE order_items (
-    id INT PRIMARY KEY IDENTITY(1,1),
-    order_id INT NOT NULL FOREIGN KEY REFERENCES orders(id) ON DELETE CASCADE,
-    cake_id NVARCHAR(255) NOT NULL FOREIGN KEY REFERENCES cakes(id),
-    quantity INT NOT NULL DEFAULT 1,
-    price_at_purchase DECIMAL(10, 2) NOT NULL,
-    customizations_json NVARCHAR(MAX) CHECK (ISJSON(customizations_json) > 0)
-);
-
--- 6. Customization Flavors Table
-CREATE TABLE customization_flavors (
-    id NVARCHAR(255) PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL
-);
-
--- 7. Customization Sizes Table
-CREATE TABLE customization_sizes (
-    id NVARCHAR(255) PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    serves NVARCHAR(255),
-    price DECIMAL(10, 2) NOT NULL
-);
-
--- 8. Customization Colors Table
-CREATE TABLE customization_colors (
-    id NVARCHAR(255) PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    hex_value NVARCHAR(7),
-    price DECIMAL(10, 2) NOT NULL
-);
-
--- 9. Customization Toppings Table
-CREATE TABLE customization_toppings (
-    id NVARCHAR(255) PRIMARY KEY,
-    name NVARCHAR(255) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL
-);
-```
-
-#### MS SQL Server Seed Data
-Run these commands after creating the tables to populate them with initial data.
-```sql
--- Insert Admin User (replace with a securely hashed password in production)
-INSERT INTO admins (name, email, password_hash) VALUES
-('Admin User', 'admin@whiskedelights.com', 'admin'); -- NOTE: Use a proper hash in production!
-
--- Insert Cakes
-INSERT INTO cakes (id, name, description, base_price, image_id, rating, category, customizable, orders_count, ready_time) VALUES
-('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake, layered with silky smooth chocolate ganache and topped with a glossy finish. A true indulgence for any chocolate lover.', 3200.00, 'special-offer-cake', 4.9, 'Chocolate', 1, 150, '24h'),
-('red-velvet-delight', 'Red Velvet Delight', 'The timeless classic. A moist, scarlet-hued cake with a hint of cocoa, perfectly balanced by our signature tangy cream cheese frosting.', 2800.00, 'red-velvet-delight', 4.8, 'Classic', 1, 120, '24h'),
-('strawberry-dream', 'Strawberry Dream', 'A light and fluffy vanilla sponge cake, layered with fresh strawberries and delicate whipped cream. This cake is not customizable and comes in a standard 8-inch size with our classic vanilla flavor.', 2500.00, 'strawberry-dream', 4.7, 'Fruit', 0, 95, '24h'),
-('lemon-zest-creation', 'Lemon Zest Creation', 'A zesty and refreshing lemon cake infused with fresh lemon juice and zest, topped with a sweet and tangy lemon glaze. This cake is not customizable and comes in a standard 8-inch size.', 2600.00, 'lemon-zest-creation', 4.6, 'Fruit', 0, 80, '24h'),
-('vanilla-bean-classic', 'Vanilla Bean Classic', 'A simple yet elegant cake made with real vanilla beans for a fragrant and sophisticated flavor. Perfect for any occasion.', 2400.00, 'vanilla-bean-classic', 4.5, 'Classic', 1, 110, '24h'),
-('matcha-elegance', 'Matcha Elegance', 'An earthy and refined cake featuring premium matcha green tea powder, offering a unique and subtle sweetness that is both calming and delightful.', 3000.00, 'matcha-elegance', 4.7, 'Specialty', 1, 60, '48h');
-
--- Insert Special Offer
-INSERT INTO special_offers (cake_id, discount_percentage, is_active) VALUES
-('chocolate-fudge-delight', 20, 1);
-
--- Insert Customization Flavors
-INSERT INTO customization_flavors (id, name, price) VALUES
-('f1', 'Classic Vanilla', 0.00),
-('f2', 'Rich Chocolate', 200.00),
-('f3', 'Red Velvet', 250.00),
-('f4', 'Zesty Lemon', 150.00);
-
--- Insert Customization Sizes
-INSERT INTO customization_sizes (id, name, serves, price) VALUES
-('s1', '6" Cake', '6-8 people', 0.00),
-('s2', '8" Cake', '10-12 people', 500.00),
-('s3', '10" Cake', '15-20 people', 1000.00);
-
--- Insert Customization Colors
-INSERT INTO customization_colors (id, name, hex_value, price) VALUES
-('c1', 'Classic White', '#FFFFFF', 0.00),
-('c2', 'Pastel Pink', '#FFD1DC', 100.00),
-('c3', 'Sky Blue', '#87CEEB', 100.00),
-('c4', 'Vibrant Red', '#FF0000', 150.00);
-
--- Insert Customization Toppings
-INSERT INTO customization_toppings (id, name, price) VALUES
-('t1', 'Rainbow Sprinkles', 50.00),
-('t2', 'Chocolate Drizzle', 100.00),
-('t3', 'Fresh Berries', 250.00),
-('t4', 'Edible Flowers', 300.00);
-```
-
----
-### f. MySQL / MariaDB Table Creation Scripts (for XAMPP users)
-If you are using XAMPP, use these scripts in phpMyAdmin or a similar tool.
-
-```sql
--- This script is for MySQL or MariaDB.
-
--- 1. Admins Table
-CREATE TABLE admins (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    password_hash VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 2. Cakes Table
-CREATE TABLE cakes (
-    id VARCHAR(255) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    description TEXT,
-    base_price DECIMAL(10, 2) NOT NULL,
-    image_id VARCHAR(255),
-    rating FLOAT DEFAULT 0,
-    category VARCHAR(255),
-    customizable BOOLEAN DEFAULT TRUE,
-    orders_count INT DEFAULT 0,
-    ready_time VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
--- 3. Special Offers Table
-CREATE TABLE special_offers (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    cake_id VARCHAR(255),
-    discount_percentage INT NOT NULL,
-    is_active BOOLEAN DEFAULT TRUE,
-    start_date DATE,
-    end_date DATE,
-    FOREIGN KEY (cake_id) REFERENCES cakes(id) ON DELETE SET NULL
-);
-
--- 4. Orders Table
-CREATE TABLE orders (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    order_number VARCHAR(255) NOT NULL UNIQUE,
-    customer_name VARCHAR(255) NOT NULL,
-    customer_phone VARCHAR(20) NOT NULL,
-    delivery_method ENUM('delivery', 'pickup') NOT NULL,
-    delivery_address TEXT,
-    latitude DECIMAL(10, 8),
-    longitude DECIMAL(11, 8),
-    pickup_location VARCHAR(255),
-    delivery_date DATE,
-    special_instructions TEXT,
-    total_price DECIMAL(10, 2) NOT NULL,
-    payment_status ENUM('pending', 'paid') DEFAULT 'pending',
-    order_status ENUM('processing', 'complete', 'cancelled') DEFAULT 'processing',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- 5. Order Items Table
-CREATE TABLE order_items (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    order_id INT NOT NULL,
-    cake_id VARCHAR(255) NOT NULL,
-    quantity INT NOT NULL DEFAULT 1,
-    price_at_purchase DECIMAL(10, 2) NOT NULL,
-    customizations_json JSON,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-    FOREIGN KEY (cake_id) REFERENCES cakes(id)
-);
-
--- 6. Customization Flavors Table
-CREATE TABLE customization_flavors (
-    id VARCHAR(255) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL
-);
-
--- 7. Customization Sizes Table
-CREATE TABLE customization_sizes (
-    id VARCHAR(255) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    serves VARCHAR(255),
-    price DECIMAL(10, 2) NOT NULL
-);
-
--- 8. Customization Colors Table
-CREATE TABLE customization_colors (
-    id VARCHAR(255) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    hex_value VARCHAR(7),
-    price DECIMAL(10, 2) NOT NULL
-);
-
--- 9. Customization Toppings Table
-CREATE TABLE customization_toppings (
-    id VARCHAR(255) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL
-);
-```
-
-#### MySQL / MariaDB Seed Data
-Run these commands after creating the tables to populate them with initial data.
-```sql
--- Insert Admin User (replace with a securely hashed password in production)
-INSERT INTO `admins` (`name`, `email`, `password_hash`) VALUES
-('Admin User', 'admin@whiskedelights.com', 'admin'); -- NOTE: Use a proper hash in production!
-
--- Insert Cakes
-INSERT INTO `cakes` (`id`, `name`, `description`, `base_price`, `image_id`, `rating`, `category`, `customizable`, `orders_count`, `ready_time`) VALUES
-('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake, layered with silky smooth chocolate ganache and topped with a glossy finish. A true indulgence for any chocolate lover.', 3200.00, 'special-offer-cake', 4.9, 'Chocolate', TRUE, 150, '24h'),
-('red-velvet-delight', 'Red Velvet Delight', 'The timeless classic. A moist, scarlet-hued cake with a hint of cocoa, perfectly balanced by our signature tangy cream cheese frosting.', 2800.00, 'red-velvet-delight', 4.8, 'Classic', TRUE, 120, '24h'),
-('strawberry-dream', 'Strawberry Dream', 'A light and fluffy vanilla sponge cake, layered with fresh strawberries and delicate whipped cream. This cake is not customizable and comes in a standard 8-inch size with our classic vanilla flavor.', 2500.00, 'strawberry-dream', 4.7, 'Fruit', FALSE, 95, '24h'),
-('lemon-zest-creation', 'Lemon Zest Creation', 'A zesty and refreshing lemon cake infused with fresh lemon juice and zest, topped with a sweet and tangy lemon glaze. This cake is not customizable and comes in a standard 8-inch size.', 2600.00, 'lemon-zest-creation', 4.6, 'Fruit', FALSE, 80, '24h'),
-('vanilla-bean-classic', 'Vanilla Bean Classic', 'A simple yet elegant cake made with real vanilla beans for a fragrant and sophisticated flavor. Perfect for any occasion.', 2400.00, 'vanilla-bean-classic', 4.5, 'Classic', TRUE, 110, '24h'),
-('matcha-elegance', 'Matcha Elegance', 'An earthy and refined cake featuring premium matcha green tea powder, offering a unique and subtle sweetness that is both calming and delightful.', 3000.00, 'matcha-elegance', 4.7, 'Specialty', TRUE, 60, '48h');
-
--- Insert Special Offer
-INSERT INTO `special_offers` (`cake_id`, `discount_percentage`, `is_active`) VALUES
-('chocolate-fudge-delight', 20, TRUE);
-
--- Insert Customization Flavors
-INSERT INTO `customization_flavors` (`id`, `name`, `price`) VALUES
-('f1', 'Classic Vanilla', 0.00),
-('f2', 'Rich Chocolate', 200.00),
-('f3', 'Red Velvet', 250.00),
-('f4', 'Zesty Lemon', 150.00);
-
--- Insert Customization Sizes
-INSERT INTO `customization_sizes` (`id`, `name`, `serves`, `price`) VALUES
-('s1', '6" Cake', '6-8 people', 0.00),
-('s2', '8" Cake', '10-12 people', 500.00),
-('s3', '10" Cake', '15-20 people', 1000.00);
-
--- Insert Customization Colors
-INSERT INTO `customization_colors` (`id`, `name`, `hex_value`, `price`) VALUES
-('c1', 'Classic White', '#FFFFFF', 0.00),
-('c2', 'Pastel Pink', '#FFD1DC', 100.00),
-('c3', 'Sky Blue', '#87CEEB', 100.00),
-('c4', 'Vibrant Red', '#FF0000', 150.00);
-
--- Insert Customization Toppings
-INSERT INTO `customization_toppings` (`id`, `name`, `price`) VALUES
-('t1', 'Rainbow Sprinkles', 50.00),
-('t2', 'Chocolate Drizzle', 100.00),
-('t3', 'Fresh Berries', 250.00),
-('t4', 'Edible Flowers', 300.00);
-```
-
-### g. Local Database Setup
-
-The Next.js frontend **should not** connect directly to the database for security reasons. It must communicate with a **backend API**. The following instructions are for setting up the database that your future backend API will connect to.
-
-#### Option 1: Local MS SQL Server Setup (using Docker)
-
-The easiest way to run a local MS SQL database is with Docker.
-
-**Prerequisites:**
--   **Docker Desktop**: Make sure it is installed and running on your machine.
--   **Database Tool**: **Azure Data Studio** is recommended for MS SQL.
-
-**Step-by-Step Instructions:**
-
-1.  **Create a Database Docker Compose File:**
-    In the root of your project, create a new file named `docker-compose.sql.yml` and add the following:
-
-    ```yml
-    version: '3.8'
-    services:
-      sqlserver:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        container_name: mssql_server_local
-        ports:
-          - "1433:1433"
-        environment:
-          SA_PASSWORD: "your_Strong_Password123" # CHANGE THIS to a strong password
-          ACCEPT_EULA: "Y"
-        volumes:
-          - sqlserver_data:/var/opt/mssql
-
-    volumes:
-      sqlserver_data:
-    ```
-
-2.  **Start the Database Container:**
-    Open your terminal in the project root and run:
-    ```bash
-    docker-compose -f docker-compose.sql.yml up -d
-    ```
-
-3.  **Connect to Your Local Database:**
-    -   Open Azure Data Studio.
-    -   Create a new connection:
-        -   **Server**: `localhost`
-        -   **Authentication type**: `SQL Login`
-        -   **User name**: `sa`
-        -   **Password**: The password you set in the `docker-compose.sql.yml` file.
-    -   Connect.
-
-4.  **Create the Database and Tables:**
-    -   Open a new query editor.
-    -   Run `CREATE DATABASE WhiskeDelightsDB;`
-    -   Switch your connection to use this new database.
-    -   Copy and run the **MS SQL Server** `CREATE TABLE` scripts from the section above.
-    -   Copy and run the **MS SQL Server Seed Data** scripts to populate the tables.
-
-#### Option 2: Using XAMPP for the Database (MySQL/MariaDB)
-
-If you prefer to use XAMPP, you can use its included MySQL/MariaDB server.
-
-1. **Start XAMPP**: Open the XAMPP Control Panel and start the `Apache` and `MySQL` modules.
-2. **Open phpMyAdmin**: Click the `Admin` button next to the MySQL module. This will open phpMyAdmin in your browser.
-3. **Create the Database**:
-   - In phpMyAdmin, click on the `Databases` tab.
-   - Enter `WhiskeDelightsDB` in the "Create database" field and click `Create`.
-4. **Run SQL Scripts**:
-   - Select the `WhiskeDelightsDB` database from the left-hand sidebar.
-   - Click on the `SQL` tab.
-   - Copy all the **MySQL/MariaDB** `CREATE TABLE` scripts from the section above and paste them into the query box. Click `Go`.
-   - After the tables are created, click the `SQL` tab again.
-   - Copy all the **MySQL / MariaDB Seed Data** `INSERT` scripts and paste them into the query box. Click `Go` to populate your tables.
-
-
-### h. Connecting a Backend to Your Database
-
-Your backend application (e.g., using Node.js/Express, ASP.NET) will handle the database operations. In that **separate backend project**, you would have an environment file (`.env`) with a connection string like this:
-
-**For MS SQL Server:**
-```
-DATABASE_URL="sqlserver://localhost:1433;database=WhiskeDelightsDB;user=sa;password=your_Strong_Password123;encrypt=false;trustServerCertificate=true"
-```
-**For MySQL/MariaDB (XAMPP):**
-```
-DATABASE_URL="mysql://root:@localhost:3306/WhiskeDelightsDB"
-```
-Your backend code would then use this string to connect to the database and expose the API endpoints listed in section 5a.
-
-## 7. Security Overview
-
-This section details the security architecture of the application, measures taken to protect user data, and best practices for a production environment.
-
-### a. Core Architectural Principles
-
--   **Frontend/Backend Separation**: The most critical security principle is the strict separation between the Next.js frontend and a backend API. The frontend never connects directly to the database. This prevents exposure of database credentials and other sensitive information to the client's browser.
--   **Next.js Server Actions**: Operations that involve business logic (like placing an order) are implemented as Server Actions (`src/lib/actions.ts`). These actions run securely on the server, not the client, making it impossible for a user to tamper with logic such as prices or product details.
--   **Environment Variable Management**: Sensitive keys (like payment provider secret keys or database connection strings) are **not** stored in this project. They belong exclusively in the backend API's environment. The frontend `.env` file requires public keys, which are designed to be safely used in the browser.
-
-### b. Payment Security (Paystack Integration)
-
-The application ensures payment security by delegating all sensitive operations to Paystack, a PCI-DSS compliant Payment Service Provider. This architecture is designed to be robust and prevent common payment-related vulnerabilities.
-
-#### Payment Workflow
-
-1.  **Order Creation**: When a user clicks "Place Order & Pay", the `placeOrder` Server Action is called. This action securely creates an order in your database with a `payment_status` of **`pending`**.
-2.  **Payment Initiation**: The frontend receives the new `orderNumber` and initiates the payment with Paystack.
-3.  **Client-Side Feedback**:
-    -   If the payment is successful on the client side, the user receives an immediate success message and is redirected. **This is for UI/UX purposes only and is not trusted for fulfillment.**
-    -   If the user cancels, they are notified, and the order remains in the database as `pending`.
-4.  **Server-to-Server Verification (The Single Source of Truth)**:
-    -   Independently, Paystack sends a **webhook** (a secure, server-to-server notification) to a dedicated endpoint on your backend API (e.g., `POST /api/payments/verify`).
-    -   Your backend code **must** perform the following checks:
-        1.  **Verify the Webhook Signature**: Ensure the request is genuinely from Paystack using your secret key.
-        2.  **Check the Event Type**: Confirm the event is `charge.success`.
-        3.  **Verify Transaction Details**: Cross-reference the transaction amount and currency with the order total in your database to prevent tampering.
-        4.  **Update Order Status**: If all checks pass, update the order's `payment_status` in your database from `pending` to **`paid`**.
-    -   Only orders marked as `paid` should be processed for fulfillment.
-
-This webhook-based approach is critical. It prevents malicious users from spoofing a successful payment on the frontend and ensures that you only fulfill orders for which you have received verified payment.
-
-#### Handling Abandoned Payments
-
-Orders that remain in the `pending` state (because the user abandoned the payment) can be managed in several ways:
--   **Automatic Cleanup**: A scheduled job (e.g., a cron job) on your backend can run periodically (e.g., every hour) to find and cancel `pending` orders that are older than a specified duration.
--   **Manual Management**: The admin panel shows the `payment_status`, allowing you to manually review, follow up on, or cancel pending orders.
-
-### c. Admin Panel & Authentication
-
--   **Brute-Force Attack Prevention**: The current mock login is for demonstration only. A production backend must implement measures to prevent brute-force attacks on the admin login page, including:
-    -   **Rate Limiting**: Block an IP address after a set number of failed login attempts.
-    -   **Account Lockout**: Temporarily lock the `admin` account after too many consecutive failures.
-    -   **CAPTCHA**: Introduce a CAPTCHA challenge after several failed attempts.
--   **Authentication Method**: A production system should use secure, HTTP-only cookies with JWTs (JSON Web Tokens) to manage admin sessions, rather than `localStorage`.
-
-### d. Threat Mitigation Strategies
-
--   **DDoS (Distributed Denial-of-Service) Attacks**: The primary defense against DDoS attacks is the hosting infrastructure. Deploying this application on a modern cloud platform like Firebase App Hosting, Vercel, or AWS provides significant, built-in protection at the network edge. Additionally, the backend API should implement its own rate-limiting rules.
--   **Cross-Site Scripting (XSS)**: React and Next.js provide strong, built-in protection against XSS attacks by automatically escaping data rendered in JSX. This prevents malicious scripts injected into data fields (e.g., a cake description) from being executed in the browser.
--   **Cross-Site Request Forgery (CSRF)**: Next.js Server Actions have built-in CSRF protection. When a form is submitted, Next.js automatically creates and validates a unique token, ensuring that the request legitimately originated from your application.
--   **Data Validation**: All data coming from the client must be re-validated on the backend API before being processed or saved to the database. Never trust client-side input, as it can be manipulated.
-
-By following this layered security approach, the application ensures a robust defense against common web vulnerabilities.
-
-## 8. Local Development Setup
+## 5. Local Development Setup
 
 Follow these instructions to get the application running on your local machine.
 
@@ -735,14 +84,12 @@ Follow these instructions to get the application running on your local machine.
 
 - **Node.js**: Version 20.x or higher.
 - **npm**: A Node.js package manager (v10+).
-- **Docker**: (Optional) For running the application in a containerized environment.
+- **Docker**: (Optional) For a consistent, containerized environment.
 
 ### b. Environment Variables
 
-For the application to run correctly, especially for payment integration, you must provide an environment variable.
-
-1.  Create a new file named `.env` in the root of the project.
-2.  Add the following line to the file, replacing the placeholder with your actual key:
+1.  Create a file named `.env` in the root of the project.
+2.  Add the following lines, replacing placeholders with your keys:
 
     ```
     # Your public key from the Paystack dashboard (required for payments)
@@ -750,40 +97,16 @@ For the application to run correctly, especially for payment integration, you mu
     
     # Your WhatsApp number including country code (e.g., 254712345678)
     NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER=2547xxxxxxxx
-
-    # The base URL of your backend API
-    NEXT_PUBLIC_API_URL=http://localhost:3001/api
     ```
 
-### c. Standard Installation (npm)
+### c. Running with Docker
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <your-repository-url>
-    cd <repository-name>
-    ```
+This is the recommended way to run the application.
 
-2.  **Install dependencies:**
-    ```bash
-    npm install
-    ```
-
-3.  **Run the development server:**
-    The application will be available at `http://localhost:3000`.
-    ```bash
-    npm run dev
-    ```
-
-### d. Running with Docker
-
-This is the recommended way to run the application to ensure a consistent environment.
-
-1.  **Build the Docker image and run the container:**
-    Make sure Docker Desktop is running on your machine. Then, from the root of the project, run:
+1.  **Build and run the container:**
+    Make sure Docker Desktop is running. Then, from the project root, run:
     ```bash
     docker-compose up --build
     ```
 2.  **Access the application:**
     The application will be available at `http://localhost:3000`.
-
-To stop the application, press `CTRL+C` in the terminal.

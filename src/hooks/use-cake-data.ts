@@ -34,8 +34,8 @@ export function useCakeData(): CakeData {
         console.error("Failed to fetch cake data:", error);
         // Handle error state if necessary
       } finally {
-        // A slightly longer delay to show the loading screen
-        setTimeout(() => setLoading(false), 1000);
+        // A short delay to show the loading screen
+        setTimeout(() => setLoading(false), 500);
       }
     }
 

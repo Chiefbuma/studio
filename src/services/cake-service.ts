@@ -1,7 +1,9 @@
 import type { Cake, SpecialOffer, CustomizationOptions, Order } from '@/lib/types';
+import { cakes, specialOfferData, customizationOptions, orders } from '@/lib/data';
 
-// In a real application, this would be your base API URL.
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// --- MOCK SERVICE ---
+// This service simulates fetching data. In a real application, this would
+// make API calls to a backend.
 
 const customCake: Cake = {
   id: 'custom-cake',
@@ -15,6 +17,45 @@ const customCake: Cake = {
   ready_time: '48h+',
   customizable: true,
 };
+
+export async function getCakes(): Promise<Cake[]> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 200));
+  // Add the special 'custom cake' to the list
+  return [customCake, ...cakes];
+}
+
+export async function getSpecialOffer(): Promise<SpecialOffer | null> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 200));
+  return specialOfferData;
+}
+
+export async function getCustomizationOptions(): Promise<CustomizationOptions | null> {
+  // Simulate network delay
+  await new Promise(resolve => setTimeout(resolve, 200));
+  return customizationOptions;
+}
+
+export function getCustomCake(): Promise<Cake> {
+  // This remains a client-side operation as it's a placeholder object.
+  return new Promise(resolve => {
+    resolve(customCake);
+  });
+}
+
+export async function getOrders(): Promise<Order[]> {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 300));
+    // Sort orders by most recent
+    return [...orders].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+}
+
+
+/*
+// --- REAL API SERVICE ---
+// In a real application, this would be your base API URL.
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export async function getCakes(): Promise<Cake[]> {
   try {
@@ -62,13 +103,6 @@ export async function getCustomizationOptions(): Promise<CustomizationOptions | 
   }
 }
 
-export function getCustomCake(): Promise<Cake> {
-  // This remains a client-side operation as it's a placeholder object.
-  return new Promise(resolve => {
-    resolve(customCake);
-  });
-}
-
 export async function getOrders(): Promise<Order[]> {
   try {
     const token = localStorage.getItem('authToken');
@@ -92,3 +126,4 @@ export async function getOrders(): Promise<Order[]> {
     return []; // Return an empty array on error
   }
 }
+*/

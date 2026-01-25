@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Cake, Loader2 } from 'lucide-react';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -32,6 +32,24 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoggingIn(true);
     
+    // Mock login logic
+    if (email === 'admin@whiskedelights.com' && password === 'admin') {
+      localStorage.setItem('isAdminLoggedIn', 'true');
+      toast({
+        title: 'Login Successful',
+        description: 'Welcome back, Admin!',
+      });
+      router.push('/admin/dashboard');
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Login Failed',
+        description: 'Invalid email or password.',
+      });
+      setIsLoggingIn(false);
+    }
+
+    /* Real API Login Logic
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -65,6 +83,7 @@ export default function AdminLoginPage() {
       });
       setIsLoggingIn(false);
     }
+    */
   };
 
   if (isCheckingAuth) {

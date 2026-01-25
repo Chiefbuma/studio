@@ -2,7 +2,7 @@
 
 import type { OrderPayload } from './types';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 /**
  * Places an order in the system with a 'pending' payment status.
@@ -17,8 +17,27 @@ export async function placeOrder(payload: OrderPayload): Promise<{ success: bool
     console.log('Coordinates received:', payload.deliveryInfo.coordinates);
   }
 
-  // This is where you would call your backend API to create the order.
-  // The backend should create the order with `payment_status: 'pending'`.
+  // --- MOCK IMPLEMENTATION ---
+  try {
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Simulate successful order creation
+    const mockOrderNumber = `WD${Math.floor(Math.random() * 90000) + 10000}`;
+    console.log(`Mock order ${mockOrderNumber} created with pending payment.`);
+    
+    return {
+        success: true,
+        orderNumber: mockOrderNumber,
+        depositAmount: payload.depositAmount, // Pass the calculated amount back
+    };
+  } catch (e) {
+    const error = e instanceof Error ? e.message : 'An unknown error occurred.';
+    console.error('Failed to place mock order:', error);
+    return { success: false, error, orderNumber: '', depositAmount: 0 };
+  }
+
+  /* --- REAL API IMPLEMENTATION ---
   try {
     const response = await fetch(`${API_BASE_URL}/orders`, {
       method: 'POST',
@@ -46,4 +65,5 @@ export async function placeOrder(payload: OrderPayload): Promise<{ success: bool
     console.error('Failed to place order:', error);
     return { success: false, error, orderNumber: '', depositAmount: 0 };
   }
+  */
 }

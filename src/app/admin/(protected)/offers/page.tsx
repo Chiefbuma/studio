@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function OffersPage() {
     const [specialOffer, setSpecialOffer] = useState<SpecialOffer | null>(null);
@@ -55,6 +55,12 @@ export default function OffersPage() {
             return;
         }
 
+        toast({
+            title: 'Prototype Action',
+            description: `This would update the special offer.`,
+        });
+
+        /*
         const payload = {
             cake_id: selectedCakeId,
             discount_percentage: discount,
@@ -90,6 +96,7 @@ export default function OffersPage() {
                 description: error.message || 'An unknown error occurred.',
             });
         }
+        */
     };
 
     if (loading) {

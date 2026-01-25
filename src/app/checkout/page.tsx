@@ -208,6 +208,7 @@ export default function CheckoutPage() {
         title: "Order Placed!",
         description: `Your order #${result.orderNumber} is ready for payment.`,
       });
+      // The `depositAmount` is now passed to the payment trigger
       triggerPaystackPayment(result.orderNumber, result.depositAmount);
     } else {
       // Order failed
@@ -253,7 +254,7 @@ export default function CheckoutPage() {
         toast({
           variant: "destructive",
           title: 'Payment Cancelled',
-          description: 'Your order is saved with a pending status.',
+          description: 'Your order is saved. You can complete the payment later.',
         });
       }
     });

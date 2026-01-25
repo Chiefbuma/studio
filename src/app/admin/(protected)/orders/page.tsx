@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -38,6 +38,9 @@ export default function OrdersPage() {
     }, [fetchData]);
     
     const handleUpdateStatus = (orderId: number, status: 'processing' | 'complete' | 'cancelled') => {
+        toast({ title: "Prototype Action", description: `This would change order status to ${status}.` });
+
+        /*
         fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
@@ -54,6 +57,7 @@ export default function OrdersPage() {
         }).catch(err => {
             toast({ variant: "destructive", title: "Error", description: err.message || "Could not update status." });
         });
+        */
     };
 
     const getOrderStatusVariant = (status: 'processing' | 'complete' | 'cancelled') => {

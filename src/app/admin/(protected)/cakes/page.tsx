@@ -14,7 +14,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function CakesPage() {
     const [cakes, setCakes] = useState<Cake[]>([]);
@@ -40,7 +40,8 @@ export default function CakesPage() {
 
     const handleCreate = () => {
         // In a real app, this would open a form/dialog to create a new cake.
-        // For this example, we'll simulate creating a new cake with placeholder data.
+        toast({ title: "Prototype Action", description: `This would open a 'Create' form for a new cake.` });
+        /*
         const newCakeData = { name: "New Awesome Cake", base_price: 3000, customizable: true, description: "A new cake." };
         
         fetch(`${API_BASE_URL}/cakes`, {
@@ -58,6 +59,7 @@ export default function CakesPage() {
         }).catch(err => {
             toast({ variant: "destructive", title: "Error", description: err.message || "Could not create cake." });
         });
+        */
     };
 
     const handleEdit = (cakeId: string) => {
@@ -70,7 +72,8 @@ export default function CakesPage() {
     const handleDelete = async (cakeId: string, cakeName: string) => {
         // This would show a confirmation dialog first.
         if (!confirm(`Are you sure you want to delete "${cakeName}"?`)) return;
-
+        toast({ title: "Prototype Action", description: `This would delete cake "${cakeName}".` });
+        /*
         try {
             const response = await fetch(`${API_BASE_URL}/cakes/${cakeId}`, {
                 method: 'DELETE',
@@ -96,6 +99,7 @@ export default function CakesPage() {
                 description: error.message || 'An unknown error occurred.',
             });
         }
+        */
     };
     
     return (
@@ -116,6 +120,7 @@ export default function CakesPage() {
                         <TableRow>
                             <TableHead className="w-[80px]">Image</TableHead>
                             <TableHead>Name</TableHead>
+                            <TableHead>Customizable</TableHead>
                             <TableHead>Category</TableHead>
                             <TableHead>Rating</TableHead>
                             <TableHead className="text-right">Price</TableHead>
@@ -128,6 +133,7 @@ export default function CakesPage() {
                                 <TableRow key={i}>
                                     <TableCell><Skeleton className="h-12 w-12 rounded-md" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                                    <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                                     <TableCell className="text-right"><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
@@ -143,6 +149,11 @@ export default function CakesPage() {
                                         <Image src={image.imageUrl} alt={cake.name} width={48} height={48} className="rounded-md object-cover h-12 w-12" />
                                     </TableCell>
                                     <TableCell className="font-medium">{cake.name}</TableCell>
+                                    <TableCell>
+                                        <Badge variant={cake.customizable ? 'secondary' : 'outline'}>
+                                            {cake.customizable ? 'Yes' : 'No'}
+                                        </Badge>
+                                    </TableCell>
                                     <TableCell><Badge variant="outline">{cake.category}</Badge></TableCell>
                                     <TableCell>
                                         <div className="flex items-center gap-1">

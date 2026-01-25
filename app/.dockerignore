@@ -1,0 +1,20 @@
+# Ignore Git history
+.git
+
+# Ignore Docker-related files
+.dockerignore
+Dockerfile
+docker-compose.yml
+
+# Ignore Next.js build artifacts
+.next
+
+# Ignore local dependencies, they will be installed inside the container
+node_modules
+
+# Ignore environment files - these should be passed in via docker-compose
+.env
+.env.local
+
+# Ignore IDE/editor-specific files
+.vscode
