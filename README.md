@@ -122,7 +122,7 @@ A real-world backend for this application would need to expose the following API
 | Method | Endpoint | Description | Used In |
 | :--- | :--- | :--- | :--- |
 | **Auth** | | |
-| `POST` | `/api/auth/login` | Authenticate an admin user and return a token. | Admin Login |
+| `POST` | `/api/auth/login` | Authenticate an admin user against the `admins` table and return a token. | Admin Login |
 | **Cakes** | | |
 | `GET` | `/api/cakes` | Get a list of all cakes. | Menu, Admin |
 | `POST`| `/api/cakes` | Create a new cake. Payload should include the `customizable` flag. | Admin |
@@ -165,10 +165,21 @@ This section provides the blueprint for your backend database and instructions o
 -   **`cakes` (1) -> (∞) `order_items`**: A specific cake can be part of many different order items. `order_items.cake_id` is a foreign key to `cakes.id`.
 -   **`cakes` (1) -> (1) `special_offers`**: A special offer is tied to a single cake. `special_offers.cake_id` is a foreign key to `cakes.id`.
 -   **`customization_*` Tables**: These are lookup tables (for flavors, sizes, etc.) and do not have direct relationships with the `orders` table. Customization choices for an order are stored in the `order_items.customizations_json` column.
+-   **`admins` table**: This table is standalone and used for admin authentication.
 
 ### b. Core Tables
 
-**1. `cakes` Table**
+**1. `admins` Table**
+| Column Name | Data Type | Constraints / Notes |
+| :--- | :--- | :--- |
+| `id` | `INT` | **Primary Key**, Auto-increment |
+| `name` | `VARCHAR(255)` | Not Null |
+| `email` | `VARCHAR(255)` | Not Null, Unique |
+| `password_hash`| `VARCHAR(255)` | Not Null. In production, this should be a securely hashed password. |
+| `created_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` |
+
+---
+**2. `cakes` Table**
 | Column Name | Data Type | Constraints / Notes |
 | :--- | :--- | :--- |
 | `id` | `VARCHAR(255)` | **Primary Key** |
@@ -185,7 +196,7 @@ This section provides the blueprint for your backend database and instructions o
 | `updated_at` | `TIMESTAMP` | Updates on change |
 
 ---
-**2. `special_offers` Table**
+**3. `special_offers` Table**
 | Column Name | Data Type | Constraints / Notes |
 | :--- | :--- | :--- |
 | `id` | `INT` | **Primary Key**, Auto-increment |
@@ -196,7 +207,7 @@ This section provides the blueprint for your backend database and instructions o
 | `end_date` | `DATE` | |
 
 ---
-**3. `orders` Table**
+**4. `orders` Table**
 | Column Name | Data Type | Constraints / Notes |
 | :--- | :--- | :--- |
 | `id` | `INT` | **Primary Key**, Auto-increment |
@@ -216,7 +227,7 @@ This section provides the blueprint for your backend database and instructions o
 | `created_at` | `TIMESTAMP` | Default: `CURRENT_TIMESTAMP` |
 
 ---
-**4. `order_items` Table**
+**5. `order_items` Table**
 | Column Name | Data Type | Constraints / Notes |
 | :--- | :--- | :--- |
 | `id` | `INT` | **Primary Key**, Auto-increment |
@@ -277,7 +288,16 @@ You can use these SQL scripts to create all required tables in a tool like SQL S
 ```sql
 -- This script is for Microsoft SQL Server.
 
--- 1. Cakes Table
+-- 1. Admins Table
+CREATE TABLE admins (
+    id INT PRIMARY KEY IDENTITY(1,1),
+    name NVARCHAR(255) NOT NULL,
+    email NVARCHAR(255) NOT NULL UNIQUE,
+    password_hash NVARCHAR(255) NOT NULL,
+    created_at DATETIME2 DEFAULT GETDATE()
+);
+
+-- 2. Cakes Table
 CREATE TABLE cakes (
     id NVARCHAR(255) PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
@@ -293,7 +313,7 @@ CREATE TABLE cakes (
     updated_at DATETIME2 DEFAULT GETDATE()
 );
 
--- 2. Special Offers Table
+-- 3. Special Offers Table
 CREATE TABLE special_offers (
     id INT PRIMARY KEY IDENTITY(1,1),
     cake_id NVARCHAR(255) FOREIGN KEY REFERENCES cakes(id) ON DELETE SET NULL,
@@ -303,7 +323,7 @@ CREATE TABLE special_offers (
     end_date DATE
 );
 
--- 3. Orders Table
+-- 4. Orders Table
 CREATE TABLE orders (
     id INT PRIMARY KEY IDENTITY(1,1),
     order_number NVARCHAR(255) NOT NULL UNIQUE,
@@ -322,7 +342,7 @@ CREATE TABLE orders (
     created_at DATETIME2 DEFAULT GETDATE()
 );
 
--- 4. Order Items Table
+-- 5. Order Items Table
 CREATE TABLE order_items (
     id INT PRIMARY KEY IDENTITY(1,1),
     order_id INT NOT NULL FOREIGN KEY REFERENCES orders(id) ON DELETE CASCADE,
@@ -332,14 +352,14 @@ CREATE TABLE order_items (
     customizations_json NVARCHAR(MAX) CHECK (ISJSON(customizations_json) > 0)
 );
 
--- 5. Customization Flavors Table
+-- 6. Customization Flavors Table
 CREATE TABLE customization_flavors (
     id NVARCHAR(255) PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) NOT NULL
 );
 
--- 6. Customization Sizes Table
+-- 7. Customization Sizes Table
 CREATE TABLE customization_sizes (
     id NVARCHAR(255) PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
@@ -347,7 +367,7 @@ CREATE TABLE customization_sizes (
     price DECIMAL(10, 2) NOT NULL
 );
 
--- 7. Customization Colors Table
+-- 8. Customization Colors Table
 CREATE TABLE customization_colors (
     id NVARCHAR(255) PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
@@ -355,7 +375,7 @@ CREATE TABLE customization_colors (
     price DECIMAL(10, 2) NOT NULL
 );
 
--- 8. Customization Toppings Table
+-- 9. Customization Toppings Table
 CREATE TABLE customization_toppings (
     id NVARCHAR(255) PRIMARY KEY,
     name NVARCHAR(255) NOT NULL,
@@ -366,6 +386,10 @@ CREATE TABLE customization_toppings (
 #### MS SQL Server Seed Data
 Run these commands after creating the tables to populate them with initial data.
 ```sql
+-- Insert Admin User (replace with a securely hashed password in production)
+INSERT INTO admins (name, email, password_hash) VALUES
+('Admin User', 'admin@whiskedelights.com', 'admin'); -- NOTE: Use a proper hash in production!
+
 -- Insert Cakes
 INSERT INTO cakes (id, name, description, base_price, image_id, rating, category, customizable, orders_count, ready_time) VALUES
 ('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake, layered with silky smooth chocolate ganache and topped with a glossy finish. A true indulgence for any chocolate lover.', 3200.00, 'special-offer-cake', 4.9, 'Chocolate', 1, 150, '24h'),
@@ -414,7 +438,16 @@ If you are using XAMPP, use these scripts in phpMyAdmin or a similar tool.
 ```sql
 -- This script is for MySQL or MariaDB.
 
--- 1. Cakes Table
+-- 1. Admins Table
+CREATE TABLE admins (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Cakes Table
 CREATE TABLE cakes (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -430,7 +463,7 @@ CREATE TABLE cakes (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
--- 2. Special Offers Table
+-- 3. Special Offers Table
 CREATE TABLE special_offers (
     id INT PRIMARY KEY AUTO_INCREMENT,
     cake_id VARCHAR(255),
@@ -441,7 +474,7 @@ CREATE TABLE special_offers (
     FOREIGN KEY (cake_id) REFERENCES cakes(id) ON DELETE SET NULL
 );
 
--- 3. Orders Table
+-- 4. Orders Table
 CREATE TABLE orders (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_number VARCHAR(255) NOT NULL UNIQUE,
@@ -460,7 +493,7 @@ CREATE TABLE orders (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- 4. Order Items Table
+-- 5. Order Items Table
 CREATE TABLE order_items (
     id INT PRIMARY KEY AUTO_INCREMENT,
     order_id INT NOT NULL,
@@ -472,14 +505,14 @@ CREATE TABLE order_items (
     FOREIGN KEY (cake_id) REFERENCES cakes(id)
 );
 
--- 5. Customization Flavors Table
+-- 6. Customization Flavors Table
 CREATE TABLE customization_flavors (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     price DECIMAL(10, 2) NOT NULL
 );
 
--- 6. Customization Sizes Table
+-- 7. Customization Sizes Table
 CREATE TABLE customization_sizes (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -487,7 +520,7 @@ CREATE TABLE customization_sizes (
     price DECIMAL(10, 2) NOT NULL
 );
 
--- 7. Customization Colors Table
+-- 8. Customization Colors Table
 CREATE TABLE customization_colors (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -495,7 +528,7 @@ CREATE TABLE customization_colors (
     price DECIMAL(10, 2) NOT NULL
 );
 
--- 8. Customization Toppings Table
+-- 9. Customization Toppings Table
 CREATE TABLE customization_toppings (
     id VARCHAR(255) PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
@@ -506,6 +539,10 @@ CREATE TABLE customization_toppings (
 #### MySQL / MariaDB Seed Data
 Run these commands after creating the tables to populate them with initial data.
 ```sql
+-- Insert Admin User (replace with a securely hashed password in production)
+INSERT INTO `admins` (`name`, `email`, `password_hash`) VALUES
+('Admin User', 'admin@whiskedelights.com', 'admin'); -- NOTE: Use a proper hash in production!
+
 -- Insert Cakes
 INSERT INTO `cakes` (`id`, `name`, `description`, `base_price`, `image_id`, `rating`, `category`, `customizable`, `orders_count`, `ready_time`) VALUES
 ('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake, layered with silky smooth chocolate ganache and topped with a glossy finish. A true indulgence for any chocolate lover.', 3200.00, 'special-offer-cake', 4.9, 'Chocolate', TRUE, 150, '24h'),
