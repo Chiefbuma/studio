@@ -211,3 +211,29 @@ The frontend is configured to communicate with a backend API available at the UR
 -   `PUT /api/orders/:id/status`: Update an order's status (Admin only).
 -   `POST /api/orders`: Place a new order.
 -   `POST /api/auth/login`: Authenticate an admin user.
+
+## 5. Transitioning from Mock Data to a Live API
+
+This application is currently running in a "prototype" mode, using mock data to simulate a full-stack experience. The following guide outlines the files you will need to modify to connect the frontend to a real, live backend API.
+
+### a. `docker-compose.yml` & `.env` (Environment Configuration)
+
+*   **`docker-compose.yml`**: This file already configures and runs your `mysql` database container. Your separate backend API service (not included in this repository) should be configured to connect to this database using the credentials specified here (host: `mysql`, user: `whiskedelight_user`, etc.).
+*   **`.env`**: This file contains the `NEXT_PUBLIC_API_URL`. To connect to your real backend, you must ensure this variable points to the correct URL where your API is running (e.g., `http://localhost:3001/api`).
+
+### b. `src/services/cake-service.ts` (Data Fetching Service)
+
+*   **How it Works**: This file acts as the data layer for the frontend. It currently contains functions like `getCakes`, `getSpecialOffer`, and `getOrders`. Each function has two versions:
+    1.  A **mock implementation** that returns hardcoded data from `src/lib/data.ts` (currently active).
+    2.  A **real implementation** that uses `fetch` to call the backend API (currently commented out).
+*   **To Switch to Real Data**: For each function in this file, comment out the mock implementation and uncomment the `fetch`-based implementation. This will switch the application from using local mock data to fetching live data from your API.
+
+### c. `src/lib/actions.ts` (Server Actions for Data Mutation)
+
+*   **How it Works**: This file handles server-side logic initiated from the client, such as placing an order. The `placeOrder` function currently simulates creating an order.
+*   **To Switch to Real Data**: You will need to modify the `placeOrder` function to make a `POST` request to your `/api/orders` endpoint, sending the order payload and returning the result from your backend.
+
+### d. Admin Panel Pages (`app/admin/(protected)/**/*.tsx`)
+
+*   **How They Work**: The pages in the admin panel (e.g., `cakes/page.tsx`, `orders/page.tsx`) contain handler functions for actions like creating, editing, and deleting items (e.g., `handleCreate`, `handleDelete`, `handleUpdateStatus`). These handlers currently perform mock operations and show a toast notification.
+*   **To Switch to Real Data**: You must update these handler functions. Instead of just simulating the action, they should call new functions in `src/services/cake-service.ts` that make the appropriate API requests (e.g., `DELETE /api/cakes/:id`, `PUT /api/orders/:id/status`). After a successful API call, they should then re-fetch the data to update the UI.
