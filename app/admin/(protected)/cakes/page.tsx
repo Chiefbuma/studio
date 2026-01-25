@@ -14,7 +14,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function CakesPage() {
     const [cakes, setCakes] = useState<Cake[]>([]);
@@ -40,9 +40,7 @@ export default function CakesPage() {
 
     const handleCreate = () => {
         // In a real app, this would open a form/dialog to create a new cake.
-        toast({ title: "Prototype Action", description: `This would open a 'Create' form for a new cake.` });
-        /*
-        const newCakeData = { name: "New Awesome Cake", base_price: 3000, customizable: true, description: "A new cake." };
+        const newCakeData = { name: "New Awesome Cake", base_price: 3000, customizable: true, description: "A new cake.", image_id: "vanilla-bean-classic", category: "Classic", rating: 4.5, orders_count: 0, ready_time: "24h" };
         
         fetch(`${API_BASE_URL}/cakes`, {
             method: 'POST',
@@ -59,21 +57,18 @@ export default function CakesPage() {
         }).catch(err => {
             toast({ variant: "destructive", title: "Error", description: err.message || "Could not create cake." });
         });
-        */
     };
 
     const handleEdit = (cakeId: string) => {
         // This would open a form/dialog pre-filled with the cake's data.
         // The form would include a toggle for the 'customizable' field.
-        // For demonstration, we'll just show the toast.
         toast({ title: "Prototype Action", description: `This would open an 'Edit' form for cake ${cakeId}.` });
     };
 
     const handleDelete = async (cakeId: string, cakeName: string) => {
         // This would show a confirmation dialog first.
         if (!confirm(`Are you sure you want to delete "${cakeName}"?`)) return;
-        toast({ title: "Prototype Action", description: `This would delete cake "${cakeName}".` });
-        /*
+        
         try {
             const response = await fetch(`${API_BASE_URL}/cakes/${cakeId}`, {
                 method: 'DELETE',
@@ -99,7 +94,6 @@ export default function CakesPage() {
                 description: error.message || 'An unknown error occurred.',
             });
         }
-        */
     };
     
     return (

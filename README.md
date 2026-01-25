@@ -1,112 +1,213 @@
 # WhiskeDelights: Application Documentation
 
-Welcome to the full technical documentation for the WhiskeDelights web application. This document provides a comprehensive overview of the technologies used, the core design principles applied, and the project's file structure. This version of the application operates on mock data for frontend development and prototyping.
+Welcome to the full technical documentation for the WhiskeDelights web application. This document provides a comprehensive overview of the technologies used, the core design principles applied, and the project's file structure.
 
 ## 1. Technology Stack
 
 -   **Next.js**: A React framework that provides a production-ready foundation. We use its App Router for file-based routing and Server Components for performance.
--   **React**: The core library for building the user interface. The entire application is composed of interactive and reusable React components.
--   **TypeScript**: A typed superset of JavaScript that enhances code quality, improves maintainability, and provides excellent editor support.
--   **Tailwind CSS**: A utility-first CSS framework for rapidly building custom user interfaces. It's used for all styling in the application.
--   **ShadCN/UI**: A collection of beautifully designed, accessible, and reusable UI components built on top of Radix UI and Tailwind CSS.
--   **OpenStreetMap (Nominatim)**: Integrated for an intelligent address search with autocomplete.
--   **Paystack**: A payment gateway integrated for processing M-Pesa payments securely.
+-   **React**: The core library for building the user interface.
+-   **TypeScript**: Enhances code quality and improves maintainability.
+-   **Tailwind CSS**: A utility-first CSS framework for all styling.
+-   **ShadCN/UI**: A collection of accessible and reusable UI components.
+-   **Paystack**: Integrated for processing M-Pesa payments securely.
+-   **Docker**: For creating a consistent and reproducible development environment.
+-   **MySQL**: The database for storing all application data.
 
-## 2. Design Principles & Architecture
+## 2. Full-Stack Docker Environment
 
-The application is structured following modern software design principles to ensure it is clean, scalable, and easy to maintain.
-
-### a. Component-Based Architecture
-
-The UI is broken down into small, reusable components located in `src/components`.
--   **Presentational Components**: Most components are "dumb" and focus on rendering UI based on the props they receive.
--   **Container Components**: Page-level components (`src/app/page.tsx`) act as containers that manage state and pass it down.
-
-### b. Separation of Concerns
-
--   **UI (`src/components`, `src/app`):** Responsible for presentation and user interaction.
--   **State Management (`src/hooks`):**
-    -   `useCart`: Manages the global shopping cart state and persists it to `localStorage`.
-    -   `useCakeData`: Manages the fetching and loading state of all mock cake data.
--   **Data Fetching (`src/services`):** The `cake-service.ts` file abstracts the data source. Currently, it retrieves data from the mock data file (`src/lib/data.ts`).
--   **Server-Side Logic (`src/lib/actions.ts`):** Next.js Server Actions are used to simulate backend operations like placing an order.
-
-### c. Admin Panel Architecture (Prototype)
-
-The admin panel is a client-side application that simulates data management.
--   **Authentication**: It uses `localStorage` to persist the admin's login state for local development.
--   **Data Management**: The admin panel reads from the mock data files (`src/lib/data.ts`). Actions like "Create," "Update," and "Delete" are simulated and show toast notifications, but do not permanently alter the mock data as it is read-only.
-
-## 3. File-by-File Breakdown
-
--   `src/app/`: Contains all routing, pages, and layouts.
-    -   `checkout/page.tsx`: A responsive, single-page checkout flow.
-    -   `admin/`: Contains the prototype admin panel.
-        -   `login/page.tsx`: The mock login page.
-        -   `(protected)/...`: The protected admin pages.
--   `src/components/`: Contains all UI components.
-    -   `cake-paradise/`: Custom components for this application.
-    -   `ui/`: ShadCN/UI components.
--   `src/hooks/`: Contains custom React hooks for shared logic.
--   `src/lib/`:
-    -   `actions.ts`: Contains mock Server Actions.
-    -   `data.ts`: **(Mock Backend)** This file contains all the mock data for the application.
-    -   `types.ts`: Contains all TypeScript type definitions.
--   `src/services/`:
-    -   `cake-service.ts`: This service abstracts data fetching from the mock data file.
-
-## 4. The Admin Panel (Prototype)
-
-The application includes a comprehensive admin panel for demonstrating management functionality.
-
-### a. Functionality
-
--   **Dashboard**: View key metrics based on mock data.
--   **Order Management**: View a list of mock orders.
--   **Cake Management**: View and manage available cakes.
--   **Offer Management**: Update the daily special offer.
--   **Customization Management**: Manage cake customization options.
-
-**Note:** All data management in the admin panel is a simulation. Changes are not persisted.
-
-### b. How to Access and Log In
-
-1.  Navigate to the site's footer and click the "Admin Panel" link, or go directly to `/admin/login`.
-2.  Use the following credentials:
-    -   **Email**: `admin@whiskedelights.com`
-    -   **Password**: `admin`
-
-## 5. Local Development Setup
-
-Follow these instructions to get the application running on your local machine.
+This project is configured to run in a multi-container Docker environment using `docker-compose`. This is the recommended way to run the application for development, as it sets up the Next.js frontend, a MySQL database, and a database management tool (phpMyAdmin) with a single command.
 
 ### a. Prerequisites
 
 - **Node.js**: Version 20.x or higher.
 - **npm**: A Node.js package manager (v10+).
-- **Docker**: (Optional) For a consistent, containerized environment.
+- **Docker & Docker Compose**: For running the containerized environment.
 
 ### b. Environment Variables
 
-1.  Create a file named `.env` in the root of the project.
-2.  Add the following lines, replacing placeholders with your keys:
+Before starting, create a `.env` file in the project root. This file is ignored by Git and holds your secret keys.
 
-    ```
-    # Your public key from the Paystack dashboard (required for payments)
-    NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxx
-    
-    # Your WhatsApp number including country code (e.g., 254712345678)
-    NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER=2547xxxxxxxx
-    ```
+1.  Copy the example `env.local.example` to a new file named `.env`.
+2.  Fill in the values:
+    -   `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your public key from the Paystack dashboard.
+    -   `NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER`: Your business WhatsApp number.
+    -   `NEXT_PUBLIC_API_URL`: The URL for your backend API. For this Docker setup, it is pre-configured and should be `http://localhost:3001/api`.
 
-### c. Running with Docker
+### c. How to Run the Application
 
-This is the recommended way to run the application.
-
-1.  **Build and run the container:**
+1.  **Start the services**:
     Make sure Docker Desktop is running. Then, from the project root, run:
     ```bash
-    docker-compose up --build
+    docker-compose up --build -d
     ```
-2.  **Access the application:**
-    The application will be available at `http://localhost:3000`.
+    This command will build the images and start the Next.js app, MySQL database, and phpMyAdmin in detached mode.
+
+2.  **Access the services**:
+    -   **Application**: `http://localhost:3000`
+    -   **phpMyAdmin**: `http://localhost:8080` (Log in with user `root` and password `secret`)
+
+3.  **Stopping the services**:
+    To stop all running containers, run:
+    ```bash
+    docker-compose down
+    ```
+
+## 3. Database Schema & Seeding
+
+Your backend API will need a database. The `docker-compose.yml` file automatically creates a MySQL database named `WhiskeDelightsDB`.
+
+### a. Database Credentials
+
+Your backend API should use the following credentials to connect to the database.
+
+-   **Host**: `mysql` (when running inside Docker) or `127.0.0.1` (if backend is outside Docker)
+-   **Port**: `3306`
+-   **Database**: `WhiskeDelightsDB`
+-   **User**: `whiskedelight_user`
+-   **Password**: `secret`
+
+### b. SQL Schema
+
+Use the following SQL scripts to create the necessary tables in your `WhiskeDelightsDB` database.
+
+#### Admins Table
+```sql
+CREATE TABLE `admins` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL,
+  `email` VARCHAR(255) NOT NULL UNIQUE,
+  `password_hash` VARCHAR(255) NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+*Creates the table to store admin user credentials.*
+
+#### Cakes, Customizations, and Orders
+```sql
+-- Core table for all available cakes
+CREATE TABLE `cakes` (
+  `id` VARCHAR(255) PRIMARY KEY,
+  `name` VARCHAR(255) NOT NULL,
+  `description` TEXT NOT NULL,
+  `base_price` DECIMAL(10, 2) NOT NULL,
+  `image_id` VARCHAR(255) NOT NULL,
+  `rating` DECIMAL(3, 2) NOT NULL,
+  `category` VARCHAR(255) NOT NULL,
+  `orders_count` INT NOT NULL,
+  `ready_time` VARCHAR(50) NOT NULL,
+  `defaultFlavorId` VARCHAR(255),
+  `customizable` BOOLEAN NOT NULL DEFAULT false
+);
+
+-- Customization options
+CREATE TABLE `flavors` ( `id` VARCHAR(255) PRIMARY KEY, `name` VARCHAR(255) NOT NULL, `price` DECIMAL(10, 2) NOT NULL, `description` VARCHAR(255), `color` VARCHAR(50) );
+CREATE TABLE `sizes` ( `id` VARCHAR(255) PRIMARY KEY, `name` VARCHAR(255) NOT NULL, `serves` VARCHAR(100), `price` DECIMAL(10, 2) NOT NULL );
+CREATE TABLE `colors` ( `id` VARCHAR(255) PRIMARY KEY, `name` VARCHAR(255) NOT NULL, `hex_value` VARCHAR(7), `price` DECIMAL(10, 2) NOT NULL );
+CREATE TABLE `toppings` ( `id` VARCHAR(255) PRIMARY KEY, `name` VARCHAR(255) NOT NULL, `price` DECIMAL(10, 2) NOT NULL );
+
+-- Special offer table (links to one cake)
+CREATE TABLE `special_offers` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `cake_id` VARCHAR(255) NOT NULL UNIQUE,
+  `discount_percentage` INT NOT NULL,
+  FOREIGN KEY (`cake_id`) REFERENCES `cakes`(`id`) ON DELETE CASCADE
+);
+
+-- Orders and their associated items
+CREATE TABLE `orders` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `order_number` VARCHAR(255) NOT NULL UNIQUE,
+  `customer_name` VARCHAR(255) NOT NULL,
+  `customer_phone` VARCHAR(50) NOT NULL,
+  `delivery_method` ENUM('delivery', 'pickup') NOT NULL,
+  `delivery_address` TEXT,
+  `latitude` DECIMAL(10, 8),
+  `longitude` DECIMAL(11, 8),
+  `pickup_location` VARCHAR(255),
+  `delivery_date` VARCHAR(255),
+  `special_instructions` TEXT,
+  `total_price` DECIMAL(10, 2) NOT NULL,
+  `deposit_amount` DECIMAL(10, 2) NOT NULL,
+  `payment_status` ENUM('pending', 'paid') DEFAULT 'pending',
+  `order_status` ENUM('processing', 'complete', 'cancelled') DEFAULT 'processing',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE `order_items` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `order_id` INT NOT NULL,
+  `cake_id` VARCHAR(255) NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `quantity` INT NOT NULL,
+  `price` DECIMAL(10, 2) NOT NULL,
+  `customizations` JSON,
+  FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`) ON DELETE CASCADE
+);
+```
+
+### c. Database Seed Script (MySQL/MariaDB)
+
+Run these `INSERT` statements in phpMyAdmin to populate your database with the initial data.
+
+```sql
+-- Seed Admins
+INSERT INTO `admins` (`name`, `email`, `password_hash`) VALUES ('Admin', 'admin@whiskedelights.com', '$2b$10$your_bcrypt_hash_for_password_admin'); -- Replace with a real hash
+
+-- Seed Cakes
+INSERT INTO `cakes` (`id`, `name`, `description`, `base_price`, `image_id`, `rating`, `category`, `orders_count`, `ready_time`, `defaultFlavorId`, `customizable`) VALUES
+('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake...', 3200.00, 'special-offer-cake', 4.9, 'Chocolate', 150, '24h', 'f2', true),
+('red-velvet-delight', 'Red Velvet Delight', 'The timeless classic...', 2800.00, 'red-velvet-delight', 4.8, 'Classic', 120, '24h', 'f3', true),
+('strawberry-dream', 'Strawberry Dream', 'A light and fluffy vanilla sponge cake...', 2500.00, 'strawberry-dream', 4.7, 'Fruit', 95, '24h', NULL, false),
+('lemon-zest-creation', 'Lemon Zest Creation', 'A zesty and refreshing lemon cake...', 2600.00, 'lemon-zest-creation', 4.6, 'Fruit', 80, '24h', NULL, false),
+('vanilla-bean-classic', 'Vanilla Bean Classic', 'A simple yet elegant cake...', 2400.00, 'vanilla-bean-classic', 4.5, 'Classic', 110, '24h', 'f1', true),
+('matcha-elegance', 'Matcha Elegance', 'An earthy and refined cake...', 3000.00, 'matcha-elegance', 4.7, 'Specialty', 60, '48h', 'f1', true),
+('custom-cake', 'Custom Creation', 'Design your own cake from scratch...', 1200.00, 'custom-cake-placeholder', 0, 'Custom', 0, '48h+', NULL, true);
+
+-- Seed Flavors
+INSERT INTO `flavors` (`id`, `name`, `price`, `description`, `color`) VALUES
+('f1', 'Classic Vanilla', 0.00, 'A timeless, aromatic flavor.', '#F3E5AB'),
+('f2', 'Rich Chocolate', 200.00, 'Deep, decadent, and dark.', '#5D4037'),
+('f3', 'Red Velvet', 250.00, 'A Southern classic with a hint of cocoa.', '#9B2C2C'),
+('f4', 'Zesty Lemon', 150.00, 'Bright, citrusy, and refreshing.', '#FBC02D');
+
+-- Seed Sizes
+INSERT INTO `sizes` (`id`, `name`, `serves`, `price`) VALUES
+('s1', '6" Cake', '6-8 people', 0.00),
+('s2', '8" Cake', '10-12 people', 500.00),
+('s3', '10" Cake', '15-20 people', 1000.00);
+
+-- Seed Colors
+INSERT INTO `colors` (`id`, `name`, `hex_value`, `price`) VALUES
+('c1', 'Classic White', '#FFFFFF', 0.00),
+('c2', 'Pastel Pink', '#FFD1DC', 100.00),
+('c3', 'Sky Blue', '#87CEEB', 100.00),
+('c4', 'Vibrant Red', '#FF0000', 150.00);
+
+-- Seed Toppings
+INSERT INTO `toppings` (`id`, `name`, `price`) VALUES
+('t1', 'Rainbow Sprinkles', 50.00),
+('t2', 'Chocolate Drizzle', 100.00),
+('t3', 'Fresh Berries', 250.00),
+('t4', 'Edible Flowers', 300.00);
+
+-- Seed Special Offer
+INSERT INTO `special_offers` (`cake_id`, `discount_percentage`) VALUES ('chocolate-fudge-delight', 20);
+```
+
+## 4. API Endpoints
+
+The frontend is configured to communicate with a backend API available at the URL specified in `NEXT_PUBLIC_API_URL`. Below is a summary of the expected endpoints.
+
+-   `GET /api/cakes`: Get all available cakes.
+-   `GET /api/cakes/:id`: Get a single cake by its ID.
+-   `POST /api/cakes`: Create a new cake (Admin only).
+-   `DELETE /api/cakes/:id`: Delete a cake (Admin only).
+-   `GET /api/special-offer`: Get the current special offer.
+-   `PUT /api/special-offer`: Update the special offer (Admin only).
+-   `GET /api/customizations`: Get all customization options.
+-   `POST /api/customizations/:category`: Add a new customization option (Admin only).
+-   `DELETE /api/customizations/:category/:id`: Delete a customization option (Admin only).
+-   `GET /api/orders`: Get all orders (Admin only).
+-   `PUT /api/orders/:id/status`: Update an order's status (Admin only).
+-   `POST /api/orders`: Place a new order.
+-   `POST /api/auth/login`: Authenticate an admin user.

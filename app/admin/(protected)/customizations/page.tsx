@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 
 type CustomizationCategory = "flavors" | "sizes" | "colors" | "toppings";
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 const categoryTitles: Record<CustomizationCategory, string> = {
     flavors: "Flavors",
@@ -48,9 +48,7 @@ export default function CustomizationsPage() {
         // This would open a dialog/form to add a new item.
         const newItemName = prompt(`Enter the name for the new ${category.slice(0, -1)}:`);
         if (!newItemName) return;
-        toast({ title: 'Prototype Action', description: `This would add "${newItemName}" to ${category}.` });
         
-        /*
         const newItemPrice = prompt(`Enter the price for ${newItemName}:`);
         if (!newItemPrice) return;
         
@@ -69,7 +67,6 @@ export default function CustomizationsPage() {
                 toast({ variant: 'destructive', title: 'Error', description: err.message });
             }
         });
-        */
     };
     
     const handleEdit = (category: CustomizationCategory, itemId: string) => {
@@ -78,9 +75,7 @@ export default function CustomizationsPage() {
 
     const handleDelete = (category: CustomizationCategory, itemId: string) => {
         if (!confirm(`Are you sure you want to delete this item from ${category}?`)) return;
-        toast({ title: 'Prototype Action', description: `This would delete item ${itemId} from ${category}.` });
 
-        /*
         fetch(`${API_BASE_URL}/customizations/${category}/${itemId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
@@ -93,7 +88,6 @@ export default function CustomizationsPage() {
                 toast({ variant: 'destructive', title: 'Error', description: err.message });
             }
         });
-        */
     };
 
     const renderTable = (category: CustomizationCategory, data: (Flavor | Size | Color | Topping)[]) => (

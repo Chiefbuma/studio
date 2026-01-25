@@ -1,58 +1,5 @@
 import type { Cake, SpecialOffer, CustomizationOptions, Order } from '@/lib/types';
-import { cakes, specialOfferData, customizationOptions, orders } from '@/lib/data';
 
-// --- MOCK SERVICE ---
-// This service simulates fetching data. In a real application, this would
-// make API calls to a backend.
-
-const customCake: Cake = {
-  id: 'custom-cake',
-  name: 'Custom Creation',
-  description: 'Design your own cake from scratch. Choose your flavor, size, colors, and toppings to create your perfect dessert.',
-  base_price: 1200,
-  image_id: 'custom-cake-placeholder',
-  rating: 0,
-  category: 'Custom',
-  orders_count: 0,
-  ready_time: '48h+',
-  customizable: true,
-};
-
-export async function getCakes(): Promise<Cake[]> {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 200));
-  // Add the special 'custom cake' to the list
-  return [customCake, ...cakes];
-}
-
-export async function getSpecialOffer(): Promise<SpecialOffer | null> {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 200));
-  return specialOfferData;
-}
-
-export async function getCustomizationOptions(): Promise<CustomizationOptions | null> {
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 200));
-  return customizationOptions;
-}
-
-export function getCustomCake(): Promise<Cake> {
-  // This remains a client-side operation as it's a placeholder object.
-  return new Promise(resolve => {
-    resolve(customCake);
-  });
-}
-
-export async function getOrders(): Promise<Order[]> {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 300));
-    // Sort orders by most recent
-    return [...orders].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-}
-
-
-/*
 // --- REAL API SERVICE ---
 // In a real application, this would be your base API URL.
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -103,6 +50,20 @@ export async function getCustomizationOptions(): Promise<CustomizationOptions | 
   }
 }
 
+export async function getCustomCake(): Promise<Cake | null> {
+    try {
+        const response = await fetch(`${API_BASE_URL}/cakes/custom-cake`);
+        if (!response.ok) {
+            if (response.status === 404) return null;
+            throw new Error('Failed to fetch custom cake placeholder');
+        }
+        return await response.json();
+    } catch (error) {
+        console.error('[GET_CUSTOM_CAKE_ERROR]', error);
+        return null;
+    }
+}
+
 export async function getOrders(): Promise<Order[]> {
   try {
     const token = localStorage.getItem('authToken');
@@ -120,10 +81,10 @@ export async function getOrders(): Promise<Order[]> {
       throw new Error('Failed to fetch orders');
     }
     const data: Order[] = await response.json();
-    return data;
+    // Sort orders by most recent
+    return [...data].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   } catch (error) {
     console.error('[GET_ORDERS_ERROR]', error);
     return []; // Return an empty array on error
   }
 }
-*/
