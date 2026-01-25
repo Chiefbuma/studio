@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
-import { getOrders } from "@/services/cake-service";
+import { getOrders, updateOrderStatus } from "@/services/cake-service";
 import type { Order } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -35,9 +36,14 @@ export default function OrdersPage() {
         fetchData();
     }, [fetchData]);
     
-    const handleUpdateStatus = (orderId: number, status: 'processing' | 'complete' | 'cancelled') => {
-        toast({ title: "Status Updated (Mock)", description: `Order status 'changed' to ${status}.` });
-        setOrders(prevOrders => prevOrders.map(o => o.id === orderId ? { ...o, order_status: status } : o));
+    const handleUpdateStatus = async (orderId: number, status: 'processing' | 'complete' | 'cancelled') => {
+        try {
+            await updateOrderStatus(orderId, status);
+            toast({ title: "Status Updated", description: `Order status changed to ${status}.` });
+            fetchData();
+        } catch (error) {
+             toast({ variant: "destructive", title: "Update Failed", description: "Could not update order status." });
+        }
     };
 
     const getOrderStatusVariant = (status: 'processing' | 'complete' | 'cancelled') => {

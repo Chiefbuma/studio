@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
-import { getCustomizationOptions } from "@/services/cake-service";
-import type { CustomizationOptions, Flavor, Size, Color, Topping } from "@/lib/types";
+import { getCustomizationOptions, deleteCustomizationOption } from "@/services/cake-service";
+import type { CustomizationOptions, Flavor, Size, Color, Topping, CustomizationCategory } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -12,8 +13,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-
-type CustomizationCategory = "flavors" | "sizes" | "colors" | "toppings";
 
 const categoryTitles: Record<CustomizationCategory, string> = {
     flavors: "Flavors",
@@ -44,16 +43,23 @@ export default function CustomizationsPage() {
     }, [fetchData]);
 
     const handleAdd = (category: CustomizationCategory) => {
-        toast({ title: 'Prototype Action', description: `This would open a form to add a new ${category.slice(0, -1)}.` });
+        toast({ title: 'Prototype Action', description: `This would open a form to add a new ${category.slice(0, -1)}. Backend connection required.` });
     };
     
     const handleEdit = (category: CustomizationCategory, itemId: string) => {
-        toast({ title: 'Prototype Action', description: `This would open an edit form for item ${itemId} in ${category}.` });
+        toast({ title: 'Prototype Action', description: `This would open an edit form for item ${itemId} in ${category}. Backend connection required.` });
     };
 
-    const handleDelete = (category: CustomizationCategory, itemId: string) => {
-        if (!confirm(`Are you sure you want to delete this item from ${category}?`)) return;
-        toast({ title: 'Item Deleted (Mock)', description: `Item ${itemId} was 'deleted' from ${category}.` });
+    const handleDelete = async (category: CustomizationCategory, itemId: string, itemName: string) => {
+        if (!confirm(`Are you sure you want to delete "${itemName}" from ${category}?`)) return;
+        
+        try {
+            await deleteCustomizationOption(category, itemId);
+            toast({ title: 'Item Deleted', description: `Item "${itemName}" was deleted from ${category}.` });
+            fetchData();
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Deletion Failed', description: `Could not delete the item. Please try again.` });
+        }
     };
 
     const renderTable = (category: CustomizationCategory, data: (Flavor | Size | Color | Topping)[]) => (
@@ -116,7 +122,7 @@ export default function CustomizationsPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem onClick={() => handleEdit(category, item.id)}>Edit</DropdownMenuItem>
-                                                <DropdownMenuItem onClick={() => handleDelete(category, item.id)} className="text-destructive">Delete</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleDelete(category, item.id, item.name)} className="text-destructive">Delete</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>

@@ -1,6 +1,7 @@
+
 'use client';
 import { useEffect, useState, useCallback } from "react";
-import { getCakes } from "@/services/cake-service";
+import { getCakes, deleteCake } from "@/services/cake-service";
 import type { Cake } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,7 +24,6 @@ export default function CakesPage() {
         setLoading(true);
         try {
             const cakesData = await getCakes();
-            // We filter out the custom cake placeholder
             setCakes(cakesData.filter(c => c.id !== 'custom-cake'));
         } catch (error) {
             toast({ variant: "destructive", title: "Error", description: "Could not fetch cakes." });
@@ -37,30 +37,30 @@ export default function CakesPage() {
     }, [fetchData]);
 
     const handleCreate = () => {
-        // In a real app, this would open a form/dialog to create a new cake.
-        toast({ title: "Prototype Action", description: "This would open a 'Create' form for a new cake." });
-        // To simulate, we can add a placeholder cake to the UI.
-        const newCakeData: Cake = { id: `new-cake-${Date.now()}`, name: "New Awesome Cake", base_price: 3000, customizable: true, description: "A new cake.", image_id: "vanilla-bean-classic", category: "Classic", rating: 4.5, orders_count: 0, ready_time: "24h" };
-        setCakes(prev => [newCakeData, ...prev]);
-        toast({ title: "Cake Created (Mock)", description: "The new cake has been added to the list." });
+        toast({ title: "Prototype Action", description: "This would open a 'Create' form for a new cake. Backend connection required." });
     };
 
     const handleEdit = (cakeId: string) => {
-        // This would open a form/dialog pre-filled with the cake's data.
-        // The form would include a toggle for the 'customizable' field.
-        toast({ title: "Prototype Action", description: `This would open an 'Edit' form for cake ${cakeId}.` });
+        toast({ title: "Prototype Action", description: `This would open an 'Edit' form for cake ${cakeId}. Backend connection required.` });
     };
 
     const handleDelete = async (cakeId: string, cakeName: string) => {
-        // This would show a confirmation dialog first.
         if (!confirm(`Are you sure you want to delete "${cakeName}"?`)) return;
         
-        // Simulate deletion
-        setCakes(prevCakes => prevCakes.filter(c => c.id !== cakeId));
-        toast({
-            title: 'Cake Deleted (Mock)',
-            description: `"${cakeName}" has been successfully deleted from the list.`,
-        });
+        try {
+            await deleteCake(cakeId);
+            toast({
+                title: 'Cake Deleted',
+                description: `"${cakeName}" has been successfully deleted.`,
+            });
+            fetchData();
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Deletion Failed',
+                description: `Could not delete "${cakeName}". Please try again.`,
+            });
+        }
     };
     
     return (

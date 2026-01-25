@@ -1,20 +1,21 @@
-import { cakes, specialOfferData, customizationOptions, orders } from '@/lib/data';
-import type { Cake, SpecialOffer, CustomizationOptions, Order } from '@/lib/types';
+
+import type { Cake, SpecialOffer, CustomizationOptions, Order, LoginCredentials, SpecialOfferUpdatePayload, CustomizationCategory } from '@/lib/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-// --- MOCK API SERVICE ---
-// This service simulates API calls by returning mock data from `/src/lib/data.ts`.
-// The real API calls are commented out below for easy switching.
+// Helper to get auth token from localStorage
+const getAuthHeaders = () => {
+    // This function will only be called on the client side, where localStorage is available.
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+};
 
-export async function getCakes(): Promise<Cake[]> {
-  console.log("MOCK: Fetching cakes...");
-  await new Promise(resolve => setTimeout(resolve, 50));
-  return cakes;
-}
+// --- REAL API IMPLEMENTATION ---
 
-/*
-// --- REAL API IMPLEMENTATION (Commented Out) ---
 export async function getCakes(): Promise<Cake[]> {
   try {
     const res = await fetch(`${API_URL}/cakes`);
@@ -27,21 +28,11 @@ export async function getCakes(): Promise<Cake[]> {
     throw error;
   }
 }
-*/
 
-export async function getSpecialOffer(): Promise<SpecialOffer | null> {
-    console.log("MOCK: Fetching special offer...");
-    await new Promise(resolve => setTimeout(resolve, 50));
-    return specialOfferData;
-}
-
-/*
-// --- REAL API IMPLEMENTATION (Commented Out) ---
 export async function getSpecialOffer(): Promise<SpecialOffer | null> {
     try {
         const res = await fetch(`${API_URL}/special-offer`);
         if (!res.ok) {
-            // It's okay to not have a special offer, so we return null instead of throwing
             if (res.status === 404) return null;
             throw new Error('Failed to fetch special offer');
         }
@@ -51,17 +42,7 @@ export async function getSpecialOffer(): Promise<SpecialOffer | null> {
         return null;
     }
 }
-*/
 
-
-export async function getCustomizationOptions(): Promise<CustomizationOptions | null> {
-    console.log("MOCK: Fetching customization options...");
-    await new Promise(resolve => setTimeout(resolve, 50));
-    return customizationOptions;
-}
-
-/*
-// --- REAL API IMPLEMENTATION (Commented Out) ---
 export async function getCustomizationOptions(): Promise<CustomizationOptions | null> {
     try {
         const res = await fetch(`${API_URL}/customizations`);
@@ -74,20 +55,9 @@ export async function getCustomizationOptions(): Promise<CustomizationOptions | 
         throw error;
     }
 }
-*/
 
-export async function getCustomCake(): Promise<Cake | null> {
-    console.log("MOCK: Fetching custom cake placeholder...");
-    await new Promise(resolve => setTimeout(resolve, 50));
-    const customCake = cakes.find(c => c.id === 'custom-cake');
-    return customCake || null;
-}
-
-/*
-// --- REAL API IMPLEMENTATION (Commented Out) ---
 export async function getCustomCake(): Promise<Cake | null> {
     try {
-        // The custom cake is usually a special case, often fetched with other cakes
         const allCakes = await getCakes();
         return allCakes.find(c => c.id === 'custom-cake') || null;
     } catch (error) {
@@ -95,34 +65,79 @@ export async function getCustomCake(): Promise<Cake | null> {
         return null;
     }
 }
-*/
 
-
-export async function getOrders(): Promise<Order[]> {
-    console.log("MOCK: Fetching orders...");
-    await new Promise(resolve => setTimeout(resolve, 50));
-    return [...orders].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-}
-
-/*
-// --- REAL API IMPLEMENTATION (Commented Out) ---
 export async function getOrders(): Promise<Order[]> {
     try {
-        // This would require authentication
-        const res = await fetch(`${API_URL}/orders`, {
-            headers: {
-                // 'Authorization': `Bearer ${your_auth_token}`
-            }
-        });
+        const res = await fetch(`${API_URL}/orders`, { headers: getAuthHeaders() });
         if (!res.ok) {
             throw new Error('Failed to fetch orders');
         }
         const data = await res.json();
-        // Sort orders by most recent
-        return data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        return data.sort((a: Order, b: Order) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } catch (error) {
         console.error('[GET_ORDERS_ERROR]', error);
         throw error;
     }
 }
-*/
+
+// --- Admin/Mutation Functions ---
+
+export async function loginAdmin(credentials: LoginCredentials): Promise<{ token: string }> {
+    const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: 'An unknown error occurred' }));
+        throw new Error(errorData.message || 'Login failed');
+    }
+    return res.json();
+}
+
+export async function deleteCake(cakeId: string): Promise<Response> {
+    const res = await fetch(`${API_URL}/cakes/${cakeId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        throw new Error('Failed to delete cake');
+    }
+    return res;
+}
+
+export async function updateSpecialOffer(payload: SpecialOfferUpdatePayload): Promise<SpecialOffer> {
+    const res = await fetch(`${API_URL}/special-offer`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+        throw new Error('Failed to update special offer');
+    }
+    return res.json();
+}
+
+export async function deleteCustomizationOption(category: CustomizationCategory, id: string): Promise<Response> {
+    const res = await fetch(`${API_URL}/customizations/${category}/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        throw new Error(`Failed to delete ${category} option`);
+    }
+    return res;
+}
+
+export async function updateOrderStatus(orderId: number, status: 'processing' | 'complete' | 'cancelled'): Promise<Order> {
+    const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status }),
+    });
+     if (!res.ok) {
+        throw new Error('Failed to update order status');
+    }
+    return res.json();
+}

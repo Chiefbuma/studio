@@ -1,7 +1,8 @@
+
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
-import { getSpecialOffer, getCakes } from "@/services/cake-service";
+import { getSpecialOffer, getCakes, updateSpecialOffer } from "@/services/cake-service";
 import type { SpecialOffer, Cake } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,7 +19,6 @@ export default function OffersPage() {
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
-    // Local state to manage form changes before saving
     const [selectedCakeId, setSelectedCakeId] = useState<string>('');
     const [discount, setDiscount] = useState<number>(0);
 
@@ -53,21 +53,20 @@ export default function OffersPage() {
             return;
         }
 
-        toast({
-            title: 'Special Offer Updated (Mock)',
-            description: `The special offer has been 'updated' to ${selectedCake?.name} with a ${discount}% discount.`,
-        });
-        
-        // To make the UI update, we can update the local state.
-        if (selectedCake) {
-            const newOffer: SpecialOffer = {
-                cake: selectedCake,
-                discount_percentage: discount,
-                original_price: originalPrice,
-                special_price: discountedPrice,
-                savings: originalPrice - discountedPrice,
-            };
-            setSpecialOffer(newOffer);
+        try {
+            const updatedOffer = await updateSpecialOffer({ cake_id: selectedCakeId, discount_percentage: discount });
+            setSpecialOffer(updatedOffer);
+            toast({
+                title: 'Special Offer Updated',
+                description: `The special offer has been updated successfully.`,
+            });
+            fetchData();
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: 'Update Failed',
+                description: `Could not update the special offer.`,
+            });
         }
     };
 
@@ -88,7 +87,37 @@ export default function OffersPage() {
     }
 
     if (!specialOffer) {
-        return <p>No special offer data found. You can create one from the backend.</p>
+        // This state allows creating a new offer if one doesn't exist
+        return (
+            <Card className="max-w-2xl mx-auto">
+                <CardHeader>
+                    <CardTitle>Create Special Offer</CardTitle>
+                    <CardDescription>There is no special offer. Create one now.</CardDescription>
+                </CardHeader>
+                 <CardContent className="space-y-6">
+                    <div className="space-y-2">
+                        <Label htmlFor="cake-select">Select Cake for Offer</Label>
+                        <Select value={selectedCakeId} onValueChange={setSelectedCakeId}>
+                            <SelectTrigger id="cake-select">
+                                <SelectValue placeholder="Select a cake" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {cakes.map(cake => (
+                                    <SelectItem key={cake.id} value={cake.id}>
+                                        {cake.name} - {formatPrice(cake.base_price)}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="discount">Discount Percentage (%)</Label>
+                        <Input id="discount" type="number" value={discount} onChange={e => setDiscount(Number(e.target.value))} />
+                    </div>
+                    <Button onClick={handleUpdateOffer}>Create Special Offer</Button>
+                </CardContent>
+            </Card>
+        )
     }
 
     return (

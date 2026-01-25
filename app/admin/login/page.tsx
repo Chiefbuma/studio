@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Cake, Loader2 } from 'lucide-react';
+import { loginAdmin } from '@/services/cake-service';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -30,27 +32,28 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoggingIn(true);
     
-    // Mock API Login Logic
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+        const { token } = await loginAdmin({ email, password });
+        
+        localStorage.setItem('isAdminLoggedIn', 'true');
+        localStorage.setItem('adminUser', JSON.stringify({ name: 'Admin', email })); // Store user info
+        localStorage.setItem('authToken', token); // Store auth token
 
-    if (email === 'admin@whiskedelights.com' && password === 'admin') {
-      localStorage.setItem('isAdminLoggedIn', 'true');
-      localStorage.setItem('adminUser', JSON.stringify({ name: 'Admin User', email: 'admin@whiskedelights.com' }));
-      localStorage.setItem('authToken', 'mock-auth-token'); // Mock token
+        toast({
+            title: 'Login Successful',
+            description: `Welcome back, Admin!`,
+        });
+        
+        router.push('/admin/dashboard');
 
-      toast({
-        title: 'Login Successful',
-        description: `Welcome back, Admin!`,
-      });
-      
-      router.push('/admin/dashboard');
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: 'Invalid email or password.',
-      });
-      setIsLoggingIn(false);
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Invalid email or password.';
+        toast({
+            variant: 'destructive',
+            title: 'Login Failed',
+            description: errorMessage,
+        });
+        setIsLoggingIn(false);
     }
   };
 
