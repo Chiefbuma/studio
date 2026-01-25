@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        - NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER=${NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER}
+    container_name: whiskedelights-app
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    working_dir: /app
+    env_file:
+      - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - whiskedelights-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: whiskedelights-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: WhiskeDelightsDB
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_USER: whiskedelight_user
+      MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - whiskedelights-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: whiskedelights-phpmyadmin
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: secret
+    depends_on:
+      - mysql
+    networks:
+      - whiskedelights-network
+
+networks:
+  whiskedelights-network:
+    driver: bridge
+
+volumes:
+  dbdata:
