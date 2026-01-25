@@ -14,8 +14,6 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
@@ -38,22 +36,8 @@ export default function OrdersPage() {
     }, [fetchData]);
     
     const handleUpdateStatus = (orderId: number, status: 'processing' | 'complete' | 'cancelled') => {
-        fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
-            body: JSON.stringify({ status }),
-        }).then(async response => {
-            if (response.ok) {
-                toast({ title: "Status Updated", description: `Order status changed to ${status}.` });
-                // Re-fetch orders to show updated status
-                await fetchData();
-            } else {
-                const error = await response.json();
-                toast({ variant: "destructive", title: "Error", description: error.message || "Could not update status." });
-            }
-        }).catch(err => {
-            toast({ variant: "destructive", title: "Error", description: err.message || "Could not update status." });
-        });
+        toast({ title: "Status Updated (Mock)", description: `Order status 'changed' to ${status}.` });
+        setOrders(prevOrders => prevOrders.map(o => o.id === orderId ? { ...o, order_status: status } : o));
     };
 
     const getOrderStatusVariant = (status: 'processing' | 'complete' | 'cancelled') => {

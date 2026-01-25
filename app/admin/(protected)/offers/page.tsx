@@ -12,8 +12,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-
 export default function OffersPage() {
     const [specialOffer, setSpecialOffer] = useState<SpecialOffer | null>(null);
     const [cakes, setCakes] = useState<Cake[]>([]);
@@ -55,40 +53,21 @@ export default function OffersPage() {
             return;
         }
 
-        const payload = {
-            cake_id: selectedCakeId,
-            discount_percentage: discount,
-        };
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/special-offer`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
-                body: JSON.stringify(payload),
-            });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Failed to update the special offer.');
-            }
-
-            const updatedOffer = await response.json();
-            
-            // Update the local state with the new data from the server
-            setSpecialOffer(updatedOffer);
-            setSelectedCakeId(updatedOffer.cake.id);
-            setDiscount(updatedOffer.discount_percentage);
-
-            toast({
-                title: 'Special Offer Updated',
-                description: `The special offer has been successfully updated.`,
-            });
-        } catch (error: any) {
-            toast({
-                variant: 'destructive',
-                title: 'Update Failed',
-                description: error.message || 'An unknown error occurred.',
-            });
+        toast({
+            title: 'Special Offer Updated (Mock)',
+            description: `The special offer has been 'updated' to ${selectedCake?.name} with a ${discount}% discount.`,
+        });
+        
+        // To make the UI update, we can update the local state.
+        if (selectedCake) {
+            const newOffer: SpecialOffer = {
+                cake: selectedCake,
+                discount_percentage: discount,
+                original_price: originalPrice,
+                special_price: discountedPrice,
+                savings: originalPrice - discountedPrice,
+            };
+            setSpecialOffer(newOffer);
         }
     };
 

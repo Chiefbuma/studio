@@ -9,8 +9,6 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Cake, Loader2 } from 'lucide-react';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
-
 export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -32,37 +30,25 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoggingIn(true);
     
-    // Real API Login Logic
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
+    // Mock API Login Logic
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (!response.ok) {
-        throw new Error('Invalid email or password.');
-      }
-
-      const { token, admin } = await response.json();
-
-      // Store token and user data for authenticated requests
-      localStorage.setItem('authToken', token);
-      localStorage.setItem('adminUser', JSON.stringify(admin));
-      localStorage.setItem('isAdminLoggedIn', 'true'); // Keep this for the client-side auth check
+    if (email === 'admin@whiskedelights.com' && password === 'admin') {
+      localStorage.setItem('isAdminLoggedIn', 'true');
+      localStorage.setItem('adminUser', JSON.stringify({ name: 'Admin User', email: 'admin@whiskedelights.com' }));
+      localStorage.setItem('authToken', 'mock-auth-token'); // Mock token
 
       toast({
         title: 'Login Successful',
-        description: `Welcome back, ${admin.name}!`,
+        description: `Welcome back, Admin!`,
       });
       
       router.push('/admin/dashboard');
-
-    } catch (error: any) {
+    } else {
       toast({
         variant: 'destructive',
         title: 'Login Failed',
-        description: error.message || 'An unknown error occurred.',
+        description: 'Invalid email or password.',
       });
       setIsLoggingIn(false);
     }
