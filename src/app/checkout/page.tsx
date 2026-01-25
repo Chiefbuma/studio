@@ -100,7 +100,11 @@ export default function CheckoutPage() {
   const customerEmail = `${deliveryInfo.phone}@whiskedelights.com`; 
 
   const handlePaymentSuccess = (response: { reference: string }, orderNumber: string) => {
-    // Generate and send WhatsApp message
+    // This function provides immediate feedback to the user on the client-side.
+    // In a production app, the true order confirmation and fulfillment process
+    // should ONLY be triggered by a verified Paystack webhook on your backend.
+
+    // Generate and send WhatsApp message for immediate notification to the owner
     const message = generateWhatsAppMessage(orderNumber);
     const whatsappUrl = `https://wa.me/${ownerWhatsAppNumber}?text=${encodeURIComponent(message)}`;
     
@@ -190,6 +194,7 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
 
+    // Create the order in the database with a 'pending' payment status.
     const result = await placeOrder({
         items: cart,
         deliveryInfo,
@@ -231,7 +236,7 @@ export default function CheckoutPage() {
       key: paystackPublicKey,
       email: customerEmail,
       amount: Math.round(amount * 100), // Amount in kobo/cents
-      currency: 'KES', // Explicitly set currency to Kenyan Shillings
+      currency: 'KES', // Explicitly set currency
       phone: deliveryInfo.phone,
       ref: `WD_${orderNumber}_${Date.now()}`,
       metadata: {
@@ -248,7 +253,7 @@ export default function CheckoutPage() {
         toast({
           variant: "destructive",
           title: 'Payment Cancelled',
-          description: 'Your order has been saved. You can try again later.',
+          description: 'Your order is saved with a pending status.',
         });
       }
     });

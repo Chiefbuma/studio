@@ -66,7 +66,7 @@ Here is an explanation of the key files and directories in the project.
     -   `login/page.tsx`: The dedicated login page for the admin panel.
     -   `(protected)/layout.tsx`: A special layout that protects all admin routes, redirecting unauthenticated users to the login page. It also contains the main sidebar navigation for the admin panel.
     -   `(protected)/dashboard/page.tsx`: The main dashboard page for the admin, showing key metrics.
-    -   `(protected)/orders/page.tsx`: Renders a table of all orders.
+    -   `(protected)/orders/page.tsx`: Renders a table of all orders, including their payment and order status.
     -   `(protected)/cakes/page.tsx`: Renders a table of all available cakes.
     -   `(protected)/offers/page.tsx`: Provides a form to manage the daily special offer.
     -   `(protected)/customizations/page.tsx`: A tabbed interface to manage all cake customization options (flavors, sizes, etc.).
@@ -97,8 +97,8 @@ The application includes a comprehensive admin panel for managing the shop's dat
 ### a. Functionality
 
 -   **Dashboard**: View key metrics like total revenue, total orders, and customer count.
--   **Order Management**: View a list of all orders with customer details, status, and total price.
--   **Cake Management**: View and manage all available cakes.
+-   **Order Management**: View a list of all orders with customer details, payment status, and order status.
+-   **Cake Management**: View and manage all available cakes, including their "customizable" status.
 -   **Offer Management**: Update the daily special offer.
 -   **Customization Management**: Add, view, or remove options for cake flavors, sizes, colors, and toppings.
 
@@ -133,9 +133,9 @@ A real-world backend for this application would need to expose the following API
 | `PUT` | `/api/special-offer` | Update the special offer. | Admin |
 | **Orders** | | |
 | `GET` | `/api/orders` | Get a list of all orders. | Admin |
-| `POST`| `/api/orders` | **Place a new customer order.** | Checkout |
-| `PUT` | `/api/orders/:id/status`| Update an order's status. | Admin |
-| `POST`| `/api/payments/verify` | Verify a payment with Paystack. | Checkout |
+| `POST`| `/api/orders` | **Place a new customer order.** The order should be created with `payment_status: 'pending'`. | Checkout |
+| `PUT` | `/api/orders/:id/status`| Update an order's status (e.g., to 'complete'). | Admin |
+| `POST`| `/api/payments/verify` | **[Webhook Endpoint]** Verify a payment with Paystack. Updates `payment_status` to `'paid'`. | Paystack |
 | **Customizations**| | |
 | `GET` | `/api/customizations`| Get all customization options. | Customization Modal, Admin |
 | `POST`| `/api/customizations/flavors` | Add a new flavor. | Admin |
@@ -556,17 +556,31 @@ This section details the security architecture of the application, measures take
 
 ### b. Payment Security (Paystack Integration)
 
-The application ensures payment security by delegating all sensitive operations to Paystack, a PCI-DSS compliant Payment Service Provider.
+The application ensures payment security by delegating all sensitive operations to Paystack, a PCI-DSS compliant Payment Service Provider. This architecture is designed to be robust and prevent common payment-related vulnerabilities.
 
--   **No Sensitive Data Handled**: The application **never** sees, handles, or stores any M-Pesa PINs or credit card numbers. All payment information is entered directly into a secure iframe controlled by Paystack.
--   **Transaction Verification (The Critical Step)**:
-    -   The `callback` function in the Paystack popup is only for providing immediate UI feedback (e.g., "Payment successful!"). It **cannot be trusted** as a definitive confirmation of payment.
-    -   **True verification must happen on the backend**. For every payment, Paystack can send a **webhook** to a secure endpoint on your backend API. Your backend code must:
-        1.  Receive this webhook and verify its authenticity using the signature provided by Paystack.
-        2.  Check the event type (e.g., `charge.success`).
-        3.  Verify the transaction amount and currency match the order total.
-        4.  Update the `payment_status` in your `orders` table from `pending` to `paid`.
-    -   This webhook-based approach prevents a malicious user from simply triggering the success function on the frontend to get an order for free and ensures no duplicate orders are processed.
+#### Payment Workflow
+
+1.  **Order Creation**: When a user clicks "Place Order & Pay", the `placeOrder` Server Action is called. This action securely creates an order in your database with a `payment_status` of **`pending`**.
+2.  **Payment Initiation**: The frontend receives the new `orderNumber` and initiates the payment with Paystack.
+3.  **Client-Side Feedback**:
+    -   If the payment is successful on the client side, the user receives an immediate success message and is redirected. **This is for UI/UX purposes only and is not trusted for fulfillment.**
+    -   If the user cancels, they are notified, and the order remains in the database as `pending`.
+4.  **Server-to-Server Verification (The Single Source of Truth)**:
+    -   Independently, Paystack sends a **webhook** (a secure, server-to-server notification) to a dedicated endpoint on your backend API (e.g., `POST /api/payments/verify`).
+    -   Your backend code **must** perform the following checks:
+        1.  **Verify the Webhook Signature**: Ensure the request is genuinely from Paystack using your secret key.
+        2.  **Check the Event Type**: Confirm the event is `charge.success`.
+        3.  **Verify Transaction Details**: Cross-reference the transaction amount and currency with the order total in your database to prevent tampering.
+        4.  **Update Order Status**: If all checks pass, update the order's `payment_status` in your database from `pending` to **`paid`**.
+    -   Only orders marked as `paid` should be processed for fulfillment.
+
+This webhook-based approach is critical. It prevents malicious users from spoofing a successful payment on the frontend and ensures that you only fulfill orders for which you have received verified payment.
+
+#### Handling Abandoned Payments
+
+Orders that remain in the `pending` state (because the user abandoned the payment) can be managed in several ways:
+-   **Automatic Cleanup**: A scheduled job (e.g., a cron job) on your backend can run periodically (e.g., every hour) to find and cancel `pending` orders that are older than a specified duration.
+-   **Manual Management**: The admin panel shows the `payment_status`, allowing you to manually review, follow up on, or cancel pending orders.
 
 ### c. Admin Panel & Authentication
 
@@ -605,6 +619,9 @@ For the application to run correctly, especially for payment integration, you mu
     ```
     # Your public key from the Paystack dashboard (required for payments)
     NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxxxxxxx
+    
+    # Your WhatsApp number including country code (e.g., 254712345678)
+    NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER=2547xxxxxxxx
     ```
 
 ### c. Standard Installation (npm)

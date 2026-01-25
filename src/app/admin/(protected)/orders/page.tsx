@@ -53,7 +53,7 @@ export default function OrdersPage() {
         setOrders(prev => prev.map(o => o.id === orderId ? {...o, order_status: status} : o));
     };
 
-    const getStatusVariant = (status: 'processing' | 'complete' | 'cancelled') => {
+    const getOrderStatusVariant = (status: 'processing' | 'complete' | 'cancelled') => {
         switch (status) {
             case 'processing': return 'secondary';
             case 'complete': return 'default';
@@ -61,6 +61,14 @@ export default function OrdersPage() {
             default: return 'outline';
         }
     };
+
+    const getPaymentStatusVariant = (status: 'paid' | 'pending') => {
+        switch (status) {
+            case 'paid': return 'default';
+            case 'pending': return 'outline';
+            default: return 'outline';
+        }
+    }
 
     return (
         <Card>
@@ -75,7 +83,8 @@ export default function OrdersPage() {
                             <TableHead>Order</TableHead>
                             <TableHead>Customer</TableHead>
                             <TableHead>Date</TableHead>
-                            <TableHead>Status</TableHead>
+                            <TableHead>Order Status</TableHead>
+                            <TableHead>Payment</TableHead>
                             <TableHead className="text-right">Total</TableHead>
                             <TableHead className="w-[100px] text-right">Actions</TableHead>
                         </TableRow>
@@ -88,6 +97,7 @@ export default function OrdersPage() {
                                     <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                                     <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                                     <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                                    <TableCell><Skeleton className="h-6 w-20 rounded-full" /></TableCell>
                                     <TableCell className="text-right"><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
                                     <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
                                 </TableRow>
@@ -102,7 +112,10 @@ export default function OrdersPage() {
                                     </TableCell>
                                     <TableCell>{format(new Date(order.created_at), "MMM d, yyyy")}</TableCell>
                                     <TableCell>
-                                        <Badge variant={getStatusVariant(order.order_status)} className="capitalize">{order.order_status}</Badge>
+                                        <Badge variant={getOrderStatusVariant(order.order_status)} className="capitalize">{order.order_status}</Badge>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Badge variant={getPaymentStatusVariant(order.payment_status)} className="capitalize">{order.payment_status}</Badge>
                                     </TableCell>
                                     <TableCell className="text-right">{formatPrice(order.total_price)}</TableCell>
                                     <TableCell className="text-right">
