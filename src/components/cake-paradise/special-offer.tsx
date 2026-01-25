@@ -23,91 +23,79 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
     const cakeImage = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
 
     return (
-        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white flex items-center justify-center">
+        <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white flex items-center justify-center p-4">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5 opacity-50"></div>
             
-            <div className="relative z-10 max-w-7xl w-full mx-auto px-4 flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
-                
-                {/* Left Side: Text Content */}
-                <div className="lg:w-1/2 w-full">
-                    <div className="relative bg-card/5 backdrop-blur-sm rounded-2xl p-6 sm:p-8 lg:p-12 shadow-2xl border border-primary/20 overflow-hidden flex flex-col justify-center">
-                        <div className="absolute -top-16 -left-16 w-48 h-48 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-                        <div className="absolute -bottom-16 -right-16 w-48 h-48 bg-accent/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+            <div className="relative z-10 w-full max-w-md mx-auto">
+                <div className="relative bg-card/5 backdrop-blur-sm rounded-2xl shadow-2xl border border-primary/20 overflow-hidden group">
+                    
+                    {/* Image at the top */}
+                    <div className="relative h-80">
+                        <Image
+                            src={cakeImage.imageUrl}
+                            alt={cake.name}
+                            fill
+                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                            data-ai-hint={cakeImage.imageHint}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                         
-                        <div className="relative z-10">
-                            <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-2 rounded-full shadow-lg mb-6">
-                                <Crown className="w-4 h-4 text-amber-300" />
-                                <span className="font-bold text-xs uppercase tracking-wider">Today's Special</span>
+                        <div className="absolute top-4 right-4 bg-background/90 backdrop-blur-sm rounded-xl p-2 shadow-xl border border-primary/20">
+                            <div className="text-center">
+                                <div className="flex justify-center items-center gap-1 text-lg font-bold text-primary"><Trophy className="w-5 h-5" />1</div>
+                                <div className="text-xs text-muted-foreground">Best Seller</div>
                             </div>
-
-                            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-background mb-4 leading-tight text-balance">{cake.name}</h1>
-                            <p className="text-muted-foreground text-base sm:text-lg mb-6 max-w-xl text-balance">{cake.description}</p>
-                            
-                            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 mb-6 text-sm">
-                                <div className="flex items-center gap-2">
-                                    <Star className="w-4 h-4 text-accent" />
-                                    <span className="font-bold">{cake.rating.toFixed(1)} Rating</span>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <Clock className="w-4 h-4 text-accent" />
-                                    <span>Ready in {cake.ready_time}</span>
-                                </div>
-                            </div>
-                            
-                            <div className="flex flex-wrap items-end gap-4 mb-8">
-                                <div className="text-4xl sm:text-5xl font-bold text-accent">{formatPrice(special_price)}</div>
-                                <div className="text-xl text-muted-foreground line-through">{formatPrice(cake.base_price)}</div>
-                                <div className="bg-primary/20 text-primary-foreground px-3 py-1 rounded-full font-bold text-sm border border-primary">
-                                    {discount_percentage}% OFF
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col sm:flex-row flex-wrap gap-4">
-                                <Button className="shadow-lg hover:shadow-primary/50 transition-shadow" onClick={() => onOrder(cake)}>
-                                    <CakeIcon className="mr-2 h-5 w-5" /> Add to Cart
-                                </Button>
-                                 <Button variant="secondary" onClick={onOrderCustom}>
-                                    <Sparkles className="mr-2 h-5 w-5" /> Create Your Own
-                                 </Button>
-                                <Button variant="outline" className="bg-card/10 border-primary/30 hover:bg-card/20" onClick={onNavigateToMenu}>
-                                    View Full Menu <ArrowRight className="ml-2 h-5 w-5" />
-                                </Button>
+                        </div>
+                        
+                        <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm p-2 rounded-xl shadow-lg flex items-center gap-2 border border-primary/20">
+                            <CheckCircle className="w-4 h-4 text-primary" />
+                            <div>
+                                <div className="font-bold text-sm text-foreground">{cake.orders_count}+ Orders</div>
+                                <div className="text-xs text-muted-foreground">This Month</div>
                             </div>
                         </div>
                     </div>
-                </div>
+                    
+                    {/* Text content below */}
+                    <div className="p-6 sm:p-8 text-center">
+                        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-4 py-2 rounded-full shadow-lg mb-6">
+                            <Crown className="w-4 h-4 text-amber-300" />
+                            <span className="font-bold text-xs uppercase tracking-wider">Today's Special</span>
+                        </div>
 
-                {/* Right Side: Image Content */}
-                <div className="lg:w-1/2 w-full flex justify-center">
-                    <div className="relative group w-full max-w-md">
-                         <div className="absolute -inset-2 bg-gradient-to-r from-primary/50 to-accent/50 rounded-2xl blur-xl opacity-50 group-hover:opacity-75 transition-all duration-500 animate-pulse"></div>
-                        <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-background/10 h-96 lg:h-[32rem]">
-                            <Image
-                                src={cakeImage.imageUrl}
-                                alt={cake.name}
-                                fill
-                                className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                data-ai-hint={cakeImage.imageHint}
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                            
-                            {/* #1 Best Seller Badge (Top Right) */}
-                            <div className="absolute top-4 right-4 bg-background/90 backdrop-blur-sm rounded-xl p-2 shadow-xl border border-primary/20">
-                                <div className="text-center">
-                                    <div className="flex justify-center items-center gap-1 text-lg font-bold text-primary"><Trophy className="w-5 h-5" />1</div>
-                                    <div className="text-xs text-muted-foreground">Best Seller</div>
-                                </div>
+                        <h1 className="text-3xl sm:text-4xl font-bold text-background mb-3 leading-tight text-balance">{cake.name}</h1>
+                        <p className="text-muted-foreground text-sm sm:text-base mb-6 max-w-xl text-balance mx-auto">{cake.description}</p>
+                        
+                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 mb-6 text-sm">
+                            <div className="flex items-center gap-2">
+                                <Star className="w-4 h-4 text-accent" />
+                                <span className="font-bold">{cake.rating.toFixed(1)} Rating</span>
                             </div>
-                            
-                             {/* Orders This Month Badge (Bottom Left) */}
-                            <div className="absolute bottom-4 left-4 bg-background/80 backdrop-blur-sm p-2 rounded-xl shadow-lg flex items-center gap-2 border border-primary/20">
-                                <CheckCircle className="w-4 h-4 text-primary" />
-                                <div>
-                                    <div className="font-bold text-sm text-foreground">{cake.orders_count}+ Orders</div>
-                                    <div className="text-xs text-muted-foreground">This Month</div>
-                                </div>
+                            <div className="flex items-center gap-2">
+                                <Clock className="w-4 h-4 text-accent" />
+                                <span>Ready in {cake.ready_time}</span>
                             </div>
                         </div>
+                        
+                        <div className="flex flex-wrap items-end justify-center gap-4 mb-8">
+                            <div className="text-3xl sm:text-4xl font-bold text-accent">{formatPrice(special_price)}</div>
+                            <div className="text-lg text-muted-foreground line-through">{formatPrice(cake.base_price)}</div>
+                            <div className="bg-primary/20 text-primary-foreground px-3 py-1 rounded-full font-bold text-sm border border-primary">
+                                {discount_percentage}% OFF
+                            </div>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                            <Button size="lg" className="shadow-lg hover:shadow-primary/50 transition-shadow w-full" onClick={() => onOrder(cake)}>
+                                <CakeIcon className="mr-2 h-5 w-5" /> Add to Cart
+                            </Button>
+                             <Button size="lg" variant="secondary" className="w-full" onClick={onOrderCustom}>
+                                <Sparkles className="mr-2 h-5 w-5" /> Create Your Own
+                             </Button>
+                        </div>
+                        <Button variant="outline" className="bg-card/10 border-primary/30 hover:bg-card/20 w-full mt-3" onClick={onNavigateToMenu}>
+                            View Full Menu <ArrowRight className="ml-2 h-5 w-5" />
+                        </Button>
                     </div>
                 </div>
             </div>
