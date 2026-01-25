@@ -197,35 +197,49 @@ INSERT INTO `special_offers` (`cake_id`, `discount_percentage`) VALUES ('chocola
 
 This project uses Next.js API Routes to create a backend directly within the Next.js application. This avoids the need for a separate backend server.
 
-### a. How it Works
+### a. Backend Architecture
 
 1.  **File-based Routing**: Any file named `route.ts` inside the `app/api` directory becomes an API endpoint. For example, `app/api/cakes/route.ts` creates the `/api/cakes` endpoint.
-2.  **Database Connection Utility (`src/lib/db.ts`)**: This new file manages the connection to your MySQL database. It uses the `mysql2` library and reads the database credentials securely from your `.env` file (`DB_HOST`, `DB_USER`, etc.). It creates a connection pool, which is an efficient way to handle multiple database requests.
-3.  **API Route Logic (`app/api/cakes/route.ts`)**: This is an example of a server-side route. It imports the database connection pool, defines a `GET` function to handle requests, executes a `SELECT * FROM cakes` query, and returns the result as JSON.
 
-### b. Creating New API Endpoints
+2.  **Database Connection Utility (`src/lib/db.ts`)**: This file manages the connection to your MySQL database. It uses the `mysql2` library and reads the database credentials securely from your `.env` file (`DB_HOST`, `DB_USER`, etc.). It creates a connection pool, which is an efficient way to handle multiple database requests.
 
-To create more endpoints, simply follow the pattern:
-1.  Create a new folder under `app/api/`. For example, for orders, create `app/api/orders/route.ts`.
-2.  In the new `route.ts` file, import the `pool` from `@/lib/db`.
-3.  Export `async` functions for the HTTP methods you want to support (`GET`, `POST`, `PUT`, `DELETE`).
-4.  Inside these functions, use `await pool.query(...)` to interact with your database.
-5.  Return data using `NextResponse.json(...)`.
+3.  **Authentication Utility (`src/lib/auth-utils.ts`)**: This file provides a helper function, `verifyAuth`, which checks for a valid JSON Web Token (JWT) in the `Authorization` header of incoming requests. This is used to protect admin-only endpoints.
 
-### c. Current API Endpoints
+4.  **API Route Logic**: Each `route.ts` file contains the server-side logic for its specific resource. It imports the database `pool`, defines `async` functions for HTTP methods (`GET`, `POST`, `PUT`, `DELETE`), executes SQL queries, and returns data using `NextResponse.json(...)`.
 
-The frontend is configured to communicate with the API endpoints listed below. You will need to create the corresponding `route.ts` files for each one to make the application fully functional.
+### b. API Endpoint Documentation
 
--   `GET /api/cakes`: Get all available cakes. **(This has been created for you)**.
--   `GET /api/cakes/:id`: Get a single cake by its ID.
--   `POST /api/cakes`: Create a new cake (Admin only).
--   `DELETE /api/cakes/:id`: Delete a cake (Admin only).
--   `GET /api/special-offer`: Get the current special offer.
--   `PUT /api/special-offer`: Update the special offer (Admin only).
--   `GET /api/customizations`: Get all customization options.
--   `POST /api/customizations/:category`: Add a new customization option (Admin only).
--   `DELETE /api/customizations/:category/:id`: Delete a customization option (Admin only).
--   `GET /api/orders`: Get all orders (Admin only).
--   `PUT /api/orders/:id/status`: Update an order's status (Admin only).
--   `POST /api/orders`: Place a new order.
--   `POST /api/auth/login`: Authenticate an admin user.
+Here is a complete list of all backend API endpoints implemented in this project.
+
+-   **`app/api/auth/login/route.ts`**
+    -   `POST /api/auth/login`: Authenticates an admin user based on email and password. It checks credentials against the `admins` table and, if successful, returns a secure JWT.
+
+-   **`app/api/cakes/route.ts`**
+    -   `GET /api/cakes`: Fetches a list of all cakes from the database.
+    -   `POST /api/cakes`: Creates a new cake. (Admin Only)
+
+-   **`app/api/cakes/[id]/route.ts`**
+    -   `GET /api/cakes/:id`: Fetches a single cake by its ID.
+    -   `PUT /api/cakes/:id`: Updates an existing cake's details. (Admin Only)
+    -   `DELETE /api/cakes/:id`: Deletes a cake from the database. (Admin Only)
+
+-   **`app/api/customizations/route.ts`**
+    -   `GET /api/customizations`: Fetches all customization options, grouped by category (flavors, sizes, colors, toppings).
+
+-   **`app/api/customizations/[category]/route.ts`**
+    -   `POST /api/customizations/:category`: Adds a new customization option to a specified category (e.g., a new flavor). (Admin Only)
+
+-   **`app/api/customizations/[category]/[id]/route.ts`**
+    -   `PUT /api/customizations/:category/:id`: Updates a specific customization option. (Admin Only)
+    -   `DELETE /api/customizations/:category/:id`: Deletes a specific customization option. (Admin Only)
+
+-   **`app/api/orders/route.ts`**
+    -   `GET /api/orders`: Fetches a list of all orders, including their associated items. (Admin Only)
+    -   `POST /api/orders`: Places a new order. This is a complex transaction that creates an entry in the `orders` table and multiple entries in the `order_items` table.
+
+-   **`app/api/orders/[id]/status/route.ts`**
+    -   `PUT /api/orders/:id/status`: Updates the `order_status` of a specific order (e.g., to 'complete' or 'cancelled'). (Admin Only)
+
+-   **`app/api/special-offer/route.ts`**
+    -   `GET /api/special-offer`: Fetches the current special offer by joining the `special_offers` and `cakes` tables.
+    -   `PUT /api/special-offer`: Updates the special offer. This action first removes the old offer and then inserts the new one. (Admin Only)
