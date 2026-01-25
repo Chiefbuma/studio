@@ -4,7 +4,7 @@ Welcome to the full technical documentation for the WhiskeDelights web applicati
 
 ## 1. Technology Stack
 
--   **Next.js**: A React framework that provides a production-ready foundation. We use its App Router for file-based routing and Server Components for performance.
+-   **Next.js**: A React framework that provides a production-ready foundation. We use its App Router for file-based routing, Server Components for performance, and **API Routes** for the backend logic.
 -   **React**: The core library for building the user interface.
 -   **TypeScript**: Enhances code quality and improves maintainability.
 -   **Tailwind CSS**: A utility-first CSS framework for all styling.
@@ -31,7 +31,8 @@ Before starting, create a `.env` file in the project root. This file is ignored 
 2.  Fill in the values:
     -   `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your public key from the Paystack dashboard.
     -   `NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER`: Your business WhatsApp number.
-    -   `NEXT_PUBLIC_API_URL`: The URL for your backend API. For this Docker setup, it is pre-configured and should be `http://localhost:3001/api`.
+    -   `NEXT_PUBLIC_API_URL`: The URL for your backend API. For this setup, it should be `http://localhost:3000/api`.
+    -   The `DB_*` variables are pre-configured for the Docker environment.
 
 ### c. How to Run the Application
 
@@ -44,6 +45,7 @@ Before starting, create a `.env` file in the project root. This file is ignored 
 
 2.  **Access the services**:
     -   **Application**: `http://localhost:3000`
+    -   **API Test**: `http://localhost:3000/api/cakes` (You should see JSON data from your database)
     -   **phpMyAdmin**: `http://localhost:8080` (Log in with user `root` and password `secret`)
 
 3.  **Stopping the services**:
@@ -54,11 +56,9 @@ Before starting, create a `.env` file in the project root. This file is ignored 
 
 ## 3. Database Schema & Seeding
 
-Your backend API will need a database. The `docker-compose.yml` file automatically creates a MySQL database named `WhiskeDelightsDB`.
+The `docker-compose.yml` file automatically creates a MySQL database named `WhiskeDelightsDB`.
 
 ### a. Database Credentials
-
-Your backend API should use the following credentials to connect to the database.
 
 -   **Host**: `mysql` (when running inside Docker) or `127.0.0.1` (if backend is outside Docker)
 -   **Port**: `3306`
@@ -68,7 +68,7 @@ Your backend API should use the following credentials to connect to the database
 
 ### b. SQL Schema
 
-Use the following SQL scripts to create the necessary tables in your `WhiskeDelightsDB` database.
+Use the following SQL scripts to create the necessary tables in your `WhiskeDelightsDB` database via phpMyAdmin.
 
 #### Admins Table
 ```sql
@@ -80,7 +80,6 @@ CREATE TABLE `admins` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-*Creates the table to store admin user credentials.*
 
 #### Cakes, Customizations, and Orders
 ```sql
@@ -194,11 +193,30 @@ INSERT INTO `toppings` (`id`, `name`, `price`) VALUES
 INSERT INTO `special_offers` (`cake_id`, `discount_percentage`) VALUES ('chocolate-fudge-delight', 20);
 ```
 
-## 4. API Endpoints
+## 4. API Endpoints and Database Connection
 
-The frontend is configured to communicate with a backend API available at the URL specified in `NEXT_PUBLIC_API_URL`. Below is a summary of the expected endpoints.
+This project uses Next.js API Routes to create a backend directly within the Next.js application. This avoids the need for a separate backend server.
 
--   `GET /api/cakes`: Get all available cakes.
+### a. How it Works
+
+1.  **File-based Routing**: Any file named `route.ts` inside the `app/api` directory becomes an API endpoint. For example, `app/api/cakes/route.ts` creates the `/api/cakes` endpoint.
+2.  **Database Connection Utility (`src/lib/db.ts`)**: This new file manages the connection to your MySQL database. It uses the `mysql2` library and reads the database credentials securely from your `.env` file (`DB_HOST`, `DB_USER`, etc.). It creates a connection pool, which is an efficient way to handle multiple database requests.
+3.  **API Route Logic (`app/api/cakes/route.ts`)**: This is an example of a server-side route. It imports the database connection pool, defines a `GET` function to handle requests, executes a `SELECT * FROM cakes` query, and returns the result as JSON.
+
+### b. Creating New API Endpoints
+
+To create more endpoints, simply follow the pattern:
+1.  Create a new folder under `app/api/`. For example, for orders, create `app/api/orders/route.ts`.
+2.  In the new `route.ts` file, import the `pool` from `@/lib/db`.
+3.  Export `async` functions for the HTTP methods you want to support (`GET`, `POST`, `PUT`, `DELETE`).
+4.  Inside these functions, use `await pool.query(...)` to interact with your database.
+5.  Return data using `NextResponse.json(...)`.
+
+### c. Current API Endpoints
+
+The frontend is configured to communicate with the API endpoints listed below. You will need to create the corresponding `route.ts` files for each one to make the application fully functional.
+
+-   `GET /api/cakes`: Get all available cakes. **(This has been created for you)**.
 -   `GET /api/cakes/:id`: Get a single cake by its ID.
 -   `POST /api/cakes`: Create a new cake (Admin only).
 -   `DELETE /api/cakes/:id`: Delete a cake (Admin only).
