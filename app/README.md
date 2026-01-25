@@ -243,3 +243,5 @@ Here is a complete list of all backend API endpoints implemented in this project
 -   **`app/api/special-offer/route.ts`**
     -   `GET /api/special-offer`: Fetches the current special offer by joining the `special_offers` and `cakes` tables.
     -   `PUT /api/special-offer`: Updates the special offer. This action first removes the old offer and then inserts the new one. (Admin Only)
+
+    

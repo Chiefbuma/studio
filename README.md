@@ -4,7 +4,7 @@ Welcome to the full technical documentation for the WhiskeDelights web applicati
 
 ## 1. Technology Stack
 
--   **Next.js**: A React framework that provides a production-ready foundation. We use its App Router for file-based routing and Server Components for performance.
+-   **Next.js**: A React framework that provides a production-ready foundation. We use its App Router for file-based routing and **API Routes** for the backend logic.
 -   **React**: The core library for building the user interface.
 -   **TypeScript**: Enhances code quality and improves maintainability.
 -   **Tailwind CSS**: A utility-first CSS framework for all styling.
@@ -27,11 +27,12 @@ This project is configured to run in a multi-container Docker environment using 
 
 Before starting, create a `.env` file in the project root. This file is ignored by Git and holds your secret keys.
 
-1.  Copy the example `env.local.example` to a new file named `.env`.
+1.  Copy the example `.env.example` to a new file named `.env`.
 2.  Fill in the values:
     -   `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your public key from the Paystack dashboard.
     -   `NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER`: Your business WhatsApp number.
-    -   `NEXT_PUBLIC_API_URL`: The URL for your backend API. For this Docker setup, it is pre-configured and should be `http://localhost:3001/api`.
+    -   `NEXT_PUBLIC_API_URL`: The URL for your backend API. For this setup, it should be `http://localhost:3000/api`.
+    -   The `DB_*` variables are pre-configured for the Docker environment.
 
 ### c. How to Run the Application
 
@@ -44,6 +45,7 @@ Before starting, create a `.env` file in the project root. This file is ignored 
 
 2.  **Access the services**:
     -   **Application**: `http://localhost:3000`
+    -   **API Test**: `http://localhost:3000/api/cakes` (You should see JSON data from your database)
     -   **phpMyAdmin**: `http://localhost:8080` (Log in with user `root` and password `secret`)
 
 3.  **Stopping the services**:
@@ -54,11 +56,9 @@ Before starting, create a `.env` file in the project root. This file is ignored 
 
 ## 3. Database Schema & Seeding
 
-Your backend API will need a database. The `docker-compose.yml` file automatically creates a MySQL database named `WhiskeDelightsDB`.
+The `docker-compose.yml` file automatically creates a MySQL database named `WhiskeDelightsDB`.
 
 ### a. Database Credentials
-
-Your backend API should use the following credentials to connect to the database.
 
 -   **Host**: `mysql` (when running inside Docker) or `127.0.0.1` (if backend is outside Docker)
 -   **Port**: `3306`
@@ -68,7 +68,7 @@ Your backend API should use the following credentials to connect to the database
 
 ### b. SQL Schema
 
-Use the following SQL scripts to create the necessary tables in your `WhiskeDelightsDB` database.
+Use the following SQL scripts to create the necessary tables in your `WhiskeDelightsDB` database via phpMyAdmin.
 
 #### Admins Table
 ```sql
@@ -80,7 +80,6 @@ CREATE TABLE `admins` (
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 ```
-*Creates the table to store admin user credentials.*
 
 #### Cakes, Customizations, and Orders
 ```sql
@@ -194,46 +193,55 @@ INSERT INTO `toppings` (`id`, `name`, `price`) VALUES
 INSERT INTO `special_offers` (`cake_id`, `discount_percentage`) VALUES ('chocolate-fudge-delight', 20);
 ```
 
-## 4. API Endpoints
+## 4. API Endpoints and Database Connection
 
-The frontend is configured to communicate with a backend API available at the URL specified in `NEXT_PUBLIC_API_URL`. Below is a summary of the expected endpoints.
+This project uses Next.js API Routes to create a backend directly within the Next.js application. This avoids the need for a separate backend server.
 
--   `GET /api/cakes`: Get all available cakes.
--   `GET /api/cakes/:id`: Get a single cake by its ID.
--   `POST /api/cakes`: Create a new cake (Admin only).
--   `DELETE /api/cakes/:id`: Delete a cake (Admin only).
--   `GET /api/special-offer`: Get the current special offer.
--   `PUT /api/special-offer`: Update the special offer (Admin only).
--   `GET /api/customizations`: Get all customization options.
--   `POST /api/customizations/:category`: Add a new customization option (Admin only).
--   `DELETE /api/customizations/:category/:id`: Delete a customization option (Admin only).
--   `GET /api/orders`: Get all orders (Admin only).
--   `PUT /api/orders/:id/status`: Update an order's status (Admin only).
--   `POST /api/orders`: Place a new order.
--   `POST /api/auth/login`: Authenticate an admin user.
+### a. Backend Architecture
 
-## 5. Transitioning from Mock Data to a Live API
+1.  **File-based Routing**: Any file named `route.ts` inside the `app/api` directory becomes an API endpoint. For example, `app/api/cakes/route.ts` creates the `/api/cakes` endpoint.
 
-This application is currently running in a "prototype" mode, using mock data to simulate a full-stack experience. The following guide outlines the files you will need to modify to connect the frontend to a real, live backend API.
+2.  **Database Connection Utility (`src/lib/db.ts`)**: This file manages the connection to your MySQL database. It uses the `mysql2` library and reads the database credentials securely from your `.env` file (`DB_HOST`, `DB_USER`, etc.). It creates a connection pool, which is an efficient way to handle multiple database requests.
 
-### a. `docker-compose.yml` & `.env` (Environment Configuration)
+3.  **Authentication Utility (`src/lib/auth-utils.ts`)**: This file provides a helper function, `verifyAuth`, which checks for a valid JSON Web Token (JWT) in the `Authorization` header of incoming requests. This is used to protect admin-only endpoints.
 
-*   **`docker-compose.yml`**: This file already configures and runs your `mysql` database container. Your separate backend API service (not included in this repository) should be configured to connect to this database using the credentials specified here (host: `mysql`, user: `whiskedelight_user`, etc.).
-*   **`.env`**: This file contains the `NEXT_PUBLIC_API_URL`. To connect to your real backend, you must ensure this variable points to the correct URL where your API is running (e.g., `http://localhost:3001/api`).
+4.  **API Route Logic**: Each `route.ts` file contains the server-side logic for its specific resource. It imports the database `pool`, defines `async` functions for HTTP methods (`GET`, `POST`, `PUT`, `DELETE`), executes SQL queries, and returns data using `NextResponse.json(...)`.
 
-### b. `src/services/cake-service.ts` (Data Fetching Service)
+### b. API Endpoint Documentation
 
-*   **How it Works**: This file acts as the data layer for the frontend. It currently contains functions like `getCakes`, `getSpecialOffer`, and `getOrders`. Each function has two versions:
-    1.  A **mock implementation** that returns hardcoded data from `src/lib/data.ts` (currently active).
-    2.  A **real implementation** that uses `fetch` to call the backend API (currently commented out).
-*   **To Switch to Real Data**: For each function in this file, comment out the mock implementation and uncomment the `fetch`-based implementation. This will switch the application from using local mock data to fetching live data from your API.
+Here is a complete list of all backend API endpoints implemented in this project.
 
-### c. `src/lib/actions.ts` (Server Actions for Data Mutation)
+-   **`app/api/auth/login/route.ts`**
+    -   `POST /api/auth/login`: Authenticates an admin user based on email and password. It checks credentials against the `admins` table and, if successful, returns a secure JWT.
 
-*   **How it Works**: This file handles server-side logic initiated from the client, such as placing an order. The `placeOrder` function currently simulates creating an order.
-*   **To Switch to Real Data**: You will need to modify the `placeOrder` function to make a `POST` request to your `/api/orders` endpoint, sending the order payload and returning the result from your backend.
+-   **`app/api/cakes/route.ts`**
+    -   `GET /api/cakes`: Fetches a list of all cakes from the database.
+    -   `POST /api/cakes`: Creates a new cake. (Admin Only)
 
-### d. Admin Panel Pages (`app/admin/(protected)/**/*.tsx`)
+-   **`app/api/cakes/[id]/route.ts`**
+    -   `GET /api/cakes/:id`: Fetches a single cake by its ID.
+    -   `PUT /api/cakes/:id`: Updates an existing cake's details. (Admin Only)
+    -   `DELETE /api/cakes/:id`: Deletes a cake from the database. (Admin Only)
 
-*   **How They Work**: The pages in the admin panel (e.g., `cakes/page.tsx`, `orders/page.tsx`) contain handler functions for actions like creating, editing, and deleting items (e.g., `handleCreate`, `handleDelete`, `handleUpdateStatus`). These handlers currently perform mock operations and show a toast notification.
-*   **To Switch to Real Data**: You must update these handler functions. Instead of just simulating the action, they should call new functions in `src/services/cake-service.ts` that make the appropriate API requests (e.g., `DELETE /api/cakes/:id`, `PUT /api/orders/:id/status`). After a successful API call, they should then re-fetch the data to update the UI.
+-   **`app/api/customizations/route.ts`**
+    -   `GET /api/customizations`: Fetches all customization options, grouped by category (flavors, sizes, colors, toppings).
+
+-   **`app/api/customizations/[category]/route.ts`**
+    -   `POST /api/customizations/:category`: Adds a new customization option to a specified category (e.g., a new flavor). (Admin Only)
+
+-   **`app/api/customizations/[category]/[id]/route.ts`**
+    -   `PUT /api/customizations/:category/:id`: Updates a specific customization option. (Admin Only)
+    -   `DELETE /api/customizations/:category/:id`: Deletes a specific customization option. (Admin Only)
+
+-   **`app/api/orders/route.ts`**
+    -   `GET /api/orders`: Fetches a list of all orders, including their associated items. (Admin Only)
+    -   `POST /api/orders`: Places a new order. This is a complex transaction that creates an entry in the `orders` table and multiple entries in the `order_items` table.
+
+-   **`app/api/orders/[id]/status/route.ts`**
+    -   `PUT /api/orders/:id/status`: Updates the `order_status` of a specific order (e.g., to 'complete' or 'cancelled'). (Admin Only)
+
+-   **`app/api/special-offer/route.ts`**
+    -   `GET /api/special-offer`: Fetches the current special offer by joining the `special_offers` and `cakes` tables.
+    -   `PUT /api/special-offer`: Updates the special offer. This action first removes the old offer and then inserts the new one. (Admin Only)
+
+    
