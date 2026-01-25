@@ -1,5 +1,1 @@
-import { redirect } from 'next/navigation'
-
-export default function AdminRootPage() {
-  redirect('/admin/dashboard')
-}
+// This file has been moved to /app/admin/page.tsx to resolve a project structure issue.
