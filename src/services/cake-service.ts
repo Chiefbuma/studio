@@ -1,47 +1,143 @@
-import { cakes, specialOfferData, customizationOptions, orders } from '@/lib/data';
-import type { Cake, SpecialOffer, CustomizationOptions, Order } from '@/lib/types';
 
-// --- MOCK API SERVICE ---
-// This service simulates API calls by returning mock data from `/src/lib/data.ts`.
+import type { Cake, SpecialOffer, CustomizationOptions, Order, LoginCredentials, SpecialOfferUpdatePayload, CustomizationCategory } from '@/lib/types';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+// Helper to get auth token from localStorage
+const getAuthHeaders = () => {
+    // This function will only be called on the client side, where localStorage is available.
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+};
+
+// --- REAL API IMPLEMENTATION ---
 
 export async function getCakes(): Promise<Cake[]> {
-  console.log("Mock Service: Fetching cakes...");
-  await new Promise(resolve => setTimeout(resolve, 100)); // Simulate network delay
-  return cakes;
+  try {
+    const res = await fetch(`${API_URL}/cakes`);
+    if (!res.ok) {
+      throw new Error('Failed to fetch cakes');
+    }
+    return res.json();
+  } catch (error) {
+    console.error('[GET_CAKES_ERROR]', error);
+    throw error;
+  }
 }
 
 export async function getSpecialOffer(): Promise<SpecialOffer | null> {
-  console.log("Mock Service: Fetching special offer...");
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return specialOfferData;
+    try {
+        const res = await fetch(`${API_URL}/special-offer`);
+        if (!res.ok) {
+            if (res.status === 404) return null;
+            throw new Error('Failed to fetch special offer');
+        }
+        return res.json();
+    } catch (error) {
+        console.error('[GET_SPECIAL_OFFER_ERROR]', error);
+        return null;
+    }
 }
 
 export async function getCustomizationOptions(): Promise<CustomizationOptions | null> {
-  console.log("Mock Service: Fetching customization options...");
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return customizationOptions;
+    try {
+        const res = await fetch(`${API_URL}/customizations`);
+        if (!res.ok) {
+            throw new Error('Failed to fetch customization options');
+        }
+        return res.json();
+    } catch (error) {
+        console.error('[GET_CUSTOMIZATIONS_ERROR]', error);
+        throw error;
+    }
 }
 
 export async function getCustomCake(): Promise<Cake | null> {
-    console.log("Mock Service: Fetching custom cake placeholder...");
-    await new Promise(resolve => setTimeout(resolve, 100));
-    return {
-        id: 'custom-cake',
-        name: 'Custom Creation',
-        description: 'Design your own cake from scratch...',
-        base_price: 1200.00,
-        image_id: 'custom-cake-placeholder',
-        rating: 0,
-        category: 'Custom',
-        orders_count: 0,
-        ready_time: '48h+',
-        customizable: true
-    };
+    try {
+        const allCakes = await getCakes();
+        return allCakes.find(c => c.id === 'custom-cake') || null;
+    } catch (error) {
+        console.error('[GET_CUSTOM_CAKE_ERROR]', error);
+        return null;
+    }
 }
 
 export async function getOrders(): Promise<Order[]> {
-  console.log("Mock Service: Fetching orders...");
-  await new Promise(resolve => setTimeout(resolve, 100));
-  // Sort orders by most recent
-  return [...orders].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    try {
+        const res = await fetch(`${API_URL}/orders`, { headers: getAuthHeaders() });
+        if (!res.ok) {
+            throw new Error('Failed to fetch orders');
+        }
+        const data = await res.json();
+        return data.sort((a: Order, b: Order) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    } catch (error) {
+        console.error('[GET_ORDERS_ERROR]', error);
+        throw error;
+    }
+}
+
+// --- Admin/Mutation Functions ---
+
+export async function loginAdmin(credentials: LoginCredentials): Promise<{ token: string }> {
+    const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials),
+    });
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: 'An unknown error occurred' }));
+        throw new Error(errorData.message || 'Login failed');
+    }
+    return res.json();
+}
+
+export async function deleteCake(cakeId: string): Promise<Response> {
+    const res = await fetch(`${API_URL}/cakes/${cakeId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        throw new Error('Failed to delete cake');
+    }
+    return res;
+}
+
+export async function updateSpecialOffer(payload: SpecialOfferUpdatePayload): Promise<SpecialOffer> {
+    const res = await fetch(`${API_URL}/special-offer`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+        throw new Error('Failed to update special offer');
+    }
+    return res.json();
+}
+
+export async function deleteCustomizationOption(category: CustomizationCategory, id: string): Promise<Response> {
+    const res = await fetch(`${API_URL}/customizations/${category}/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+    });
+    if (!res.ok) {
+        throw new Error(`Failed to delete ${category} option`);
+    }
+    return res;
+}
+
+export async function updateOrderStatus(orderId: number, status: 'processing' | 'complete' | 'cancelled'): Promise<Order> {
+    const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ status }),
+    });
+     if (!res.ok) {
+        throw new Error('Failed to update order status');
+    }
+    return res.json();
 }
