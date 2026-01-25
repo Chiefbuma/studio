@@ -1,16 +1,22 @@
-import { cakes, specialOffer, customizationOptions, customCake, orders } from '@/lib/data';
 import type { Cake, SpecialOffer, CustomizationOptions, Order } from '@/lib/types';
 
 // In a real application, this would be your base API URL.
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
-// --- EXAMPLE: REAL API FETCHING ---
-// The functions below are examples of how you would fetch data from a real backend API.
-// To switch, you would comment out the mock data logic and uncomment the fetch logic.
+const customCake: Cake = {
+  id: 'custom-cake',
+  name: 'Custom Creation',
+  description: 'Design your own cake from scratch. Choose your flavor, size, colors, and toppings to create your perfect dessert.',
+  base_price: 1200,
+  image_id: 'custom-cake-placeholder',
+  rating: 0,
+  category: 'Custom',
+  orders_count: 0,
+  ready_time: '48h+',
+  customizable: true,
+};
 
 export async function getCakes(): Promise<Cake[]> {
-  /*
-  // UNCOMMENT THIS BLOCK TO USE A REAL API
   try {
     const response = await fetch(`${API_BASE_URL}/cakes`);
     if (!response.ok) {
@@ -22,23 +28,16 @@ export async function getCakes(): Promise<Cake[]> {
     console.error('[GET_CAKES_ERROR]', error);
     return []; // Return an empty array on error
   }
-  */
-
-  // --- MOCK DATA LOGIC (Current) ---
-  console.log('Fetching cakes from mock data...');
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(cakes);
-    }, 500);
-  });
 }
 
 export async function getSpecialOffer(): Promise<SpecialOffer | null> {
-  /*
-  // UNCOMMENT THIS BLOCK TO USE A REAL API
   try {
     const response = await fetch(`${API_BASE_URL}/special-offer`);
     if (!response.ok) {
+      // It's okay for no special offer to exist, so we don't throw an error for 404.
+      if (response.status === 404) {
+        return null;
+      }
       throw new Error('Failed to fetch special offer');
     }
     const data: SpecialOffer = await response.json();
@@ -47,20 +46,9 @@ export async function getSpecialOffer(): Promise<SpecialOffer | null> {
     console.error('[GET_SPECIAL_OFFER_ERROR]', error);
     return null; // Return null on error
   }
-  */
-
-  // --- MOCK DATA LOGIC (Current) ---
-  console.log('Fetching special offer from mock data...');
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(specialOffer);
-    }, 500);
-  });
 }
 
 export async function getCustomizationOptions(): Promise<CustomizationOptions | null> {
-  /*
-  // UNCOMMENT THIS BLOCK TO USE A REAL API
   try {
     const response = await fetch(`${API_BASE_URL}/customizations`);
     if (!response.ok) {
@@ -72,34 +60,26 @@ export async function getCustomizationOptions(): Promise<CustomizationOptions | 
     console.error('[GET_CUSTOMIZATIONS_ERROR]', error);
     return null; // Return null on error
   }
-  */
-    
-  // --- MOCK DATA LOGIC (Current) ---
-  console.log('Fetching customizations from mock data...');
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(customizationOptions);
-    }, 500);
-  });
 }
 
 export function getCustomCake(): Promise<Cake> {
-  // This typically remains a client-side or mock operation as it's a placeholder.
+  // This remains a client-side operation as it's a placeholder object.
   return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(customCake);
-    }, 100);
+    resolve(customCake);
   });
 }
 
 export async function getOrders(): Promise<Order[]> {
-  /*
-  // UNCOMMENT THIS BLOCK TO USE A REAL API
   try {
-    // You would typically include an auth token here
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        console.warn('No auth token found for fetching orders.');
+        return [];
+    }
+
     const response = await fetch(`${API_BASE_URL}/orders`, {
       headers: {
-        // 'Authorization': `Bearer ${your_auth_token}`
+        'Authorization': `Bearer ${token}`
       }
     });
     if (!response.ok) {
@@ -111,13 +91,4 @@ export async function getOrders(): Promise<Order[]> {
     console.error('[GET_ORDERS_ERROR]', error);
     return []; // Return an empty array on error
   }
-  */
-
-  // --- MOCK DATA LOGIC (Current) ---
-  console.log('Fetching orders from mock data...');
-  return new Promise(resolve => {
-    setTimeout(() => {
-      resolve(orders);
-    }, 500);
-  });
 }

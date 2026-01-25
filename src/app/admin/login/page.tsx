@@ -8,15 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Cake, Loader2 } from 'lucide-react';
-import { Skeleton } from '@/components/ui/skeleton';
 
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@whiskedelights.com');
+  const [password, setPassword] = useState('admin');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
@@ -33,9 +32,6 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoggingIn(true);
     
-    /*
-    // --- REAL API AUTHENTICATION LOGIC ---
-    // UNCOMMENT THIS BLOCK TO USE A REAL API
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
@@ -69,35 +65,6 @@ export default function AdminLoginPage() {
       });
       setIsLoggingIn(false);
     }
-    */
-    
-    // --- MOCK AUTHENTICATION LOGIC (Current) ---
-    setTimeout(() => {
-      if (email === 'admin@whiskedelights.com' && password === 'admin') {
-        try {
-          localStorage.setItem('isAdminLoggedIn', 'true');
-          toast({
-            title: 'Login Successful',
-            description: 'Welcome back, Admin!',
-          });
-          router.push('/admin/dashboard');
-        } catch (error) {
-          toast({
-            variant: 'destructive',
-            title: 'Login Failed',
-            description: 'Could not save session. Please enable cookies/storage.',
-          });
-          setIsLoggingIn(false);
-        }
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Login Failed',
-          description: 'Invalid email or password.',
-        });
-        setIsLoggingIn(false);
-      }
-    }, 1000);
   };
 
   if (isCheckingAuth) {

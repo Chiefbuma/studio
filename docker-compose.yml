@@ -4,14 +4,15 @@ services:
     build:
       context: .
       args:
-        # Pass the public key as a build-time argument for the Dockerfile
+        # Pass public keys and URLs as build-time arguments for the Dockerfile
         - NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     ports:
       - "3000:3000"
     # Environment variables are passed to the running container at runtime.
-    # This is for server-side code (e.g., Genkit AI flows).
     environment:
       - NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
     # Also load variables from the .env file for convenience
     env_file:
       - .env

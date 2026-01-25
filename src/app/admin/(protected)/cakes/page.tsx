@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getCakes } from "@/services/cake-service";
 import type { Cake } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -14,55 +14,63 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuIte
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function CakesPage() {
     const [cakes, setCakes] = useState<Cake[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
-    useEffect(() => {
-        async function fetchData() {
-            setLoading(true);
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
             const cakesData = await getCakes();
             // We filter out the custom cake placeholder
             setCakes(cakesData.filter(c => c.id !== 'custom-cake'));
+        } catch (error) {
+            toast({ variant: "destructive", title: "Error", description: "Could not fetch cakes." });
+        } finally {
             setLoading(false);
         }
+    }, [toast]);
+
+    useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     const handleCreate = () => {
         // In a real app, this would open a form/dialog to create a new cake.
-        // After submission, you would call an API like this:
-        /*
-        const newCakeData = { name: "New Cake", base_price: 3000, customizable: true, ... }; // from form
+        // For this example, we'll simulate creating a new cake with placeholder data.
+        const newCakeData = { name: "New Awesome Cake", base_price: 3000, customizable: true, description: "A new cake." };
+        
         fetch(`${API_BASE_URL}/cakes`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
             body: JSON.stringify(newCakeData),
-        }).then(response => {
+        }).then(async response => {
             if (response.ok) {
                 toast({ title: "Cake Created", description: "The new cake has been added." });
-                // Re-fetch cakes
+                await fetchData(); // Re-fetch cakes
             } else {
-                toast({ variant: "destructive", title: "Error", description: "Could not create cake." });
+                const error = await response.json();
+                toast({ variant: "destructive", title: "Error", description: error.message || "Could not create cake." });
             }
+        }).catch(err => {
+            toast({ variant: "destructive", title: "Error", description: err.message || "Could not create cake." });
         });
-        */
-        toast({ title: "Prototype Action", description: "This would open a 'Create Cake' form." });
     };
 
     const handleEdit = (cakeId: string) => {
         // This would open a form/dialog pre-filled with the cake's data.
         // The form would include a toggle for the 'customizable' field.
+        // For demonstration, we'll just show the toast.
         toast({ title: "Prototype Action", description: `This would open an 'Edit' form for cake ${cakeId}.` });
     };
 
     const handleDelete = async (cakeId: string, cakeName: string) => {
         // This would show a confirmation dialog first.
-        // On confirmation, call the delete API.
-        /*
+        if (!confirm(`Are you sure you want to delete "${cakeName}"?`)) return;
+
         try {
             const response = await fetch(`${API_BASE_URL}/cakes/${cakeId}`, {
                 method: 'DELETE',
@@ -70,7 +78,8 @@ export default function CakesPage() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to delete cake.');
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to delete cake.');
             }
 
             // Remove the cake from the local state to update the UI instantly
@@ -80,15 +89,13 @@ export default function CakesPage() {
                 title: 'Cake Deleted',
                 description: `"${cakeName}" has been successfully deleted.`,
             });
-        } catch (error) {
+        } catch (error: any) {
             toast({
                 variant: 'destructive',
                 title: 'Deletion Failed',
                 description: error.message || 'An unknown error occurred.',
             });
         }
-        */
-        toast({ variant: "destructive", title: "Prototype Action", description: `This would delete "${cakeName}".` });
     };
     
     return (

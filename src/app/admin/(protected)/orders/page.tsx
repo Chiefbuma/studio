@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getOrders } from "@/services/cake-service";
 import type { Order } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -14,43 +14,46 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function OrdersPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
-    useEffect(() => {
-        async function fetchData() {
-            setLoading(true);
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
             const ordersData = await getOrders();
             setOrders(ordersData);
+        } catch (error) {
+            toast({ variant: "destructive", title: "Error", description: "Could not fetch orders." });
+        } finally {
             setLoading(false);
         }
+    }, [toast]);
+    
+    useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
     
     const handleUpdateStatus = (orderId: number, status: 'processing' | 'complete' | 'cancelled') => {
-        // In a real app, this would show a dialog to confirm and then make an API call.
-        /*
         fetch(`${API_BASE_URL}/orders/${orderId}/status`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
             body: JSON.stringify({ status }),
-        }).then(response => {
+        }).then(async response => {
             if (response.ok) {
                 toast({ title: "Status Updated", description: `Order status changed to ${status}.` });
-                // Re-fetch orders or update state locally
-                setOrders(prev => prev.map(o => o.id === orderId ? {...o, order_status: status} : o));
+                // Re-fetch orders to show updated status
+                await fetchData();
             } else {
-                toast({ variant: "destructive", title: "Error", description: "Could not update status." });
+                const error = await response.json();
+                toast({ variant: "destructive", title: "Error", description: error.message || "Could not update status." });
             }
+        }).catch(err => {
+            toast({ variant: "destructive", title: "Error", description: err.message || "Could not update status." });
         });
-        */
-        toast({ title: "Prototype Action", description: `This would update order #${orderId} to "${status}".` });
-        // Optimistically update UI for prototype
-        setOrders(prev => prev.map(o => o.id === orderId ? {...o, order_status: status} : o));
     };
 
     const getOrderStatusVariant = (status: 'processing' | 'complete' | 'cancelled') => {

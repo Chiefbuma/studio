@@ -79,11 +79,11 @@ Here is an explanation of the key files and directories in the project.
 
 -   `src/lib/`
     -   `actions.ts`: Contains Next.js Server Actions.
-    -   `data.ts`: **(Mock Backend)** Contains the hardcoded array of cakes, offers, customizations, and orders. This file acts as our temporary database.
+    -   `data.ts`: **(Mock Backend - Deprecated)** This file is no longer used. All data is now fetched from a live backend API.
     -   `types.ts`: Contains all TypeScript type definitions for the application's data structures.
 
 -   `src/services/`:
-    -   `cake-service.ts`: **(Data Access Layer)** This service abstracts data fetching. It currently reads from the mock data but is the single point of modification needed to connect to a real API.
+    -   `cake-service.ts`: **(Data Access Layer)** This service abstracts data fetching. It now contains the `fetch` calls to a real backend API.
 
 -   `Dockerfile`, `docker-compose.yml`: Files required to build and run the application using Docker.
 
@@ -147,13 +147,13 @@ A real-world backend for this application would need to expose the following API
 
 1.  **Data Fetching (GET requests)**:
     -   **File to Modify**: `src/services/cake-service.ts`
-    -   **Action**: Replace the mock data imports and `setTimeout` functions with `fetch` calls to your real API endpoints (e.g., `fetch('/api/cakes')`). The rest of the application, including all React components and hooks, will automatically start using the real data without any other changes.
+    -   **Action**: This file has been updated to use `fetch` calls to your real API endpoints (e.g., `fetch('/api/cakes')`). The application will automatically use the real data.
 
 2.  **Data Mutation (POST, PUT, DELETE requests)**:
     -   **File to Modify (Orders)**: `src/lib/actions.ts` (the `placeOrder` function).
-    -   **Action**: Modify this function to send the order payload to your `POST /api/orders` endpoint.
+    -   **Action**: This function has been updated to send the order payload to your `POST /api/orders` endpoint.
     -   **File to Modify (Admin)**: The various admin pages in `src/app/admin/(protected)/`.
-    -   **Action**: Wire up the "Create", "Update", and "Delete" buttons in the admin panel to make API calls to the corresponding endpoints (e.g., `POST /api/cakes`).
+    -   **Action**: The "Create", "Update", and "Delete" buttons in the admin panel have been wired up to make API calls to the corresponding endpoints (e.g., `POST /api/cakes`).
 
 ## 6. Database Setup & Schema
 
@@ -622,6 +622,9 @@ For the application to run correctly, especially for payment integration, you mu
     
     # Your WhatsApp number including country code (e.g., 254712345678)
     NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER=2547xxxxxxxx
+
+    # The base URL of your backend API
+    NEXT_PUBLIC_API_URL=http://localhost:3001/api
     ```
 
 ### c. Standard Installation (npm)

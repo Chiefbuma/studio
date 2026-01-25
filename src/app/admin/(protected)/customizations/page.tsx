@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getCustomizationOptions } from "@/services/cake-service";
 import type { CustomizationOptions, Flavor, Size, Color, Topping } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 
 type CustomizationCategory = "flavors" | "sizes" | "colors" | "toppings";
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 const categoryTitles: Record<CustomizationCategory, string> = {
     flavors: "Flavors",
@@ -28,35 +28,44 @@ export default function CustomizationsPage() {
     const [loading, setLoading] = useState(true);
     const { toast } = useToast();
 
-    useEffect(() => {
-        async function fetchData() {
-            setLoading(true);
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
             const optionsData = await getCustomizationOptions();
             setOptions(optionsData);
+        } catch (error) {
+            toast({ variant: "destructive", title: "Error", description: "Could not fetch customization options." });
+        } finally {
             setLoading(false);
         }
+    }, [toast]);
+
+    useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     const handleAdd = (category: CustomizationCategory) => {
         // This would open a dialog/form to add a new item.
-        // On submission, an API call would be made.
-        /*
-        const newItemData = { ... }; // from form
+        const newItemName = prompt(`Enter the name for the new ${category.slice(0, -1)}:`);
+        if (!newItemName) return;
+        const newItemPrice = prompt(`Enter the price for ${newItemName}:`);
+        if (!newItemPrice) return;
+        
+        const newItemData = { name: newItemName, price: Number(newItemPrice) };
+
         fetch(`${API_BASE_URL}/customizations/${category}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
             body: JSON.stringify(newItemData),
-        }).then(response => {
+        }).then(async response => {
             if (response.ok) {
                 toast({ title: 'Item Added' });
-                // Re-fetch options
+                await fetchData(); // Re-fetch options
             } else {
-                toast({ variant: 'destructive', title: 'Error' });
+                const err = await response.json();
+                toast({ variant: 'destructive', title: 'Error', description: err.message });
             }
         });
-        */
-        toast({ title: 'Prototype Action', description: `This would open a form to add a new ${category.slice(0, -1)}.` });
     };
     
     const handleEdit = (category: CustomizationCategory, itemId: string) => {
@@ -64,21 +73,20 @@ export default function CustomizationsPage() {
     };
 
     const handleDelete = (category: CustomizationCategory, itemId: string) => {
-        // This would show a confirmation dialog first.
-        /*
+        if (!confirm(`Are you sure you want to delete this item from ${category}?`)) return;
+
         fetch(`${API_BASE_URL}/customizations/${category}/${itemId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
-        }).then(response => {
+        }).then(async response => {
             if (response.ok) {
                 toast({ title: 'Item Deleted' });
-                // Re-fetch options or update state locally
+                await fetchData(); // Re-fetch options
             } else {
-                toast({ variant: 'destructive', title: 'Error' });
+                const err = await response.json();
+                toast({ variant: 'destructive', title: 'Error', description: err.message });
             }
         });
-        */
-        toast({ variant: 'destructive', title: 'Prototype Action', description: `This would delete item ${itemId} from ${category}.` });
     };
 
     const renderTable = (category: CustomizationCategory, data: (Flavor | Size | Color | Topping)[]) => (

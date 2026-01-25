@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getSpecialOffer, getCakes } from "@/services/cake-service";
 import type { SpecialOffer, Cake } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { formatPrice } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
-// const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
 export default function OffersPage() {
     const [specialOffer, setSpecialOffer] = useState<SpecialOffer | null>(null);
@@ -24,9 +24,9 @@ export default function OffersPage() {
     const [selectedCakeId, setSelectedCakeId] = useState<string>('');
     const [discount, setDiscount] = useState<number>(0);
 
-    useEffect(() => {
-        async function fetchData() {
-            setLoading(true);
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
             const [offerData, cakesData] = await Promise.all([getSpecialOffer(), getCakes()]);
             setSpecialOffer(offerData);
             if (offerData) {
@@ -34,10 +34,16 @@ export default function OffersPage() {
                 setDiscount(offerData.discount_percentage);
             }
             setCakes(cakesData.filter(c => c.id !== 'custom-cake'));
+        } catch (error) {
+            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load offer data.' });
+        } finally {
             setLoading(false);
         }
+    }, [toast]);
+
+    useEffect(() => {
         fetchData();
-    }, []);
+    }, [fetchData]);
 
     const selectedCake = cakes.find(c => c.id === selectedCakeId);
     const originalPrice = selectedCake?.base_price || 0;
@@ -54,9 +60,6 @@ export default function OffersPage() {
             discount_percentage: discount,
         };
 
-        /*
-        // --- REAL API UPDATE LOGIC ---
-        // UNCOMMENT THIS BLOCK TO USE A REAL API
         try {
             const response = await fetch(`${API_BASE_URL}/special-offer`, {
                 method: 'PUT',
@@ -65,7 +68,8 @@ export default function OffersPage() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to update the special offer.');
+                const error = await response.json();
+                throw new Error(error.message || 'Failed to update the special offer.');
             }
 
             const updatedOffer = await response.json();
@@ -79,27 +83,12 @@ export default function OffersPage() {
                 title: 'Special Offer Updated',
                 description: `The special offer has been successfully updated.`,
             });
-        } catch (error) {
+        } catch (error: any) {
             toast({
                 variant: 'destructive',
                 title: 'Update Failed',
                 description: error.message || 'An unknown error occurred.',
             });
-        }
-        */
-
-        // --- MOCK UPDATE LOGIC (Current) ---
-        toast({ title: 'Prototype: Offer Updated', description: 'In a real app, this would save to the database.' });
-        // Simulate update by setting the local state
-        if (selectedCake) {
-            const newOffer: SpecialOffer = {
-                cake: selectedCake,
-                discount_percentage: discount,
-                original_price: originalPrice,
-                special_price: discountedPrice,
-                savings: originalPrice - discountedPrice,
-            };
-            setSpecialOffer(newOffer);
         }
     };
 
@@ -120,7 +109,7 @@ export default function OffersPage() {
     }
 
     if (!specialOffer) {
-        return <p>No special offer data found.</p>
+        return <p>No special offer data found. You can create one from the backend.</p>
     }
 
     return (
