@@ -363,6 +363,51 @@ CREATE TABLE customization_toppings (
 );
 ```
 
+#### MS SQL Server Seed Data
+Run these commands after creating the tables to populate them with initial data.
+```sql
+-- Insert Cakes
+INSERT INTO cakes (id, name, description, base_price, image_id, rating, category, customizable, orders_count, ready_time) VALUES
+('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake, layered with silky smooth chocolate ganache and topped with a glossy finish. A true indulgence for any chocolate lover.', 3200.00, 'special-offer-cake', 4.9, 'Chocolate', 1, 150, '24h'),
+('red-velvet-delight', 'Red Velvet Delight', 'The timeless classic. A moist, scarlet-hued cake with a hint of cocoa, perfectly balanced by our signature tangy cream cheese frosting.', 2800.00, 'red-velvet-delight', 4.8, 'Classic', 1, 120, '24h'),
+('strawberry-dream', 'Strawberry Dream', 'A light and fluffy vanilla sponge cake, layered with fresh strawberries and delicate whipped cream. This cake is not customizable and comes in a standard 8-inch size with our classic vanilla flavor.', 2500.00, 'strawberry-dream', 4.7, 'Fruit', 0, 95, '24h'),
+('lemon-zest-creation', 'Lemon Zest Creation', 'A zesty and refreshing lemon cake infused with fresh lemon juice and zest, topped with a sweet and tangy lemon glaze. This cake is not customizable and comes in a standard 8-inch size.', 2600.00, 'lemon-zest-creation', 4.6, 'Fruit', 0, 80, '24h'),
+('vanilla-bean-classic', 'Vanilla Bean Classic', 'A simple yet elegant cake made with real vanilla beans for a fragrant and sophisticated flavor. Perfect for any occasion.', 2400.00, 'vanilla-bean-classic', 4.5, 'Classic', 1, 110, '24h'),
+('matcha-elegance', 'Matcha Elegance', 'An earthy and refined cake featuring premium matcha green tea powder, offering a unique and subtle sweetness that is both calming and delightful.', 3000.00, 'matcha-elegance', 4.7, 'Specialty', 1, 60, '48h');
+
+-- Insert Special Offer
+INSERT INTO special_offers (cake_id, discount_percentage, is_active) VALUES
+('chocolate-fudge-delight', 20, 1);
+
+-- Insert Customization Flavors
+INSERT INTO customization_flavors (id, name, price) VALUES
+('f1', 'Classic Vanilla', 0.00),
+('f2', 'Rich Chocolate', 200.00),
+('f3', 'Red Velvet', 250.00),
+('f4', 'Zesty Lemon', 150.00);
+
+-- Insert Customization Sizes
+INSERT INTO customization_sizes (id, name, serves, price) VALUES
+('s1', '6" Cake', '6-8 people', 0.00),
+('s2', '8" Cake', '10-12 people', 500.00),
+('s3', '10" Cake', '15-20 people', 1000.00);
+
+-- Insert Customization Colors
+INSERT INTO customization_colors (id, name, hex_value, price) VALUES
+('c1', 'Classic White', '#FFFFFF', 0.00),
+('c2', 'Pastel Pink', '#FFD1DC', 100.00),
+('c3', 'Sky Blue', '#87CEEB', 100.00),
+('c4', 'Vibrant Red', '#FF0000', 150.00);
+
+-- Insert Customization Toppings
+INSERT INTO customization_toppings (id, name, price) VALUES
+('t1', 'Rainbow Sprinkles', 50.00),
+('t2', 'Chocolate Drizzle', 100.00),
+('t3', 'Fresh Berries', 250.00),
+('t4', 'Edible Flowers', 300.00);
+```
+
+---
 ### f. MySQL / MariaDB Table Creation Scripts (for XAMPP users)
 If you are using XAMPP, use these scripts in phpMyAdmin or a similar tool.
 
@@ -458,6 +503,50 @@ CREATE TABLE customization_toppings (
 );
 ```
 
+#### MySQL / MariaDB Seed Data
+Run these commands after creating the tables to populate them with initial data.
+```sql
+-- Insert Cakes
+INSERT INTO `cakes` (`id`, `name`, `description`, `base_price`, `image_id`, `rating`, `category`, `customizable`, `orders_count`, `ready_time`) VALUES
+('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake, layered with silky smooth chocolate ganache and topped with a glossy finish. A true indulgence for any chocolate lover.', 3200.00, 'special-offer-cake', 4.9, 'Chocolate', TRUE, 150, '24h'),
+('red-velvet-delight', 'Red Velvet Delight', 'The timeless classic. A moist, scarlet-hued cake with a hint of cocoa, perfectly balanced by our signature tangy cream cheese frosting.', 2800.00, 'red-velvet-delight', 4.8, 'Classic', TRUE, 120, '24h'),
+('strawberry-dream', 'Strawberry Dream', 'A light and fluffy vanilla sponge cake, layered with fresh strawberries and delicate whipped cream. This cake is not customizable and comes in a standard 8-inch size with our classic vanilla flavor.', 2500.00, 'strawberry-dream', 4.7, 'Fruit', FALSE, 95, '24h'),
+('lemon-zest-creation', 'Lemon Zest Creation', 'A zesty and refreshing lemon cake infused with fresh lemon juice and zest, topped with a sweet and tangy lemon glaze. This cake is not customizable and comes in a standard 8-inch size.', 2600.00, 'lemon-zest-creation', 4.6, 'Fruit', FALSE, 80, '24h'),
+('vanilla-bean-classic', 'Vanilla Bean Classic', 'A simple yet elegant cake made with real vanilla beans for a fragrant and sophisticated flavor. Perfect for any occasion.', 2400.00, 'vanilla-bean-classic', 4.5, 'Classic', TRUE, 110, '24h'),
+('matcha-elegance', 'Matcha Elegance', 'An earthy and refined cake featuring premium matcha green tea powder, offering a unique and subtle sweetness that is both calming and delightful.', 3000.00, 'matcha-elegance', 4.7, 'Specialty', TRUE, 60, '48h');
+
+-- Insert Special Offer
+INSERT INTO `special_offers` (`cake_id`, `discount_percentage`, `is_active`) VALUES
+('chocolate-fudge-delight', 20, TRUE);
+
+-- Insert Customization Flavors
+INSERT INTO `customization_flavors` (`id`, `name`, `price`) VALUES
+('f1', 'Classic Vanilla', 0.00),
+('f2', 'Rich Chocolate', 200.00),
+('f3', 'Red Velvet', 250.00),
+('f4', 'Zesty Lemon', 150.00);
+
+-- Insert Customization Sizes
+INSERT INTO `customization_sizes` (`id`, `name`, `serves`, `price`) VALUES
+('s1', '6" Cake', '6-8 people', 0.00),
+('s2', '8" Cake', '10-12 people', 500.00),
+('s3', '10" Cake', '15-20 people', 1000.00);
+
+-- Insert Customization Colors
+INSERT INTO `customization_colors` (`id`, `name`, `hex_value`, `price`) VALUES
+('c1', 'Classic White', '#FFFFFF', 0.00),
+('c2', 'Pastel Pink', '#FFD1DC', 100.00),
+('c3', 'Sky Blue', '#87CEEB', 100.00),
+('c4', 'Vibrant Red', '#FF0000', 150.00);
+
+-- Insert Customization Toppings
+INSERT INTO `customization_toppings` (`id`, `name`, `price`) VALUES
+('t1', 'Rainbow Sprinkles', 50.00),
+('t2', 'Chocolate Drizzle', 100.00),
+('t3', 'Fresh Berries', 250.00),
+('t4', 'Edible Flowers', 300.00);
+```
+
 ### g. Local Database Setup
 
 The Next.js frontend **should not** connect directly to the database for security reasons. It must communicate with a **backend API**. The following instructions are for setting up the database that your future backend API will connect to.
@@ -513,6 +602,7 @@ The easiest way to run a local MS SQL database is with Docker.
     -   Run `CREATE DATABASE WhiskeDelightsDB;`
     -   Switch your connection to use this new database.
     -   Copy and run the **MS SQL Server** `CREATE TABLE` scripts from the section above.
+    -   Copy and run the **MS SQL Server Seed Data** scripts to populate the tables.
 
 #### Option 2: Using XAMPP for the Database (MySQL/MariaDB)
 
@@ -526,8 +616,9 @@ If you prefer to use XAMPP, you can use its included MySQL/MariaDB server.
 4. **Run SQL Scripts**:
    - Select the `WhiskeDelightsDB` database from the left-hand sidebar.
    - Click on the `SQL` tab.
-   - Copy all the **MySQL/MariaDB** `CREATE TABLE` scripts from the section above and paste them into the query box.
-   - Click the `Go` button to create all the tables.
+   - Copy all the **MySQL/MariaDB** `CREATE TABLE` scripts from the section above and paste them into the query box. Click `Go`.
+   - After the tables are created, click the `SQL` tab again.
+   - Copy all the **MySQL / MariaDB Seed Data** `INSERT` scripts and paste them into the query box. Click `Go` to populate your tables.
 
 
 ### h. Connecting a Backend to Your Database
