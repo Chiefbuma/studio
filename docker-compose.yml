@@ -1,18 +1,73 @@
 version: '3.8'
+
 services:
-  web:
+  app:
     build:
       context: .
       args:
         # Pass public keys and URLs as build-time arguments for the Dockerfile
         - NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
         - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+        - NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER=${NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER}
+    container_name: whiskedelights-app
     ports:
       - "3000:3000"
-    # Environment variables are passed to the running container at runtime.
-    environment:
-      - NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY=${NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY}
-      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-    # Also load variables from the .env file for convenience
+    volumes:
+      # Mount the entire project directory into /app to allow for hot-reloading
+      - .:/app
+      # Use a volume for node_modules to avoid it being overwritten by the host
+      - /app/node_modules
+    working_dir: /app
+    # Load variables from the .env file for runtime access
     env_file:
       - .env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - whiskedelights-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: whiskedelights-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: WhiskeDelightsDB
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_USER: whiskedelight_user
+      MYSQL_PASSWORD: secret
+    ports:
+      # Expose MySQL on the standard port 3306 for external connections if needed
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - whiskedelights-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: whiskedelights-phpmyadmin
+    restart: unless-stopped
+    ports:
+      # Access phpMyAdmin on http://localhost:8080
+      - "8080:80"
+    environment:
+      PMA_HOST: mysql # This must match the service name of the database
+      MYSQL_ROOT_PASSWORD: secret
+    depends_on:
+      - mysql
+    networks:
+      - whiskedelights-network
+
+networks:
+  whiskedelights-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    # This named volume persists the database data across container restarts
