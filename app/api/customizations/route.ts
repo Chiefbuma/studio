@@ -2,6 +2,13 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
+const parsePrices = (items: any[]) => {
+    return items.map(item => ({
+        ...item,
+        price: item.price !== undefined ? parseFloat(item.price) : 0,
+    }));
+};
+
 export async function GET() {
     try {
         const connection = await pool.getConnection();
@@ -12,10 +19,10 @@ export async function GET() {
         connection.release();
 
         return NextResponse.json({
-            flavors,
-            sizes,
-            colors,
-            toppings,
+            flavors: parsePrices(flavors as any[]),
+            sizes: parsePrices(sizes as any[]),
+            colors: parsePrices(colors as any[]),
+            toppings: parsePrices(toppings as any[]),
         });
 
     } catch (error: any) {

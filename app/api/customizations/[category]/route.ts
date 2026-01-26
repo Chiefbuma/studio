@@ -17,22 +17,31 @@ export async function POST(req: NextRequest, { params }: { params: { category: s
 
     try {
         const body = await req.json();
+        const { id } = body;
         // This is a generic handler, so it relies on the frontend sending the correct properties.
         const columns = Object.keys(body).filter(key => body[key] !== undefined && body[key] !== null);
         const values = columns.map(col => body[col]);
         const placeholders = columns.map(() => '?').join(', ');
         
         const connection = await pool.getConnection();
-        const [result]: any = await connection.query(
+        await connection.query(
             `INSERT INTO \`${category}\` (${columns.map(c => `\`${c}\``).join(', ')}) VALUES (${placeholders})`,
             values
         );
-        connection.release();
         
-        const newId = result.insertId;
-        const [newItem] = await (await pool.query(`SELECT * FROM \`${category}\` WHERE id = ?`, [newId]));
+        const [newItemRows]:any[] = await connection.query(`SELECT * FROM \`${category}\` WHERE id = ?`, [id]);
+        connection.release();
 
-        return NextResponse.json( (newItem as any)[0], { status: 201 });
+        if (newItemRows.length === 0) {
+            return NextResponse.json({ message: `Failed to create item in ${category}`}, { status: 500 });
+        }
+
+        const newItem = newItemRows[0];
+         if (newItem.price) {
+            newItem.price = parseFloat(newItem.price);
+        }
+
+        return NextResponse.json(newItem, { status: 201 });
 
     } catch (error) {
         console.error(`API Error (POST /customizations/${category}):`, error);

@@ -42,7 +42,12 @@ export async function PUT(req: NextRequest, { params }: { params: { category: st
         const [updatedRows]: any[] = await connection.query(`SELECT * FROM \`${category}\` WHERE id = ?`, [id]);
         connection.release();
 
-        return NextResponse.json((updatedRows as any)[0]);
+        const updatedItem = updatedRows[0];
+        if (updatedItem.price) {
+            updatedItem.price = parseFloat(updatedItem.price);
+        }
+
+        return NextResponse.json(updatedItem);
 
     } catch (error) {
         console.error(`API Error (PUT /customizations/${category}/${id}):`, error);
