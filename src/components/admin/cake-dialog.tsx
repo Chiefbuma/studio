@@ -67,7 +67,7 @@ export function CakeDialog({ isOpen, onOpenChange, onFormSubmit, cakeToEdit, fla
         if (isEditMode && cakeToEdit) {
             form.reset({
                 ...cakeToEdit,
-                defaultFlavorId: cakeToEdit.defaultFlavorId || null
+                defaultFlavorId: cakeToEdit.defaultFlavorId ?? null
             });
         } else {
             form.reset({
@@ -231,14 +231,14 @@ export function CakeDialog({ isOpen, onOpenChange, onFormSubmit, cakeToEdit, fla
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Default Flavor</FormLabel>
-                                         <Select onValueChange={field.onChange} value={field.value || ''}>
+                                         <Select onValueChange={field.onChange} value={field.value ?? ''}>
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select a default flavor" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                 <SelectItem value="">None</SelectItem>
+                                                {/* The "None" option is handled by the placeholder, as an empty value is not allowed for SelectItem. */}
                                                 {flavors.map(flavor => <SelectItem key={flavor.id} value={flavor.id}>{flavor.name}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
@@ -279,4 +279,3 @@ export function CakeDialog({ isOpen, onOpenChange, onFormSubmit, cakeToEdit, fla
         </Dialog>
     );
 }
-
