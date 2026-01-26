@@ -1,13 +1,15 @@
+
 import { NextRequest } from 'next/server';
 import jwt from 'jsonwebtoken';
 
-const JWT_SECRET = process.env.JWT_SECRET;
-
-if (!JWT_SECRET) {
-    throw new Error('JWT_SECRET is not defined in environment variables');
-}
-
 export function verifyAuth(req: NextRequest): { authenticated: boolean; error?: string } {
+    const JWT_SECRET = process.env.JWT_SECRET;
+
+    if (!JWT_SECRET) {
+        console.error("CRITICAL: JWT_SECRET environment variable not defined. Authentication will fail.");
+        return { authenticated: false, error: 'Server authentication is not configured.' };
+    }
+
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return { authenticated: false, error: 'Authorization header missing or malformed' };
