@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { verifyAuth } from '@/lib/auth-utils';
+import type { Cake, SpecialOffer } from '@/lib/types';
 
 export async function GET() {
     try {
@@ -20,25 +21,27 @@ export async function GET() {
         }
 
         const offer = rows[0];
-        const special_price = parseFloat(offer.base_price) * (1 - offer.discount_percentage / 100);
-        const savings = parseFloat(offer.base_price) - special_price;
+        const original_price = parseFloat(offer.base_price);
+        const discount_percentage = parseInt(offer.discount_percentage, 10);
+        const special_price = original_price * (1 - discount_percentage / 100);
+        const savings = original_price - special_price;
 
-        const responseData = {
+        const responseData: SpecialOffer = {
             cake: {
                 id: offer.id,
                 name: offer.name,
                 description: offer.description,
-                base_price: parseFloat(offer.base_price),
+                base_price: original_price,
                 image_id: offer.image_id,
                 rating: parseFloat(offer.rating),
                 category: offer.category,
-                orders_count: offer.orders_count,
+                orders_count: parseInt(offer.orders_count, 10),
                 ready_time: offer.ready_time,
                 defaultFlavorId: offer.defaultFlavorId,
-                customizable: !!offer.customizable
+                customizable: Boolean(offer.customizable)
             },
-            discount_percentage: offer.discount_percentage,
-            original_price: parseFloat(offer.base_price),
+            discount_percentage: discount_percentage,
+            original_price: original_price,
             special_price,
             savings,
         };

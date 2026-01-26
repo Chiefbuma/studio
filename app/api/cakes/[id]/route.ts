@@ -1,6 +1,7 @@
 import { NextResponse, NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { verifyAuth } from '@/lib/auth-utils';
+import type { Cake } from '@/lib/types';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     try {
@@ -13,7 +14,16 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             return NextResponse.json({ message: 'Cake not found' }, { status: 404 });
         }
 
-        return NextResponse.json(rows[0]);
+        const cake = rows[0];
+        const formattedCake: Cake = {
+            ...cake,
+            base_price: parseFloat(cake.base_price),
+            rating: parseFloat(cake.rating),
+            orders_count: parseInt(cake.orders_count, 10),
+            customizable: Boolean(cake.customizable),
+        };
+
+        return NextResponse.json(formattedCake);
     } catch (error) {
         console.error(`API Error (GET /cakes/${params.id}):`, error);
         return NextResponse.json({ message: 'Failed to fetch cake' }, { status: 500 });
@@ -54,7 +64,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         const [updatedRows]: any[] = await connection.query('SELECT * FROM cakes WHERE id = ?', [id]);
         connection.release();
         
-        return NextResponse.json(updatedRows[0]);
+        const cake = updatedRows[0];
+        const formattedCake: Cake = {
+            ...cake,
+            base_price: parseFloat(cake.base_price),
+            rating: parseFloat(cake.rating),
+            orders_count: parseInt(cake.orders_count, 10),
+            customizable: Boolean(cake.customizable),
+        };
+        
+        return NextResponse.json(formattedCake);
     } catch (error) {
         console.error(`API Error (PUT /cakes/${params.id}):`, error);
         return NextResponse.json({ message: 'Failed to update cake' }, { status: 500 });

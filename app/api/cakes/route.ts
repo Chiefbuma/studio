@@ -1,13 +1,23 @@
 import { NextResponse, NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { verifyAuth } from '@/lib/auth-utils';
+import type { Cake } from '@/lib/types';
 
 export async function GET() {
   try {
     const connection = await pool.getConnection();
-    const [rows] = await connection.query('SELECT * FROM cakes');
+    const [rows]: any[] = await connection.query('SELECT * FROM cakes');
     connection.release();
-    return NextResponse.json(rows);
+    
+    const cakes: Cake[] = rows.map((cake: any) => ({
+        ...cake,
+        base_price: parseFloat(cake.base_price),
+        rating: parseFloat(cake.rating),
+        orders_count: parseInt(cake.orders_count, 10),
+        customizable: Boolean(cake.customizable),
+    }));
+
+    return NextResponse.json(cakes);
   } catch (error) {
     console.error('API Error:', error);
     // In a production app, you'd want to log this error to a service
