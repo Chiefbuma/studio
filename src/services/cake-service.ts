@@ -1,5 +1,6 @@
 
-import type { Cake, SpecialOffer, CustomizationOptions, Order, LoginCredentials, SpecialOfferUpdatePayload, CustomizationCategory } from '@/lib/types';
+
+import type { Cake, SpecialOffer, CustomizationOptions, Order, LoginCredentials, SpecialOfferUpdatePayload, CustomizationCategory, CustomizationData } from '@/lib/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -96,13 +97,40 @@ export async function loginAdmin(credentials: LoginCredentials): Promise<{ token
     return res.json();
 }
 
+export async function createCake(cakeData: Partial<Cake>): Promise<Cake> {
+    const res = await fetch(`${API_URL}/cakes`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(cakeData),
+    });
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to create cake');
+    }
+    return res.json();
+}
+
+export async function updateCake(id: string, cakeData: Partial<Cake>): Promise<Cake> {
+    const res = await fetch(`${API_URL}/cakes/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(cakeData),
+    });
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to update cake');
+    }
+    return res.json();
+}
+
 export async function deleteCake(cakeId: string): Promise<Response> {
     const res = await fetch(`${API_URL}/cakes/${cakeId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
     });
     if (!res.ok) {
-        throw new Error('Failed to delete cake');
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to delete cake');
     }
     return res;
 }
@@ -119,13 +147,41 @@ export async function updateSpecialOffer(payload: SpecialOfferUpdatePayload): Pr
     return res.json();
 }
 
+export async function createCustomizationOption(category: CustomizationCategory, data: CustomizationData): Promise<CustomizationData> {
+     const res = await fetch(`${API_URL}/customizations/${category}`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || `Failed to create ${category} option`);
+    }
+    return res.json();
+}
+
+export async function updateCustomizationOption(category: CustomizationCategory, id: string, data: CustomizationData): Promise<CustomizationData> {
+     const res = await fetch(`${API_URL}/customizations/${category}/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(),
+        body: JSON.stringify(data),
+    });
+    if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || `Failed to update ${category} option`);
+    }
+    return res.json();
+}
+
+
 export async function deleteCustomizationOption(category: CustomizationCategory, id: string): Promise<Response> {
     const res = await fetch(`${API_URL}/customizations/${category}/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
     });
     if (!res.ok) {
-        throw new Error(`Failed to delete ${category} option`);
+        const error = await res.json();
+        throw new Error(error.message ||`Failed to delete ${category} option`);
     }
     return res;
 }

@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { getCustomizationOptions, deleteCustomizationOption } from "@/services/cake-service";
-import type { CustomizationOptions, Flavor, Size, Color, Topping, CustomizationCategory } from "@/lib/types";
+import type { CustomizationOptions, Flavor, Size, Color, Topping, CustomizationCategory, CustomizationData } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
+import { CustomizationDialog } from "@/components/admin/customization-dialog";
+
+type ModalState = {
+    isOpen: boolean;
+    category?: CustomizationCategory;
+    item?: CustomizationData | null;
+}
 
 const categoryTitles: Record<CustomizationCategory, string> = {
     flavors: "Flavors",
@@ -24,6 +31,7 @@ const categoryTitles: Record<CustomizationCategory, string> = {
 export default function CustomizationsPage() {
     const [options, setOptions] = useState<CustomizationOptions | null>(null);
     const [loading, setLoading] = useState(true);
+    const [modalState, setModalState] = useState<ModalState>({ isOpen: false });
     const { toast } = useToast();
 
     const fetchData = useCallback(async () => {
@@ -43,11 +51,11 @@ export default function CustomizationsPage() {
     }, [fetchData]);
 
     const handleAdd = (category: CustomizationCategory) => {
-        toast({ title: 'Prototype Action', description: `This would open a form to add a new ${category.slice(0, -1)}. Backend connection required.` });
+        setModalState({ isOpen: true, category, item: null });
     };
     
-    const handleEdit = (category: CustomizationCategory, itemId: string) => {
-        toast({ title: 'Prototype Action', description: `This would open an edit form for item ${itemId} in ${category}. Backend connection required.` });
+    const handleEdit = (category: CustomizationCategory, item: CustomizationData) => {
+        setModalState({ isOpen: true, category, item });
     };
 
     const handleDelete = async (category: CustomizationCategory, itemId: string, itemName: string) => {
@@ -60,6 +68,11 @@ export default function CustomizationsPage() {
         } catch (error) {
             toast({ variant: 'destructive', title: 'Deletion Failed', description: `Could not delete the item. Please try again.` });
         }
+    };
+
+    const handleFormSubmit = () => {
+        setModalState({ isOpen: false });
+        fetchData();
     };
 
     const renderTable = (category: CustomizationCategory, data: (Flavor | Size | Color | Topping)[]) => (
@@ -121,7 +134,7 @@ export default function CustomizationsPage() {
                                                 </Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end">
-                                                <DropdownMenuItem onClick={() => handleEdit(category, item.id)}>Edit</DropdownMenuItem>
+                                                <DropdownMenuItem onClick={() => handleEdit(category, item)}>Edit</DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => handleDelete(category, item.id, item.name)} className="text-destructive">Delete</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
@@ -158,6 +171,15 @@ export default function CustomizationsPage() {
                     {renderTable('toppings', options?.toppings || [])}
                 </TabsContent>
             </Tabs>
+             {modalState.isOpen && modalState.category && (
+                <CustomizationDialog 
+                    isOpen={modalState.isOpen}
+                    onOpenChange={(isOpen) => setModalState(prev => ({...prev, isOpen}))}
+                    onFormSubmit={handleFormSubmit}
+                    category={modalState.category}
+                    itemToEdit={modalState.item}
+                />
+            )}
         </div>
     );
 }

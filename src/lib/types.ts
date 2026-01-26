@@ -1,4 +1,5 @@
 
+
 export interface Cake {
   id: string;
   name: string;
@@ -57,6 +58,8 @@ export interface CustomizationOptions {
 }
 
 export type CustomizationCategory = 'flavors' | 'sizes' | 'colors' | 'toppings';
+
+export type CustomizationData = Partial<Flavor> & Partial<Size> & Partial<Color> & Partial<Topping>;
 
 export interface Customizations {
   flavor: string | null;

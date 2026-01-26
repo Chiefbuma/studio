@@ -1,3 +1,4 @@
+
 import { NextResponse, NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { verifyAuth } from '@/lib/auth-utils';
@@ -37,8 +38,8 @@ export async function POST(req: NextRequest) {
         const { id, name, description, base_price, image_id, rating, category, orders_count, ready_time, defaultFlavorId, customizable } = body;
 
         // Simple validation
-        if (!id || !name || !description || !base_price) {
-            return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+        if (!id || !name || !description || base_price === undefined) {
+            return NextResponse.json({ message: 'Missing required fields: id, name, description, base_price' }, { status: 400 });
         }
         
         const connection = await pool.getConnection();
@@ -46,12 +47,26 @@ export async function POST(req: NextRequest) {
             'INSERT INTO cakes (id, name, description, base_price, image_id, rating, category, orders_count, ready_time, defaultFlavorId, customizable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
             [id, name, description, base_price, image_id, rating, category, orders_count, ready_time, defaultFlavorId, customizable]
         );
+        
+        const [newCakeRows]: any[] = await connection.query('SELECT * FROM cakes WHERE id = ?', [id]);
         connection.release();
 
-        return NextResponse.json({ message: 'Cake created successfully', cake: body }, { status: 201 });
+        const newCake = newCakeRows[0];
+        const formattedCake: Cake = {
+            ...newCake,
+            base_price: parseFloat(newCake.base_price),
+            rating: parseFloat(newCake.rating),
+            orders_count: parseInt(newCake.orders_count, 10),
+            customizable: Boolean(newCake.customizable),
+        };
 
-    } catch (error) {
+        return NextResponse.json(formattedCake, { status: 201 });
+
+    } catch (error: any) {
         console.error('API Error (POST /cakes):', error);
+         if (error.code === 'ER_DUP_ENTRY') {
+            return NextResponse.json({ message: `A cake with ID '${body.id}' already exists.` }, { status: 409 });
+        }
         return NextResponse.json({ message: 'Failed to create cake' }, { status: 500 });
     }
 }
