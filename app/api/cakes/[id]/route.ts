@@ -25,8 +25,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
         return NextResponse.json(formattedCake);
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error(`API Error (GET /cakes/${params.id}):`, error);
-        return NextResponse.json({ message: 'Failed to fetch cake' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to fetch cake: ${message}` }, { status: 500 });
     }
 }
 
@@ -75,8 +76,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         
         return NextResponse.json(formattedCake);
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error(`API Error (PUT /cakes/${params.id}):`, error);
-        return NextResponse.json({ message: 'Failed to update cake' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to update cake: ${message}` }, { status: 500 });
     }
 }
 
@@ -98,7 +100,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
         return new Response(null, { status: 204 }); // Standard practice for successful DELETE
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error(`API Error (DELETE /cakes/${params.id}):`, error);
-        return NextResponse.json({ message: 'Failed to delete cake. It may be part of a special offer or an order.' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to delete cake. It may be referenced by other records (e.g. orders). Details: ${message}` }, { status: 500 });
     }
 }

@@ -44,7 +44,8 @@ export async function POST(req: NextRequest, { params }: { params: { category: s
         return NextResponse.json(newItem, { status: 201 });
 
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error(`API Error (POST /customizations/${category}):`, error);
-        return NextResponse.json({ message: 'Failed to create item' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to create item in ${category}: ${message}` }, { status: 500 });
     }
 }

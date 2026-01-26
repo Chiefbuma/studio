@@ -50,8 +50,9 @@ export async function PUT(req: NextRequest, { params }: { params: { category: st
         return NextResponse.json(updatedItem);
 
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error(`API Error (PUT /customizations/${category}/${id}):`, error);
-        return NextResponse.json({ message: 'Failed to update item' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to update item in ${category}: ${message}` }, { status: 500 });
     }
 }
 
@@ -79,7 +80,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { category:
         return new Response(null, { status: 204 });
 
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error(`API Error (DELETE /customizations/${category}/${id}):`, error);
-        return NextResponse.json({ message: 'Failed to delete item' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to delete item from ${category}: ${message}` }, { status: 500 });
     }
 }

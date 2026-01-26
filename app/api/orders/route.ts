@@ -21,8 +21,9 @@ export async function GET(req: NextRequest) {
         connection.release();
         return NextResponse.json(orders);
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error('API Error (GET /orders):', error);
-        return NextResponse.json({ message: 'Failed to fetch orders' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to fetch orders: ${message}` }, { status: 500 });
     }
 }
 
@@ -81,8 +82,9 @@ export async function POST(req: NextRequest) {
 
     } catch (error) {
         await connection.rollback();
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error('API Error (POST /orders):', error);
-        return NextResponse.json({ message: 'Failed to place order' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to place order: ${message}` }, { status: 500 });
     } finally {
         connection.release();
     }

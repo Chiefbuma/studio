@@ -1,12 +1,10 @@
 
-
 import type { Cake, SpecialOffer, CustomizationOptions, Order, LoginCredentials, SpecialOfferUpdatePayload, CustomizationCategory, CustomizationData } from '@/lib/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Helper to get auth token from localStorage
 const getAuthHeaders = () => {
-    // This function will only be called on the client side, where localStorage is available.
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) {
@@ -15,16 +13,26 @@ const getAuthHeaders = () => {
     return headers;
 };
 
-// --- REAL API IMPLEMENTATION ---
+// Generic function to handle API responses and errors
+async function handleApiResponse(response: Response) {
+    if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'An unknown error occurred and the response was not valid JSON.' }));
+        throw new Error(errorData.message || 'An unknown server error occurred.');
+    }
+    // For DELETE requests, a 204 No Content is valid and has no body.
+    if (response.status === 204) {
+        return response;
+    }
+    return response.json();
+}
+
+
+// --- FETCH (GET) Functions ---
 
 export async function getCakes(): Promise<Cake[]> {
   try {
     const res = await fetch(`${API_URL}/cakes`);
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ message: 'Failed to fetch cakes' }));
-        throw new Error(errorData.message);
-    }
-    return res.json();
+    return await handleApiResponse(res);
   } catch (error) {
     console.error('[GET_CAKES_ERROR]', error);
     throw error;
@@ -34,26 +42,18 @@ export async function getCakes(): Promise<Cake[]> {
 export async function getSpecialOffer(): Promise<SpecialOffer | null> {
     try {
         const res = await fetch(`${API_URL}/special-offer`);
-        if (res.status === 404) return null;
-        if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: 'Failed to fetch special offer' }));
-            throw new Error(errorData.message);
-        }
-        return res.json();
+        if (res.status === 404) return null; // Special case for no offer
+        return await handleApiResponse(res);
     } catch (error) {
         console.error('[GET_SPECIAL_OFFER_ERROR]', error);
         throw error;
     }
 }
 
-export async function getCustomizationOptions(): Promise<CustomizationOptions | null> {
+export async function getCustomizationOptions(): Promise<CustomizationOptions> {
     try {
         const res = await fetch(`${API_URL}/customizations`);
-        if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: 'Failed to fetch customization options' }));
-            throw new Error(errorData.message);
-        }
-        return res.json();
+        return await handleApiResponse(res);
     } catch (error) {
         console.error('[GET_CUSTOMIZATIONS_ERROR]', error);
         throw error;
@@ -73,11 +73,7 @@ export async function getCustomCake(): Promise<Cake | null> {
 export async function getOrders(): Promise<Order[]> {
     try {
         const res = await fetch(`${API_URL}/orders`, { headers: getAuthHeaders() });
-        if (!res.ok) {
-            const errorData = await res.json().catch(() => ({ message: 'Failed to fetch orders' }));
-            throw new Error(errorData.message);
-        }
-        const data = await res.json();
+        const data = await handleApiResponse(res);
         return data.sort((a: Order, b: Order) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } catch (error) {
         console.error('[GET_ORDERS_ERROR]', error);
@@ -85,7 +81,8 @@ export async function getOrders(): Promise<Order[]> {
     }
 }
 
-// --- Admin/Mutation Functions ---
+
+// --- MUTATION (POST, PUT, DELETE) Functions ---
 
 export async function loginAdmin(credentials: LoginCredentials): Promise<{ token: string }> {
     const res = await fetch(`${API_URL}/auth/login`, {
@@ -93,12 +90,7 @@ export async function loginAdmin(credentials: LoginCredentials): Promise<{ token
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
     });
-
-    if (!res.ok) {
-        const errorData = await res.json().catch(() => ({ message: 'An unknown error occurred' }));
-        throw new Error(errorData.message || 'Login failed');
-    }
-    return res.json();
+    return handleApiResponse(res);
 }
 
 export async function createCake(cakeData: Partial<Cake>): Promise<Cake> {
@@ -107,11 +99,7 @@ export async function createCake(cakeData: Partial<Cake>): Promise<Cake> {
         headers: getAuthHeaders(),
         body: JSON.stringify(cakeData),
     });
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to create cake');
-    }
-    return res.json();
+    return handleApiResponse(res);
 }
 
 export async function updateCake(id: string, cakeData: Partial<Cake>): Promise<Cake> {
@@ -120,11 +108,7 @@ export async function updateCake(id: string, cakeData: Partial<Cake>): Promise<C
         headers: getAuthHeaders(),
         body: JSON.stringify(cakeData),
     });
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to update cake');
-    }
-    return res.json();
+    return handleApiResponse(res);
 }
 
 export async function deleteCake(cakeId: string): Promise<Response> {
@@ -132,12 +116,7 @@ export async function deleteCake(cakeId: string): Promise<Response> {
         method: 'DELETE',
         headers: getAuthHeaders(),
     });
-    if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: 'Failed to delete cake' }));
-        throw new Error(error.message);
-    }
-    // For DELETE, a successful response might not have a body
-    return res;
+    return handleApiResponse(res);
 }
 
 export async function updateSpecialOffer(payload: SpecialOfferUpdatePayload): Promise<SpecialOffer> {
@@ -146,11 +125,7 @@ export async function updateSpecialOffer(payload: SpecialOfferUpdatePayload): Pr
         headers: getAuthHeaders(),
         body: JSON.stringify(payload),
     });
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to update special offer');
-    }
-    return res.json();
+    return handleApiResponse(res);
 }
 
 export async function createCustomizationOption(category: CustomizationCategory, data: CustomizationData): Promise<CustomizationData> {
@@ -159,11 +134,7 @@ export async function createCustomizationOption(category: CustomizationCategory,
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || `Failed to create ${category} option`);
-    }
-    return res.json();
+    return handleApiResponse(res);
 }
 
 export async function updateCustomizationOption(category: CustomizationCategory, id: string, data: CustomizationData): Promise<CustomizationData> {
@@ -172,24 +143,15 @@ export async function updateCustomizationOption(category: CustomizationCategory,
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || `Failed to update ${category} option`);
-    }
-    return res.json();
+    return handleApiResponse(res);
 }
-
 
 export async function deleteCustomizationOption(category: CustomizationCategory, id: string): Promise<Response> {
     const res = await fetch(`${API_URL}/customizations/${category}/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
     });
-    if (!res.ok) {
-        const error = await res.json().catch(() => ({ message: `Failed to delete ${category} option` }));
-        throw new Error(error.message);
-    }
-    return res;
+    return handleApiResponse(res);
 }
 
 export async function updateOrderStatus(orderId: number, status: 'processing' | 'complete' | 'cancelled'): Promise<Order> {
@@ -198,9 +160,5 @@ export async function updateOrderStatus(orderId: number, status: 'processing' | 
         headers: getAuthHeaders(),
         body: JSON.stringify({ status }),
     });
-     if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to update order status');
-    }
-    return res.json();
+    return handleApiResponse(res);
 }

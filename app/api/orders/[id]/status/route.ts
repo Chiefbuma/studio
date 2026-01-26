@@ -32,7 +32,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         return NextResponse.json(updatedOrderRows[0]);
     } catch (error) {
         connection.release();
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error(`API Error (PUT /orders/${params.id}/status):`, error);
-        return NextResponse.json({ message: 'Failed to update order status' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to update order status: ${message}` }, { status: 500 });
     }
 }

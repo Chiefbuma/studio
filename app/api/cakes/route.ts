@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
          if (error.code === 'ER_DUP_ENTRY') {
             return NextResponse.json({ message: `A cake with ID '${body?.id}' already exists.` }, { status: 409 });
         }
-        return NextResponse.json({ message: 'Failed to create cake' }, { status: 500 });
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return NextResponse.json({ message: `Failed to create cake: ${message}` }, { status: 500 });
     }
 }

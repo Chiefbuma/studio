@@ -48,8 +48,9 @@ export async function GET() {
 
         return NextResponse.json(responseData);
     } catch (error) {
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error('API Error (GET /special-offer):', error);
-        return NextResponse.json({ message: 'Failed to fetch special offer' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to fetch special offer: ${message}` }, { status: 500 });
     }
 }
 
@@ -84,7 +85,8 @@ export async function PUT(req: NextRequest) {
     } catch (error) {
         await connection.rollback();
         connection.release();
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error('API Error (PUT /special-offer):', error);
-        return NextResponse.json({ message: 'Failed to update special offer' }, { status: 500 });
+        return NextResponse.json({ message: `Failed to update special offer: ${message}` }, { status: 500 });
     }
 }
