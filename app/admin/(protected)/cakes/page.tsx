@@ -1,7 +1,7 @@
 
 'use client';
 import { useEffect, useState, useCallback } from "react";
-import { cakeService } from "@/services/cake-service";
+import { getCakes, getCustomizationOptions, deleteCake } from "@/services/cake-service";
 import type { Cake, CustomizationOptions } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -28,8 +28,8 @@ export default function CakesPage() {
         setLoading(true);
         try {
             const [cakesData, customOptionsData] = await Promise.all([
-                cakeService.getCakes(),
-                cakeService.getCustomizationOptions()
+                getCakes(),
+                getCustomizationOptions()
             ]);
             setCakes(cakesData.filter(c => c.id !== 'custom-cake'));
             setCustomizationOptions(customOptionsData);
@@ -59,7 +59,7 @@ export default function CakesPage() {
         if (!confirm(`Are you sure you want to delete "${cakeName}"?`)) return;
         
         try {
-            await cakeService.deleteCake(cakeId);
+            await deleteCake(cakeId);
             toast({
                 title: 'Cake Deleted',
                 description: `"${cakeName}" has been successfully deleted.`,

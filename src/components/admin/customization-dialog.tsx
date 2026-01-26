@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { CustomizationCategory, CustomizationData } from '@/lib/types';
-import * as cakeService from '@/services/cake-service';
+import { createCustomizationOption, updateCustomizationOption } from '@/services/cake-service';
 import { Loader2 } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 
@@ -94,10 +94,10 @@ export function CustomizationDialog({ isOpen, onOpenChange, onFormSubmit, catego
     const onSubmit = async (data: any) => {
         try {
             if (isEditMode && itemToEdit) {
-                await cakeService.updateCustomizationOption(category, itemToEdit.id!, data);
+                await updateCustomizationOption(category, itemToEdit.id!, data);
                 toast({ title: "Success", description: `${title} updated successfully.` });
             } else {
-                await cakeService.createCustomizationOption(category, data);
+                await createCustomizationOption(category, data);
                 toast({ title: "Success", description: `${title} created successfully.` });
             }
             onFormSubmit();

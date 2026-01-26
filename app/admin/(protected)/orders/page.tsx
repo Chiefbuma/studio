@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
-import { cakeService } from "@/services/cake-service";
+import { getOrders, updateOrderStatus } from "@/services/cake-service";
 import type { Order } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,7 +23,7 @@ export default function OrdersPage() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const ordersData = await cakeService.getOrders();
+            const ordersData = await getOrders();
             setOrders(ordersData);
         } catch (error) {
             toast({ variant: "destructive", title: "Error", description: "Could not fetch orders." });
@@ -38,7 +38,7 @@ export default function OrdersPage() {
     
     const handleUpdateStatus = async (orderId: number, status: 'processing' | 'complete' | 'cancelled') => {
         try {
-            await cakeService.updateOrderStatus(orderId, status);
+            await updateOrderStatus(orderId, status);
             toast({ title: "Status Updated", description: `Order status changed to ${status}.` });
             fetchData();
         } catch (error) {

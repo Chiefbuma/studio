@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
-import { cakeService } from "@/services/cake-service";
+import { getCustomizationOptions, deleteCustomizationOption } from "@/services/cake-service";
 import type { CustomizationOptions, Flavor, Size, Color, Topping, CustomizationCategory, CustomizationData } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -37,7 +37,7 @@ export default function CustomizationsPage() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const optionsData = await cakeService.getCustomizationOptions();
+            const optionsData = await getCustomizationOptions();
             setOptions(optionsData);
         } catch (error) {
             toast({ variant: "destructive", title: "Error", description: "Could not fetch customization options." });
@@ -62,7 +62,7 @@ export default function CustomizationsPage() {
         if (!confirm(`Are you sure you want to delete "${itemName}" from ${category}?`)) return;
         
         try {
-            await cakeService.deleteCustomizationOption(category, itemId);
+            await deleteCustomizationOption(category, itemId);
             toast({ title: 'Item Deleted', description: `Item "${itemName}" was deleted from ${category}.` });
             fetchData();
         } catch (error) {

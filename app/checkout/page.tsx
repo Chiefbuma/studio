@@ -15,7 +15,7 @@ import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent } from '@/components/ui/card';
-import { cakeService } from '@/services/cake-service';
+import { getCustomizationOptions } from '@/services/cake-service';
 
 // Paystack public key from environment variables
 const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
@@ -91,7 +91,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     // Fetch customization options to build the WhatsApp message
     async function fetchOptions() {
-      const options = await cakeService.getCustomizationOptions();
+      const options = await getCustomizationOptions();
       setCustomizationOptions(options);
     }
     fetchOptions();

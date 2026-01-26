@@ -1,7 +1,7 @@
 
 'use client';
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { cakeService } from "@/services/cake-service";
+import { getOrders, getCakes } from "@/services/cake-service";
 import type { Order, Cake } from "@/lib/types";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/utils";
@@ -16,7 +16,7 @@ export default function DashboardPage() {
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
-            const [ordersData, cakesData] = await Promise.all([cakeService.getOrders(), cakeService.getCakes()]);
+            const [ordersData, cakesData] = await Promise.all([getOrders(), getCakes()]);
             setOrders(ordersData);
             setCakes(cakesData);
             setLoading(false);

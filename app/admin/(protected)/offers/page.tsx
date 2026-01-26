@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from "react";
-import { cakeService } from "@/services/cake-service";
+import { getSpecialOffer, getCakes, updateSpecialOffer } from "@/services/cake-service";
 import type { SpecialOffer, Cake } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,7 @@ export default function OffersPage() {
     const fetchData = useCallback(async () => {
         setLoading(true);
         try {
-            const [offerData, cakesData] = await Promise.all([cakeService.getSpecialOffer(), cakeService.getCakes()]);
+            const [offerData, cakesData] = await Promise.all([getSpecialOffer(), getCakes()]);
             setSpecialOffer(offerData);
             if (offerData) {
                 setSelectedCakeId(offerData.cake.id);
@@ -54,7 +54,7 @@ export default function OffersPage() {
         }
 
         try {
-            const updatedOffer = await cakeService.updateSpecialOffer({ cake_id: selectedCakeId, discount_percentage: discount });
+            const updatedOffer = await updateSpecialOffer({ cake_id: selectedCakeId, discount_percentage: discount });
             setSpecialOffer(updatedOffer);
             toast({
                 title: 'Special Offer Updated',

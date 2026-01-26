@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { Cake, Loader2 } from 'lucide-react';
-import { cakeService } from '@/services/cake-service';
+import { loginAdmin } from '@/services/cake-service';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
     setIsLoggingIn(true);
     
     try {
-        const { token } = await cakeService.loginAdmin({ email, password });
+        const { token } = await loginAdmin({ email, password });
         
         localStorage.setItem('isAdminLoggedIn', 'true');
         localStorage.setItem('adminUser', JSON.stringify({ name: 'Admin', email })); // Store user info
