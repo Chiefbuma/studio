@@ -14,7 +14,7 @@ import type { Cake, Flavor } from '@/lib/types';
 import type { ImagePlaceholder } from '@/lib/placeholder-images';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
-import { createCake, updateCake } from '@/services/cake-service';
+import * as cakeService from '@/services/cake-service';
 import { Loader2 } from 'lucide-react';
 
 const cakeFormSchema = z.object({
@@ -97,10 +97,10 @@ export function CakeDialog({ isOpen, onOpenChange, onFormSubmit, cakeToEdit, fla
     const onSubmit = async (data: CakeFormValues) => {
         try {
             if (isEditMode && cakeToEdit) {
-                await updateCake(cakeToEdit.id, data);
+                await cakeService.updateCake(cakeToEdit.id, data);
                 toast({ title: "Success", description: "Cake updated successfully." });
             } else {
-                await createCake(data);
+                await cakeService.createCake(data);
                 toast({ title: "Success", description: "Cake created successfully." });
             }
             onFormSubmit();
