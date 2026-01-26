@@ -209,28 +209,28 @@ This project uses Next.js API Routes to create a backend directly within the Nex
 
 ### b. API Endpoint Documentation
 
-Here is a complete list of all backend API endpoints implemented in this project.
+Here is a complete list of all backend API endpoints implemented in this project. The admin-only endpoints are consumed by the forms and actions within the `/admin` section of the application to perform CRUD (Create, Read, Update, Delete) operations.
 
 -   **`app/api/auth/login/route.ts`**
     -   `POST /api/auth/login`: Authenticates an admin user based on email and password. It checks credentials against the `admins` table and, if successful, returns a secure JWT.
 
 -   **`app/api/cakes/route.ts`**
     -   `GET /api/cakes`: Fetches a list of all cakes from the database.
-    -   `POST /api/cakes`: Creates a new cake. (Admin Only)
+    -   `POST /api/cakes`: Creates a new cake via the "Create Cake" form in the admin panel. (Admin Only)
 
 -   **`app/api/cakes/[id]/route.ts`**
     -   `GET /api/cakes/:id`: Fetches a single cake by its ID.
-    -   `PUT /api/cakes/:id`: Updates an existing cake's details. (Admin Only)
+    -   `PUT /api/cakes/:id`: Updates an existing cake's details via the "Edit Cake" form. (Admin Only)
     -   `DELETE /api/cakes/:id`: Deletes a cake from the database. (Admin Only)
 
 -   **`app/api/customizations/route.ts`**
     -   `GET /api/customizations`: Fetches all customization options, grouped by category (flavors, sizes, colors, toppings).
 
 -   **`app/api/customizations/[category]/route.ts`**
-    -   `POST /api/customizations/:category`: Adds a new customization option to a specified category (e.g., a new flavor). (Admin Only)
+    -   `POST /api/customizations/:category`: Adds a new customization option (e.g., a new flavor) via the forms in the customization manager. (Admin Only)
 
 -   **`app/api/customizations/[category]/[id]/route.ts`**
-    -   `PUT /api/customizations/:category/:id`: Updates a specific customization option. (Admin Only)
+    -   `PUT /api/customizations/:category/:id`: Updates a specific customization option via the "Edit" forms. (Admin Only)
     -   `DELETE /api/customizations/:category/:id`: Deletes a specific customization option. (Admin Only)
 
 -   **`app/api/orders/route.ts`**
@@ -238,10 +238,8 @@ Here is a complete list of all backend API endpoints implemented in this project
     -   `POST /api/orders`: Places a new order. This is a complex transaction that creates an entry in the `orders` table and multiple entries in the `order_items` table.
 
 -   **`app/api/orders/[id]/status/route.ts`**
-    -   `PUT /api/orders/:id/status`: Updates the `order_status` of a specific order (e.g., to 'complete' or 'cancelled'). (Admin Only)
+    -   `PUT /api/orders/:id/status`: Updates the `order_status` of a specific order (e.g., to 'complete' or 'cancelled') via the actions dropdown in the orders list. (Admin Only)
 
 -   **`app/api/special-offer/route.ts`**
     -   `GET /api/special-offer`: Fetches the current special offer by joining the `special_offers` and `cakes` tables.
-    -   `PUT /api/special-offer`: Updates the special offer. This action first removes the old offer and then inserts the new one. (Admin Only)
-
-    
+    -   `PUT /api/special-offer`: Updates the special offer using the form on the "Offers" page. This action first removes the old offer and then inserts the new one. (Admin Only)
