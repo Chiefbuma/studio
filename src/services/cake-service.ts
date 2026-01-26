@@ -26,7 +26,7 @@ async function getErrorFromResponse(response: Response): Promise<Error> {
 
 // --- FETCH (GET) Functions ---
 
-async function getCakes(): Promise<Cake[]> {
+export async function getCakes(): Promise<Cake[]> {
   try {
     const res = await fetch(`${API_URL}/cakes`);
     if (!res.ok) throw await getErrorFromResponse(res);
@@ -37,7 +37,7 @@ async function getCakes(): Promise<Cake[]> {
   }
 }
 
-async function getSpecialOffer(): Promise<SpecialOffer | null> {
+export async function getSpecialOffer(): Promise<SpecialOffer | null> {
     try {
         const res = await fetch(`${API_URL}/special-offer`);
         if (res.status === 404) return null;
@@ -49,7 +49,7 @@ async function getSpecialOffer(): Promise<SpecialOffer | null> {
     }
 }
 
-async function getCustomizationOptions(): Promise<CustomizationOptions> {
+export async function getCustomizationOptions(): Promise<CustomizationOptions> {
     try {
         const res = await fetch(`${API_URL}/customizations`);
         if (!res.ok) throw await getErrorFromResponse(res);
@@ -60,7 +60,7 @@ async function getCustomizationOptions(): Promise<CustomizationOptions> {
     }
 }
 
-async function getCustomCake(): Promise<Cake | null> {
+export async function getCustomCake(): Promise<Cake | null> {
     try {
         const allCakes = await getCakes();
         return allCakes.find(c => c.id === 'custom-cake') || null;
@@ -70,7 +70,7 @@ async function getCustomCake(): Promise<Cake | null> {
     }
 }
 
-async function getOrders(): Promise<Order[]> {
+export async function getOrders(): Promise<Order[]> {
     try {
         const res = await fetch(`${API_URL}/orders`, { headers: getAuthHeaders() });
         if (!res.ok) throw await getErrorFromResponse(res);
@@ -85,7 +85,7 @@ async function getOrders(): Promise<Order[]> {
 
 // --- MUTATION (POST, PUT, DELETE) Functions ---
 
-async function loginAdmin(credentials: LoginCredentials): Promise<{ token: string }> {
+export async function loginAdmin(credentials: LoginCredentials): Promise<{ token: string }> {
     const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -95,7 +95,7 @@ async function loginAdmin(credentials: LoginCredentials): Promise<{ token: strin
     return res.json();
 }
 
-async function createCake(cakeData: Partial<Cake>): Promise<Cake> {
+export async function createCake(cakeData: Partial<Cake>): Promise<Cake> {
     const res = await fetch(`${API_URL}/cakes`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -105,7 +105,7 @@ async function createCake(cakeData: Partial<Cake>): Promise<Cake> {
     return res.json();
 }
 
-async function updateCake(id: string, cakeData: Partial<Cake>): Promise<Cake> {
+export async function updateCake(id: string, cakeData: Partial<Cake>): Promise<Cake> {
     const res = await fetch(`${API_URL}/cakes/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
@@ -115,7 +115,7 @@ async function updateCake(id: string, cakeData: Partial<Cake>): Promise<Cake> {
     return res.json();
 }
 
-async function deleteCake(cakeId: string): Promise<Response> {
+export async function deleteCake(cakeId: string): Promise<Response> {
     const res = await fetch(`${API_URL}/cakes/${cakeId}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
@@ -124,7 +124,7 @@ async function deleteCake(cakeId: string): Promise<Response> {
     return res;
 }
 
-async function updateSpecialOffer(payload: SpecialOfferUpdatePayload): Promise<SpecialOffer> {
+export async function updateSpecialOffer(payload: SpecialOfferUpdatePayload): Promise<SpecialOffer> {
     const res = await fetch(`${API_URL}/special-offer`, {
         method: 'PUT',
         headers: getAuthHeaders(),
@@ -134,7 +134,7 @@ async function updateSpecialOffer(payload: SpecialOfferUpdatePayload): Promise<S
     return res.json();
 }
 
-async function createCustomizationOption(category: CustomizationCategory, data: CustomizationData): Promise<CustomizationData> {
+export async function createCustomizationOption(category: CustomizationCategory, data: CustomizationData): Promise<CustomizationData> {
      const res = await fetch(`${API_URL}/customizations/${category}`, {
         method: 'POST',
         headers: getAuthHeaders(),
@@ -144,7 +144,7 @@ async function createCustomizationOption(category: CustomizationCategory, data: 
     return res.json();
 }
 
-async function updateCustomizationOption(category: CustomizationCategory, id: string, data: CustomizationData): Promise<CustomizationData> {
+export async function updateCustomizationOption(category: CustomizationCategory, id: string, data: CustomizationData): Promise<CustomizationData> {
      const res = await fetch(`${API_URL}/customizations/${category}/${id}`, {
         method: 'PUT',
         headers: getAuthHeaders(),
@@ -154,7 +154,7 @@ async function updateCustomizationOption(category: CustomizationCategory, id: st
     return res.json();
 }
 
-async function deleteCustomizationOption(category: CustomizationCategory, id: string): Promise<Response> {
+export async function deleteCustomizationOption(category: CustomizationCategory, id: string): Promise<Response> {
     const res = await fetch(`${API_URL}/customizations/${category}/${id}`, {
         method: 'DELETE',
         headers: getAuthHeaders(),
@@ -163,7 +163,7 @@ async function deleteCustomizationOption(category: CustomizationCategory, id: st
     return res;
 }
 
-async function updateOrderStatus(orderId: number, status: 'processing' | 'complete' | 'cancelled'): Promise<Order> {
+export async function updateOrderStatus(orderId: number, status: 'processing' | 'complete' | 'cancelled'): Promise<Order> {
     const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
         method: 'PUT',
         headers: getAuthHeaders(),
@@ -172,21 +172,3 @@ async function updateOrderStatus(orderId: number, status: 'processing' | 'comple
     if (!res.ok) throw await getErrorFromResponse(res);
     return res.json();
 }
-
-
-export const cakeService = {
-    getCakes,
-    getSpecialOffer,
-    getCustomizationOptions,
-    getCustomCake,
-    getOrders,
-    loginAdmin,
-    createCake,
-    updateCake,
-    deleteCake,
-    updateSpecialOffer,
-    createCustomizationOption,
-    updateCustomizationOption,
-    deleteCustomizationOption,
-    updateOrderStatus
-};
