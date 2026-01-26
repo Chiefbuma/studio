@@ -209,7 +209,7 @@ This project uses Next.js API Routes to create a backend directly within the Nex
 
 ### b. API Endpoint Documentation
 
-Here is a complete list of all backend API endpoints implemented in this project. The admin-only endpoints are consumed by the forms and actions within the `/admin` section of the application to perform CRUD (Create, Read, Update, Delete) operations.
+Here is a complete list of all backend API endpoints implemented in this project. The admin-only endpoints are consumed by the forms and actions within the `/admin` section of the application to perform CRUD (Create, Read, Update, Delete) operations. These operations directly modify the live data in the MySQL database.
 
 -   **`app/api/auth/login/route.ts`**
     -   `POST /api/auth/login`: Authenticates an admin user based on email and password. It checks credentials against the `admins` table and, if successful, returns a secure JWT.
