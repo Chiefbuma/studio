@@ -21,7 +21,8 @@ export async function getCakes(): Promise<Cake[]> {
   try {
     const res = await fetch(`${API_URL}/cakes`);
     if (!res.ok) {
-      throw new Error('Failed to fetch cakes');
+        const errorData = await res.json().catch(() => ({ message: 'Failed to fetch cakes' }));
+        throw new Error(errorData.message);
     }
     return res.json();
   } catch (error) {
@@ -33,14 +34,15 @@ export async function getCakes(): Promise<Cake[]> {
 export async function getSpecialOffer(): Promise<SpecialOffer | null> {
     try {
         const res = await fetch(`${API_URL}/special-offer`);
+        if (res.status === 404) return null;
         if (!res.ok) {
-            if (res.status === 404) return null;
-            throw new Error('Failed to fetch special offer');
+            const errorData = await res.json().catch(() => ({ message: 'Failed to fetch special offer' }));
+            throw new Error(errorData.message);
         }
         return res.json();
     } catch (error) {
         console.error('[GET_SPECIAL_OFFER_ERROR]', error);
-        return null;
+        throw error;
     }
 }
 
@@ -48,7 +50,8 @@ export async function getCustomizationOptions(): Promise<CustomizationOptions | 
     try {
         const res = await fetch(`${API_URL}/customizations`);
         if (!res.ok) {
-            throw new Error('Failed to fetch customization options');
+            const errorData = await res.json().catch(() => ({ message: 'Failed to fetch customization options' }));
+            throw new Error(errorData.message);
         }
         return res.json();
     } catch (error) {
@@ -71,7 +74,8 @@ export async function getOrders(): Promise<Order[]> {
     try {
         const res = await fetch(`${API_URL}/orders`, { headers: getAuthHeaders() });
         if (!res.ok) {
-            throw new Error('Failed to fetch orders');
+            const errorData = await res.json().catch(() => ({ message: 'Failed to fetch orders' }));
+            throw new Error(errorData.message);
         }
         const data = await res.json();
         return data.sort((a: Order, b: Order) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
@@ -129,9 +133,10 @@ export async function deleteCake(cakeId: string): Promise<Response> {
         headers: getAuthHeaders(),
     });
     if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || 'Failed to delete cake');
+        const error = await res.json().catch(() => ({ message: 'Failed to delete cake' }));
+        throw new Error(error.message);
     }
+    // For DELETE, a successful response might not have a body
     return res;
 }
 
@@ -142,7 +147,8 @@ export async function updateSpecialOffer(payload: SpecialOfferUpdatePayload): Pr
         body: JSON.stringify(payload),
     });
     if (!res.ok) {
-        throw new Error('Failed to update special offer');
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to update special offer');
     }
     return res.json();
 }
@@ -180,8 +186,8 @@ export async function deleteCustomizationOption(category: CustomizationCategory,
         headers: getAuthHeaders(),
     });
     if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message ||`Failed to delete ${category} option`);
+        const error = await res.json().catch(() => ({ message: `Failed to delete ${category} option` }));
+        throw new Error(error.message);
     }
     return res;
 }
@@ -193,7 +199,8 @@ export async function updateOrderStatus(orderId: number, status: 'processing' | 
         body: JSON.stringify({ status }),
     });
      if (!res.ok) {
-        throw new Error('Failed to update order status');
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to update order status');
     }
     return res.json();
 }

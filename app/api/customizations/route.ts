@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
@@ -17,8 +18,14 @@ export async function GET() {
             toppings,
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('API Error (GET /customizations):', error);
-        return NextResponse.json({ message: 'Failed to fetch customization options' }, { status: 500 });
+        let message = 'Failed to fetch customization options due to a server error.';
+        if (error.code === 'ER_NO_SUCH_TABLE') {
+            message = 'Database setup incomplete: One or more customization tables were not found. Please ensure you have run the SQL scripts in the README.md file.';
+        } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+            message = 'Database connection error: Could not connect to the database server. Please ensure the Docker environment is running correctly.';
+        }
+        return NextResponse.json({ message: message }, { status: 500 });
     }
 }

@@ -34,7 +34,8 @@ export default function CakesPage() {
             setCakes(cakesData.filter(c => c.id !== 'custom-cake'));
             setCustomizationOptions(customOptionsData);
         } catch (error) {
-            toast({ variant: "destructive", title: "Error", description: "Could not fetch data." });
+            const errorMessage = error instanceof Error ? error.message : "Could not fetch data.";
+            toast({ variant: "destructive", title: "Data Fetching Error", description: errorMessage });
         } finally {
             setLoading(false);
         }
@@ -65,10 +66,11 @@ export default function CakesPage() {
             });
             fetchData();
         } catch (error) {
+             const errorMessage = error instanceof Error ? error.message : `Could not delete "${cakeName}". Please try again.`;
             toast({
                 variant: 'destructive',
                 title: 'Deletion Failed',
-                description: `Could not delete "${cakeName}". Please try again.`,
+                description: errorMessage,
             });
         }
     };

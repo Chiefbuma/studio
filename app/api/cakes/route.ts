@@ -19,10 +19,15 @@ export async function GET() {
     }));
 
     return NextResponse.json(cakes);
-  } catch (error) {
-    console.error('API Error:', error);
-    // In a production app, you'd want to log this error to a service
-    return NextResponse.json({ message: 'Failed to fetch cakes' }, { status: 500 });
+  } catch (error: any) {
+    console.error('API Error (GET /api/cakes):', error);
+    let message = 'Failed to fetch cakes due to a server error.';
+    if (error.code === 'ER_NO_SUCH_TABLE') {
+        message = 'Database setup incomplete: The `cakes` table was not found. Please ensure you have run the SQL scripts in the README.md file.';
+    } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+        message = 'Database connection error: Could not connect to the database server. Please ensure the Docker environment is running correctly.';
+    }
+    return NextResponse.json({ message: message }, { status: 500 });
   }
 }
 
@@ -33,8 +38,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: auth.error }, { status: 401 });
     }
     
+    let body;
     try {
-        const body = await req.json();
+        body = await req.json();
         const { id, name, description, base_price, image_id, rating, category, orders_count, ready_time, defaultFlavorId, customizable } = body;
 
         // Simple validation
@@ -65,7 +71,7 @@ export async function POST(req: NextRequest) {
     } catch (error: any) {
         console.error('API Error (POST /cakes):', error);
          if (error.code === 'ER_DUP_ENTRY') {
-            return NextResponse.json({ message: `A cake with ID '${body.id}' already exists.` }, { status: 409 });
+            return NextResponse.json({ message: `A cake with ID '${body?.id}' already exists.` }, { status: 409 });
         }
         return NextResponse.json({ message: 'Failed to create cake' }, { status: 500 });
     }
