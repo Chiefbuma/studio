@@ -14,7 +14,7 @@ import type { Cake, Flavor } from '@/lib/types';
 import type { ImagePlaceholder } from '@/lib/placeholder-images';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Switch } from '../ui/switch';
-import * as cakeService from '@/services/cake-service';
+import { cakeService } from '@/services/cake-service';
 import { Loader2 } from 'lucide-react';
 
 const cakeFormSchema = z.object({

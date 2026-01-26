@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from 'react';
 import type { Cake, CustomizationOptions, SpecialOffer } from '@/lib/types';
-import { getCakes, getSpecialOffer, getCustomizationOptions, getCustomCake } from '@/services/cake-service';
+import { cakeService } from '@/services/cake-service';
 
 interface CakeData {
   cakes: Cake[];
@@ -24,10 +25,10 @@ export function useCakeData(): CakeData {
       try {
         setLoading(true);
         const [cakes, specialOffer, customizationOptions, customCake] = await Promise.all([
-          getCakes(),
-          getSpecialOffer(),
-          getCustomizationOptions(),
-          getCustomCake()
+          cakeService.getCakes(),
+          cakeService.getSpecialOffer(),
+          cakeService.getCustomizationOptions(),
+          cakeService.getCustomCake()
         ]);
         setData({ cakes, specialOffer, customizationOptions, customCake });
       } catch (error) {

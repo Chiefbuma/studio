@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import type { CustomizationCategory, CustomizationData } from '@/lib/types';
-import * as cakeService from '@/services/cake-service';
+import { cakeService } from '@/services/cake-service';
 import { Loader2 } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
 
@@ -60,7 +60,9 @@ export function CustomizationDialog({ isOpen, onOpenChange, onFormSubmit, catego
     const title = categoryTitles[category];
     const currentSchema = formSchemas[category];
 
-    const form = useForm({
+    type FormSchemaType = z.infer<typeof currentSchema>;
+
+    const form = useForm<FormSchemaType>({
         resolver: zodResolver(currentSchema),
     });
 
