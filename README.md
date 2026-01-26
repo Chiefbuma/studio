@@ -31,7 +31,7 @@ Before starting, create a `.env` file in the project root. This file is ignored 
 2.  Fill in the values:
     -   `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your public key from the Paystack dashboard.
     -   `NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER`: Your business WhatsApp number.
-    -   `NEXT_PUBLIC_API_URL`: The URL for your backend API. For this setup, it should be `http://localhost:3000/api`.
+    -   `NEXT_PUBLIC_API_URL`: The URL for your backend API. For local development this should be `http://localhost:3000/api`. For production, it should be your public domain.
     -   The `DB_*` variables are pre-configured for the Docker environment.
 
 ### c. How to Run the Application
@@ -243,3 +243,41 @@ Here is a complete list of all backend API endpoints implemented in this project
 -   **`app/api/special-offer/route.ts`**
     -   `GET /api/special-offer`: Fetches the current special offer by joining the `special_offers` and `cakes` tables.
     -   `PUT /api/special-offer`: Updates the special offer using the form on the "Offers" page. This action first removes the old offer and then inserts the new one. (Admin Only)
+
+## 5. Deploying to Production
+
+This Next.js application is configured for a standalone deployment, which is suitable for running on a Node.js server, including many shared hosting environments that support Node.js.
+
+### a. Build the Application
+
+Run the following command in your terminal to create a production-optimized build of your application:
+```bash
+npm run build
+```
+This command creates a `.next` directory with the compiled code. Because `output: 'standalone'` is set in `next.config.ts`, Next.js will also create a `.next/standalone` folder. This folder contains a minimal copy of your project, including only the necessary files and `node_modules` to run the app in production.
+
+### b. File Structure for Deployment
+
+The folder you need to upload to your hosting server is the `.next/standalone` directory. Its structure will contain everything needed to run the app:
+```
+/.next/standalone/
+├── .next/
+│   ├── server/
+│   └── static/
+├── node_modules/
+├── server.js
+└── ... (other necessary files)
+```
+
+### c. Running the Application on Shared Hosting
+
+1.  **Upload Files**: Upload the entire contents of the `.next/standalone` directory to your shared hosting account.
+2.  **Configure Node.js**: In your hosting control panel (like cPanel), find the section for setting up a Node.js application.
+3.  **Set Environment Variables**: In that same section, you must configure your production environment variables. This is the most critical step. The variables must match those in your `.env` file, but with production values (e.g., your live database credentials, a new strong `JWT_SECRET`). Most importantly, set:
+    -   `NEXT_PUBLIC_API_URL` to `https://test.gle360dcapital.africa/api`
+    -   `PORT` (your host will often provide this variable, e.g., `3000`)
+4.  **Define Startup Command**: The command to start the server will be:
+    ```
+    node server.js
+    ```
+5.  **Start the App**: Save your configuration and start the application. Your hosting provider will then run this command and route traffic from your domain to the running Node.js process.
