@@ -158,16 +158,14 @@ export default function CakesPage() {
                     </Table>
                 </CardContent>
             </Card>
-            {customizationOptions && (
-                 <CakeDialog 
-                    isOpen={isModalOpen}
-                    onOpenChange={setIsModalOpen}
-                    onFormSubmit={handleFormSubmit}
-                    cakeToEdit={editingCake}
-                    flavors={customizationOptions.flavors}
-                    images={PlaceHolderImages}
-                />
-            )}
+            <CakeDialog 
+                isOpen={isModalOpen}
+                onOpenChange={setIsModalOpen}
+                onFormSubmit={handleFormSubmit}
+                cakeToEdit={editingCake}
+                flavors={customizationOptions?.flavors || []}
+                images={PlaceHolderImages}
+            />
         </>
     );
 }
