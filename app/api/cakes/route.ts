@@ -19,15 +19,10 @@ export async function GET() {
     }));
 
     return NextResponse.json(cakes);
-  } catch (error: any) {
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
     console.error('API Error (GET /api/cakes):', error);
-    let message = 'Failed to fetch cakes due to a server error.';
-    if (error.code === 'ER_NO_SUCH_TABLE') {
-        message = 'Database setup incomplete: The `cakes` table was not found. Please ensure you have run the SQL scripts in the README.md file.';
-    } else if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
-        message = 'Database connection error: Could not connect to the database server. Please ensure the Docker environment is running correctly.';
-    }
-    return NextResponse.json({ message: message }, { status: 500 });
+    return NextResponse.json({ message: `Failed to fetch cakes: ${message}` }, { status: 500 });
   }
 }
 

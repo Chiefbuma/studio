@@ -13,23 +13,15 @@ const getAuthHeaders = () => {
     return headers;
 };
 
-// Generic function to handle API responses and extract error messages
-async function getErrorFromResponse(response: Response): Promise<Error> {
-    try {
-        const errorData = await response.json();
-        return new Error(errorData.message || 'An unknown error occurred.');
-    } catch {
-        return new Error('An unknown error occurred and the response was not valid JSON.');
-    }
-}
-
 
 // --- FETCH (GET) Functions ---
 
 export async function getCakes(): Promise<Cake[]> {
   try {
     const res = await fetch(`${API_URL}/cakes`);
-    if (!res.ok) throw await getErrorFromResponse(res);
+    if (!res.ok) {
+      throw new Error('Failed to fetch cakes');
+    }
     return res.json();
   } catch (error) {
     console.error('[GET_CAKES_ERROR]', error);
@@ -40,19 +32,23 @@ export async function getCakes(): Promise<Cake[]> {
 export async function getSpecialOffer(): Promise<SpecialOffer | null> {
     try {
         const res = await fetch(`${API_URL}/special-offer`);
-        if (res.status === 404) return null;
-        if (!res.ok) throw await getErrorFromResponse(res);
+        if (!res.ok) {
+            if (res.status === 404) return null;
+            throw new Error('Failed to fetch special offer');
+        }
         return res.json();
     } catch (error) {
         console.error('[GET_SPECIAL_OFFER_ERROR]', error);
-        throw error;
+        return null;
     }
 }
 
 export async function getCustomizationOptions(): Promise<CustomizationOptions> {
     try {
         const res = await fetch(`${API_URL}/customizations`);
-        if (!res.ok) throw await getErrorFromResponse(res);
+        if (!res.ok) {
+            throw new Error('Failed to fetch customization options');
+        }
         return res.json();
     } catch (error) {
         console.error('[GET_CUSTOMIZATIONS_ERROR]', error);
@@ -73,7 +69,9 @@ export async function getCustomCake(): Promise<Cake | null> {
 export async function getOrders(): Promise<Order[]> {
     try {
         const res = await fetch(`${API_URL}/orders`, { headers: getAuthHeaders() });
-        if (!res.ok) throw await getErrorFromResponse(res);
+        if (!res.ok) {
+            throw new Error('Failed to fetch orders');
+        }
         const data = await res.json();
         return data.sort((a: Order, b: Order) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     } catch (error) {
@@ -91,9 +89,14 @@ export async function loginAdmin(credentials: LoginCredentials): Promise<{ token
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(credentials),
     });
-    if (!res.ok) throw await getErrorFromResponse(res);
+
+    if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ message: 'An unknown error occurred' }));
+        throw new Error(errorData.message || 'Login failed');
+    }
     return res.json();
 }
+
 
 export async function createCake(cakeData: Partial<Cake>): Promise<Cake> {
     const res = await fetch(`${API_URL}/cakes`, {
@@ -101,7 +104,10 @@ export async function createCake(cakeData: Partial<Cake>): Promise<Cake> {
         headers: getAuthHeaders(),
         body: JSON.stringify(cakeData),
     });
-    if (!res.ok) throw await getErrorFromResponse(res);
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to create cake');
+    }
     return res.json();
 }
 
@@ -111,7 +117,10 @@ export async function updateCake(id: string, cakeData: Partial<Cake>): Promise<C
         headers: getAuthHeaders(),
         body: JSON.stringify(cakeData),
     });
-    if (!res.ok) throw await getErrorFromResponse(res);
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to update cake');
+    }
     return res.json();
 }
 
@@ -120,7 +129,9 @@ export async function deleteCake(cakeId: string): Promise<Response> {
         method: 'DELETE',
         headers: getAuthHeaders(),
     });
-    if (!res.ok) throw await getErrorFromResponse(res);
+    if (!res.ok) {
+        throw new Error('Failed to delete cake');
+    }
     return res;
 }
 
@@ -130,7 +141,9 @@ export async function updateSpecialOffer(payload: SpecialOfferUpdatePayload): Pr
         headers: getAuthHeaders(),
         body: JSON.stringify(payload),
     });
-    if (!res.ok) throw await getErrorFromResponse(res);
+    if (!res.ok) {
+        throw new Error('Failed to update special offer');
+    }
     return res.json();
 }
 
@@ -140,7 +153,10 @@ export async function createCustomizationOption(category: CustomizationCategory,
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw await getErrorFromResponse(res);
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || `Failed to create ${category}`);
+    }
     return res.json();
 }
 
@@ -150,7 +166,10 @@ export async function updateCustomizationOption(category: CustomizationCategory,
         headers: getAuthHeaders(),
         body: JSON.stringify(data),
     });
-    if (!res.ok) throw await getErrorFromResponse(res);
+    if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || `Failed to update ${category}`);
+    }
     return res.json();
 }
 
@@ -159,7 +178,9 @@ export async function deleteCustomizationOption(category: CustomizationCategory,
         method: 'DELETE',
         headers: getAuthHeaders(),
     });
-    if (!res.ok) throw await getErrorFromResponse(res);
+    if (!res.ok) {
+        throw new Error(`Failed to delete ${category} option`);
+    }
     return res;
 }
 
@@ -169,6 +190,8 @@ export async function updateOrderStatus(orderId: number, status: 'processing' | 
         headers: getAuthHeaders(),
         body: JSON.stringify({ status }),
     });
-    if (!res.ok) throw await getErrorFromResponse(res);
+     if (!res.ok) {
+        throw new Error('Failed to update order status');
+    }
     return res.json();
 }
