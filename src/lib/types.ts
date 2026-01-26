@@ -59,7 +59,7 @@ export interface CustomizationOptions {
 
 export type CustomizationCategory = 'flavors' | 'sizes' | 'colors' | 'toppings';
 
-export type CustomizationData = Partial<Flavor> & Partial<Size> & Partial<Color> & Partial<Topping>;
+export type CustomizationData = Flavor | Size | Color | Topping;
 
 export interface Customizations {
   flavor: string | null;
