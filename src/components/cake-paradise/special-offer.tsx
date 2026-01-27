@@ -1,3 +1,4 @@
+
 'use client';
 import type { Cake, SpecialOffer as SpecialOfferType } from "@/lib/types";
 import { formatPrice } from "@/lib/utils";
@@ -23,7 +24,7 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
     const cakeImage = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
 
     return (
-        <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-8 bg-background">
+        <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-8 bg-white">
             <div className="relative z-10 w-full max-w-6xl mx-auto">
                 <div className="relative bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white rounded-2xl shadow-2xl border border-primary/20 overflow-hidden group grid md:grid-cols-2 md:items-center">
                     
@@ -103,14 +104,14 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
 
 function SpecialOfferSkeleton({ onNavigateToMenu, hasError }: { onNavigateToMenu: () => void, hasError: boolean }) {
     return (
-        <div className="relative min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white">
+        <div className="relative min-h-screen flex items-center justify-center bg-white">
             <div className="text-center px-4">
                 {hasError ? (
                      <Sparkles className="w-12 h-12 text-primary mx-auto mb-4" />
                 ) : (
                     <div className="w-12 h-12 border-4 border-primary/50 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
                 )}
-                <h3 className="text-2xl font-bold text-white mb-3">
+                <h3 className="text-2xl font-bold text-foreground mb-3">
                     {hasError ? "No Special Offer Today" : "Loading Today's Special..."}
                 </h3>
                 <p className="text-muted-foreground mb-8 max-w-md mx-auto">
