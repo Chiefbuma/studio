@@ -40,7 +40,8 @@ export default function CustomizationsPage() {
             const optionsData = await getCustomizationOptions();
             setOptions(optionsData);
         } catch (error) {
-            toast({ variant: "destructive", title: "Error", description: "Could not fetch customization options." });
+            const errorMessage = error instanceof Error ? error.message : "Could not fetch customization options.";
+            toast({ variant: "destructive", title: "Error", description: errorMessage });
         } finally {
             setLoading(false);
         }
@@ -66,7 +67,8 @@ export default function CustomizationsPage() {
             toast({ title: 'Item Deleted', description: `Item "${itemName}" was deleted from ${category}.` });
             fetchData();
         } catch (error) {
-            toast({ variant: 'destructive', title: 'Deletion Failed', description: `Could not delete the item. Please try again.` });
+            const errorMessage = error instanceof Error ? error.message : `Could not delete the item. Please try again.`;
+            toast({ variant: 'destructive', title: 'Deletion Failed', description: errorMessage });
         }
     };
 
@@ -222,3 +224,5 @@ export default function CustomizationsPage() {
         </div>
     );
 }
+
+    

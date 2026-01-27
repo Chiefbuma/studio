@@ -26,7 +26,8 @@ export default function OrdersPage() {
             const ordersData = await getOrders();
             setOrders(ordersData);
         } catch (error) {
-            toast({ variant: "destructive", title: "Error", description: "Could not fetch orders." });
+            const errorMessage = error instanceof Error ? error.message : "Could not fetch orders.";
+            toast({ variant: "destructive", title: "Error", description: errorMessage });
         } finally {
             setLoading(false);
         }
@@ -42,7 +43,8 @@ export default function OrdersPage() {
             toast({ title: "Status Updated", description: `Order status changed to ${status}.` });
             fetchData();
         } catch (error) {
-             toast({ variant: "destructive", title: "Update Failed", description: "Could not update order status." });
+             const errorMessage = error instanceof Error ? error.message : "Could not update order status.";
+             toast({ variant: "destructive", title: "Update Failed", description: errorMessage });
         }
     };
 
@@ -175,3 +177,5 @@ export default function OrdersPage() {
         </Card>
     );
 }
+
+    

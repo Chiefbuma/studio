@@ -33,7 +33,8 @@ export default function OffersPage() {
             }
             setCakes(cakesData.filter(c => c.id !== 'custom-cake'));
         } catch (error) {
-            toast({ variant: 'destructive', title: 'Error', description: 'Failed to load offer data.' });
+            const errorMessage = error instanceof Error ? error.message : 'Failed to load offer data.';
+            toast({ variant: 'destructive', title: 'Error', description: errorMessage });
         } finally {
             setLoading(false);
         }
@@ -62,10 +63,11 @@ export default function OffersPage() {
             });
             fetchData();
         } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : `Could not update the special offer.`;
             toast({
                 variant: 'destructive',
                 title: 'Update Failed',
-                description: `Could not update the special offer.`,
+                description: errorMessage,
             });
         }
     };
@@ -164,3 +166,5 @@ export default function OffersPage() {
         </Card>
     );
 }
+
+    

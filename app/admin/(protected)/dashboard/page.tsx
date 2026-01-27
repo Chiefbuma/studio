@@ -7,22 +7,39 @@ import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/utils";
 import { DollarSign, ShoppingCart, Users, Package } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 export default function DashboardPage() {
     const [orders, setOrders] = useState<Order[]>([]);
     const [cakes, setCakes] = useState<Cake[]>([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const { toast } = useToast();
 
     useEffect(() => {
         async function fetchData() {
             setLoading(true);
-            const [ordersData, cakesData] = await Promise.all([getOrders(), getCakes()]);
-            setOrders(ordersData);
-            setCakes(cakesData);
-            setLoading(false);
+            setError(null);
+            try {
+                const [ordersData, cakesData] = await Promise.all([getOrders(), getCakes()]);
+                setOrders(ordersData);
+                setCakes(cakesData);
+            } catch (err) {
+                const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+                setError(errorMessage);
+                toast({
+                    variant: "destructive",
+                    title: "Failed to load dashboard data",
+                    description: errorMessage,
+                });
+            } finally {
+                setLoading(false);
+            }
         }
         fetchData();
-    }, []);
+    }, [toast]);
 
     const totalRevenue = orders.reduce((sum, order) => sum + order.total_price, 0);
     const totalOrders = orders.length;
@@ -38,6 +55,18 @@ export default function DashboardPage() {
                 <Card><CardHeader><Skeleton className="h-6 w-2/3" /></CardHeader><CardContent><Skeleton className="h-8 w-1/2" /></CardContent></Card>
             </div>
         );
+    }
+
+    if (error) {
+        return (
+            <Alert variant="destructive">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertTitle>Loading Error</AlertTitle>
+                <AlertDescription>
+                    {error} Your session may have expired. Please try refreshing the page or logging out and back in.
+                </AlertDescription>
+            </Alert>
+        )
     }
     
     return (
@@ -97,3 +126,5 @@ export default function DashboardPage() {
         </div>
     );
 }
+
+    
