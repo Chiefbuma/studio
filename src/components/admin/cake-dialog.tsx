@@ -140,7 +140,7 @@ export function CakeDialog({ isOpen, onOpenChange, onFormSubmit, cakeToEdit, fla
                     </DialogDescription>
                 </DialogHeader>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4">
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 max-h-[70vh] overflow-y-auto pr-4 no-scrollbar">
                         <FormField
                             control={form.control}
                             name="name"

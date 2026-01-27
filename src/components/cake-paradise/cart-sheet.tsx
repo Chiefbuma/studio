@@ -28,7 +28,7 @@ export function CartSheet() {
         <Separator />
         {itemCount > 0 ? (
           <>
-            <ScrollArea className="flex-1">
+            <ScrollArea className="flex-1 no-scrollbar">
               <div className="flex flex-col gap-6 p-6">
                 {cart.map(item => {
                   return (

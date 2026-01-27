@@ -72,7 +72,7 @@ export function CustomizationForm({ cake, customizationOptions, customizations, 
                 <TabsTrigger value="color"><Palette className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Color</span></TabsTrigger>
                 <TabsTrigger value="toppings"><Star className="w-4 h-4 mr-1 sm:mr-2" /> <span className="hidden sm:inline">Toppings</span> <Badge className="ml-2 hidden sm:block">{customizations.toppings.length}</Badge></TabsTrigger>
             </TabsList>
-            <div className="mt-4 max-h-[350px] overflow-y-auto p-1 pr-3">
+            <div className="mt-4 max-h-[350px] overflow-y-auto p-1 pr-3 no-scrollbar">
                 <TabsContent value="flavor">
                     <div className="space-y-3">
                         {isFlavorLocked && lockedFlavor ? (
