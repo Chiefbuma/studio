@@ -6,9 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { formatPrice } from '@/lib/utils';
-import { Minus, Plus, ShoppingCart, Trash2, X } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Trash2, X, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export function CartSheet() {
@@ -32,11 +31,16 @@ export function CartSheet() {
             <ScrollArea className="flex-1">
               <div className="flex flex-col gap-6 p-6">
                 {cart.map(item => {
-                  const image = PlaceHolderImages.find(img => img.id === item.image_id) || PlaceHolderImages[0];
                   return (
                     <div key={item.id} className="flex items-start gap-4">
-                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md">
-                        <Image src={image.imageUrl} alt={item.name} fill className="object-cover" />
+                      <div className="relative h-20 w-20 flex-shrink-0 overflow-hidden rounded-md bg-muted">
+                        {item.image_data_uri ? (
+                            <Image src={item.image_data_uri} alt={item.name} fill className="object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                                <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                            </div>
+                        )}
                       </div>
                       <div className="flex-1">
                         <h4 className="font-semibold">{item.name}</h4>

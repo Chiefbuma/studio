@@ -16,6 +16,7 @@ export async function GET() {
         rating: parseFloat(cake.rating),
         orders_count: parseInt(cake.orders_count, 10),
         customizable: Boolean(cake.customizable),
+        image_data_uri: cake.image_data_uri,
     }));
 
     return NextResponse.json(cakes);
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
     let body;
     try {
         body = await req.json();
-        const { id, name, description, base_price, image_id, rating, category, orders_count, ready_time, defaultFlavorId, customizable } = body;
+        const { id, name, description, base_price, image_data_uri, rating, category, orders_count, ready_time, defaultFlavorId, customizable } = body;
 
         // Simple validation
         if (!id || !name || !description || base_price === undefined) {
@@ -45,8 +46,8 @@ export async function POST(req: NextRequest) {
         
         const connection = await pool.getConnection();
         await connection.query(
-            'INSERT INTO cakes (id, name, description, base_price, image_id, rating, category, orders_count, ready_time, defaultFlavorId, customizable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, name, description, base_price, image_id, rating, category, orders_count, ready_time, defaultFlavorId, customizable]
+            'INSERT INTO cakes (id, name, description, base_price, image_data_uri, rating, category, orders_count, ready_time, defaultFlavorId, customizable) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, name, description, base_price, image_data_uri, rating, category, orders_count, ready_time, defaultFlavorId, customizable]
         );
         
         const [newCakeRows]: any[] = await connection.query('SELECT * FROM cakes WHERE id = ?', [id]);
@@ -59,6 +60,7 @@ export async function POST(req: NextRequest) {
             rating: parseFloat(newCake.rating),
             orders_count: parseInt(newCake.orders_count, 10),
             customizable: Boolean(newCake.customizable),
+            image_data_uri: newCake.image_data_uri,
         };
 
         return NextResponse.json(formattedCake, { status: 201 });

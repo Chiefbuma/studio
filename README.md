@@ -89,7 +89,7 @@ CREATE TABLE `cakes` (
   `name` VARCHAR(255) NOT NULL,
   `description` TEXT NOT NULL,
   `base_price` DECIMAL(10, 2) NOT NULL,
-  `image_id` VARCHAR(255) NOT NULL,
+  `image_data_uri` LONGTEXT,
   `rating` DECIMAL(3, 2) NOT NULL,
   `category` VARCHAR(255) NOT NULL,
   `orders_count` INT NOT NULL,
@@ -153,14 +153,14 @@ Run these `INSERT` statements in phpMyAdmin to populate your database with the i
 INSERT INTO `admins` (`name`, `email`, `password_hash`) VALUES ('Admin', 'admin@whiskedelights.com', '$2b$10$your_bcrypt_hash_for_password_admin'); -- Replace with a real hash
 
 -- Seed Cakes
-INSERT INTO `cakes` (`id`, `name`, `description`, `base_price`, `image_id`, `rating`, `category`, `orders_count`, `ready_time`, `defaultFlavorId`, `customizable`) VALUES
-('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake...', 3200.00, 'special-offer-cake', 4.9, 'Chocolate', 150, '24h', 'f2', true),
-('red-velvet-delight', 'Red Velvet Delight', 'The timeless classic...', 2800.00, 'red-velvet-delight', 4.8, 'Classic', 120, '24h', 'f3', true),
-('strawberry-dream', 'Strawberry Dream', 'A light and fluffy vanilla sponge cake...', 2500.00, 'strawberry-dream', 4.7, 'Fruit', 95, '24h', NULL, false),
-('lemon-zest-creation', 'Lemon Zest Creation', 'A zesty and refreshing lemon cake...', 2600.00, 'lemon-zest-creation', 4.6, 'Fruit', 80, '24h', NULL, false),
-('vanilla-bean-classic', 'Vanilla Bean Classic', 'A simple yet elegant cake...', 2400.00, 'vanilla-bean-classic', 4.5, 'Classic', 110, '24h', 'f1', true),
-('matcha-elegance', 'Matcha Elegance', 'An earthy and refined cake...', 3000.00, 'matcha-elegance', 4.7, 'Specialty', 60, '48h', 'f1', true),
-('custom-cake', 'Custom Creation', 'Design your own cake from scratch...', 1200.00, 'custom-cake-placeholder', 0, 'Custom', 0, '48h+', NULL, true);
+INSERT INTO `cakes` (`id`, `name`, `description`, `base_price`, `image_data_uri`, `rating`, `category`, `orders_count`, `ready_time`, `defaultFlavorId`, `customizable`) VALUES
+('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake...', 3200.00, NULL, 4.9, 'Chocolate', 150, '24h', 'f2', true),
+('red-velvet-delight', 'Red Velvet Delight', 'The timeless classic...', 2800.00, NULL, 4.8, 'Classic', 120, '24h', 'f3', true),
+('strawberry-dream', 'Strawberry Dream', 'A light and fluffy vanilla sponge cake...', 2500.00, NULL, 4.7, 'Fruit', 95, '24h', NULL, false),
+('lemon-zest-creation', 'Lemon Zest Creation', 'A zesty and refreshing lemon cake...', 2600.00, NULL, 4.6, 'Fruit', 80, '24h', NULL, false),
+('vanilla-bean-classic', 'Vanilla Bean Classic', 'A simple yet elegant cake...', 2400.00, NULL, 4.5, 'Classic', 110, '24h', 'f1', true),
+('matcha-elegance', 'Matcha Elegance', 'An earthy and refined cake...', 3000.00, NULL, 4.7, 'Specialty', 60, '48h', 'f1', true),
+('custom-cake', 'Custom Creation', 'Design your own cake from scratch...', 1200.00, NULL, 0, 'Custom', 0, '48h+', NULL, true);
 
 -- Seed Flavors
 INSERT INTO `flavors` (`id`, `name`, `price`, `description`, `color`) VALUES
@@ -360,5 +360,3 @@ This means your "Application root" path in the hosting panel does not match the 
 
 #### Error: `404 Not Found` for `.js` or `.css` files (Broken Page)
 If your homepage loads but looks broken, it's almost always an issue with your `.htaccess` file. Ensure the file exists in your application root and contains the exact content from Step 7.
-
-    

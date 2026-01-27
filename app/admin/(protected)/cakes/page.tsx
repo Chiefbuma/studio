@@ -6,11 +6,10 @@ import type { Cake, CustomizationOptions } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreHorizontal, Star } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Star, Image as ImageIcon } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -121,11 +120,16 @@ export default function CakesPage() {
                             ))
                             ) : (
                                 cakes.map(cake => {
-                                    const image = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
                                     return (
                                     <TableRow key={cake.id}>
                                         <TableCell>
-                                            <Image src={image.imageUrl} alt={cake.name} width={48} height={48} className="rounded-md object-cover h-12 w-12" />
+                                            {cake.image_data_uri ? (
+                                                <Image src={cake.image_data_uri} alt={cake.name} width={48} height={48} className="rounded-md object-cover h-12 w-12" />
+                                            ) : (
+                                                <div className="h-12 w-12 rounded-md bg-muted flex items-center justify-center">
+                                                    <ImageIcon className="w-6 h-6 text-muted-foreground" />
+                                                </div>
+                                            )}
                                         </TableCell>
                                         <TableCell className="font-medium">{cake.name}</TableCell>
                                         <TableCell>
@@ -166,7 +170,6 @@ export default function CakesPage() {
                 onFormSubmit={handleFormSubmit}
                 cakeToEdit={editingCake}
                 flavors={customizationOptions?.flavors || []}
-                images={PlaceHolderImages}
             />
         </>
     );

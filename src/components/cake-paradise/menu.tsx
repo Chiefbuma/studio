@@ -2,14 +2,13 @@
 
 import Image from 'next/image';
 import type { Cake } from '@/lib/types';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice } from '@/lib/utils';
 import { BackToHomeButton } from './back-to-home-button';
-import { Star, Clock, ShoppingCart, BookOpen, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Star, Clock, ShoppingCart, BookOpen, Sparkles, ChevronLeft, ChevronRight, Image as ImageIcon } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -22,7 +21,6 @@ interface MenuProps {
 }
 
 const CakeCard = ({ cake, onOrder }: { cake: Cake, onOrder: (cake: Cake) => void }) => {
-    const cakeImage = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
     const { addToCart } = useCart();
 
     const handleOrderClick = () => {
@@ -35,15 +33,19 @@ const CakeCard = ({ cake, onOrder }: { cake: Cake, onOrder: (cake: Cake) => void
 
     return (
         <Card className="overflow-hidden h-full flex flex-col transition-all duration-300 transform-gpu w-full shadow-xl">
-            <div className="relative">
-                <Image
-                    src={cakeImage.imageUrl}
-                    alt={cake.name}
-                    width={600}
-                    height={800}
-                    className="w-full h-80 object-cover"
-                    data-ai-hint={cakeImage.imageHint}
-                />
+            <div className="relative h-80 bg-muted">
+                {cake.image_data_uri ? (
+                    <Image
+                        src={cake.image_data_uri}
+                        alt={cake.name}
+                        fill
+                        className="w-full h-full object-cover"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="w-16 h-16 text-muted-foreground" />
+                    </div>
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                 <Badge className="absolute top-4 left-4" variant="secondary">{cake.category}</Badge>
                 <div className="absolute top-4 right-4 bg-background/90 text-primary font-bold px-3 py-1 rounded-full text-lg shadow-md">{formatPrice(cake.base_price)}</div>
@@ -86,32 +88,46 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const isMobile = useIsMobile();
     const [isInteracting, setIsInteracting] = useState(false);
+    const interactionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const autoplayIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
     const nextSlide = () => {
-        setIsInteracting(true);
         setCurrentSlide((prev) => (prev === cakes.length - 1 ? prev : prev + 1));
     };
 
     const prevSlide = () => {
-        setIsInteracting(true);
         setCurrentSlide((prev) => (prev === 0 ? prev : prev - 1));
     };
 
-    useEffect(() => {
-        // Reset interaction flag after a delay
-        if (isInteracting) {
-            const timer = setTimeout(() => setIsInteracting(false), 5000);
-            return () => clearTimeout(timer);
+    const handleInteraction = () => {
+        setIsInteracting(true);
+        if (interactionTimeoutRef.current) {
+            clearTimeout(interactionTimeoutRef.current);
         }
-    }, [isInteracting]);
-    
+        interactionTimeoutRef.current = setTimeout(() => setIsInteracting(false), 5000);
+    };
+
     useEffect(() => {
-        // Autoplay logic - cycles through and resets
-        if (isInteracting) return;
-        const autoplay = setInterval(() => {
-            setCurrentSlide((prev) => (prev === cakes.length - 1 ? 0 : prev + 1));
-        }, 5000);
-        return () => clearInterval(autoplay);
+        if (!isInteracting) {
+            if (autoplayIntervalRef.current) {
+                clearInterval(autoplayIntervalRef.current);
+            }
+            autoplayIntervalRef.current = setInterval(() => {
+                setCurrentSlide((prev) => (prev === cakes.length - 1 ? 0 : prev + 1));
+            }, 5000);
+        } else {
+             if (autoplayIntervalRef.current) {
+                clearInterval(autoplayIntervalRef.current);
+            }
+        }
+        return () => {
+            if (autoplayIntervalRef.current) {
+                clearInterval(autoplayIntervalRef.current);
+            }
+            if (interactionTimeoutRef.current) {
+                clearTimeout(interactionTimeoutRef.current);
+            }
+        };
     }, [isInteracting, cakes.length]);
     
     const swipeConfidenceThreshold = 10000;
@@ -143,7 +159,7 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
 
                 {isMobile ? (
                     // Mobile: Simple Swiper
-                    <div className="relative w-full max-w-sm mx-auto h-[550px] flex items-center justify-center overflow-hidden">
+                    <div className="relative w-full max-w-sm mx-auto h-[550px] flex items-center justify-center overflow-hidden" onTouchStart={handleInteraction}>
                          <AnimatePresence initial={false}>
                             <motion.div
                                 key={currentSlide}
@@ -156,7 +172,7 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                                 dragConstraints={{ left: 0, right: 0 }}
                                 dragElastic={1}
                                 onDragEnd={(e, { offset, velocity }) => {
-                                    setIsInteracting(true);
+                                    handleInteraction();
                                     const swipe = swipePower(offset.x, velocity.x);
                                     if (swipe < -swipeConfidenceThreshold) {
                                         nextSlide();
@@ -168,8 +184,8 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                                 <CakeCard cake={cakes[currentSlide]} onOrder={onOrder} />
                             </motion.div>
                         </AnimatePresence>
-                         <Button onClick={prevSlide} size="icon" variant="outline" className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10" disabled={currentSlide === 0}><ChevronLeft /></Button>
-                         <Button onClick={nextSlide} size="icon" variant="outline" className="absolute -right-2 sm:-right-4 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10" disabled={currentSlide === cakes.length - 1}><ChevronRight /></Button>
+                         <Button onClick={() => { handleInteraction(); prevSlide(); }} size="icon" variant="outline" className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10" disabled={currentSlide === 0}><ChevronLeft /></Button>
+                         <Button onClick={() => { handleInteraction(); nextSlide(); }} size="icon" variant="outline" className="absolute -right-2 sm:-right-4 top-1/2 -translate-y-1/2 z-10 rounded-full h-10 w-10" disabled={currentSlide === cakes.length - 1}><ChevronRight /></Button>
                     </div>
                 ) : (
                     // Desktop: Overlapping Stack Carousel
@@ -208,8 +224,8 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                                 );
                             })}
                         </AnimatePresence>
-                        <Button onClick={prevSlide} size="icon" variant="outline" className="absolute -left-8 top-1/2 -translate-y-1/2 z-[11]" disabled={currentSlide === 0}><ChevronLeft /></Button>
-                        <Button onClick={nextSlide} size="icon" variant="outline" className="absolute -right-8 top-1/2 -translate-y-1/2 z-[11]" disabled={currentSlide === cakes.length - 1}><ChevronRight /></Button>
+                        <Button onClick={() => { handleInteraction(); prevSlide(); }} size="icon" variant="outline" className="absolute -left-8 top-1/2 -translate-y-1/2 z-[11]" disabled={currentSlide === 0}><ChevronLeft /></Button>
+                        <Button onClick={() => { handleInteraction(); nextSlide(); }} size="icon" variant="outline" className="absolute -right-8 top-1/2 -translate-y-1/2 z-[11]" disabled={currentSlide === cakes.length - 1}><ChevronRight /></Button>
                     </div>
                 )}
                  <div className="flex justify-center gap-2 mt-8">
@@ -217,7 +233,7 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                         <button
                             key={index}
                             onClick={() => {
-                                setIsInteracting(true);
+                                handleInteraction();
                                 setCurrentSlide(index);
                             }}
                             className={cn(

@@ -9,10 +9,9 @@ import type { DeliveryInfo, CustomizationOptions } from '@/lib/types';
 import { placeOrder } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, ShoppingCart, ChevronDown, Lock } from 'lucide-react';
+import { Loader2, ArrowLeft, ShoppingCart, ChevronDown, Lock, Image as ImageIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent } from '@/components/ui/card';
 import { getCustomizationOptions } from '@/services/cake-service';
@@ -44,10 +43,15 @@ const OrderSummaryCollapsible = () => {
             <CollapsibleContent>
                  <div className="py-4 space-y-4">
                     {cart.map(item => {
-                        const image = PlaceHolderImages.find(img => img.id === item.image_id) || PlaceHolderImages[0];
                         return (
                             <div key={item.id} className="flex items-start gap-4">
-                                <Image src={image.imageUrl} alt={item.name} width={64} height={64} className="rounded-md object-cover h-16 w-16" />
+                                {item.image_data_uri ? (
+                                    <Image src={item.image_data_uri} alt={item.name} width={64} height={64} className="rounded-md object-cover h-16 w-16" />
+                                ) : (
+                                    <div className="h-16 w-16 rounded-md bg-muted flex items-center justify-center">
+                                        <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                                    </div>
+                                )}
                                 <div className="flex-1">
                                     <p className="font-medium">{item.name}</p>
                                     <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
@@ -91,11 +95,16 @@ export default function CheckoutPage() {
   useEffect(() => {
     // Fetch customization options to build the WhatsApp message
     async function fetchOptions() {
-      const options = await getCustomizationOptions();
-      setCustomizationOptions(options);
+      try {
+          const options = await getCustomizationOptions();
+          setCustomizationOptions(options);
+      } catch (error) {
+          console.error("Failed to fetch customization options for checkout", error);
+          toast({variant: "destructive", title: "Could not load required data."});
+      }
     }
     fetchOptions();
-  }, []);
+  }, [toast]);
 
   const depositAmount = totalPrice * 0.8;
   const customerEmail = `${deliveryInfo.phone}@whiskedelights.com`; 

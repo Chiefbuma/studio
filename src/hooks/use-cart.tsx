@@ -68,7 +68,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         name: cake.name,
         quantity,
         price,
-        image_id: cake.image_id,
+        image_data_uri: cake.image_data_uri,
         customizations,
       };
 

@@ -21,6 +21,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
             rating: parseFloat(cake.rating),
             orders_count: parseInt(cake.orders_count, 10),
             customizable: Boolean(cake.customizable),
+            image_data_uri: cake.image_data_uri,
         };
 
         return NextResponse.json(formattedCake);
@@ -72,6 +73,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
             rating: parseFloat(cake.rating),
             orders_count: parseInt(cake.orders_count, 10),
             customizable: Boolean(cake.customizable),
+            image_data_uri: cake.image_data_uri,
         };
         
         return NextResponse.json(formattedCake);

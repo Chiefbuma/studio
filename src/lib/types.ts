@@ -5,7 +5,7 @@ export interface Cake {
   name: string;
   description: string;
   base_price: number;
-  image_id: string;
+  image_data_uri?: string | null;
   rating: number;
   category: string;
   orders_count: number;
@@ -85,7 +85,7 @@ export interface CartItem {
   name: string;
   quantity: number;
   price: number; // Final price per item, including customizations
-  image_id: string;
+  image_data_uri?: string | null;
   cakeId: string;
   customizations?: Customizations;
 }

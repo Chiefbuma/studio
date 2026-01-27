@@ -3,10 +3,8 @@
 import type { Cake, SpecialOffer as SpecialOfferType } from "@/lib/types";
 import { formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { ArrowRight, CheckCircle, Clock, Crown, Star, Sparkles, Cake as CakeIcon, Trophy } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, Crown, Star, Sparkles, Cake as CakeIcon, Trophy, Image as ImageIcon } from "lucide-react";
 
 interface SpecialOfferProps {
     specialOffer: SpecialOfferType | null;
@@ -21,7 +19,6 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
     }
 
     const { cake, discount_percentage, special_price } = specialOffer;
-    const cakeImage = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
 
     return (
         <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-8 bg-white">
@@ -29,14 +26,19 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                 <div className="relative bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white rounded-2xl shadow-2xl border border-primary/20 overflow-hidden group grid md:grid-cols-2 md:items-center">
                     
                     {/* Image section */}
-                    <div className="relative h-80 md:h-full min-h-[300px] md:min-h-[600px]">
-                        <Image
-                            src={cakeImage.imageUrl}
-                            alt={cake.name}
-                            fill
-                            className="w-full h-full object-cover transform md:group-hover:scale-105 transition-transform duration-500"
-                            data-ai-hint={cakeImage.imageHint}
-                        />
+                    <div className="relative h-80 md:h-full min-h-[300px] md:min-h-[600px] bg-stone-800">
+                        {cake.image_data_uri ? (
+                            <Image
+                                src={cake.image_data_uri}
+                                alt={cake.name}
+                                fill
+                                className="w-full h-full object-cover transform md:group-hover:scale-105 transition-transform duration-500"
+                            />
+                        ) : (
+                             <div className="w-full h-full flex items-center justify-center">
+                                <ImageIcon className="w-24 h-24 text-stone-500" />
+                            </div>
+                        )}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                         
                         <div className="absolute top-4 left-4 inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent text-primary-foreground px-3 py-2 rounded-full shadow-lg">

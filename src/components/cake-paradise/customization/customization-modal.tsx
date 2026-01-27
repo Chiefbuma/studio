@@ -8,10 +8,9 @@ import { useToast } from "@/hooks/use-toast";
 import type { Cake, CustomizationOptions, Customizations } from '@/lib/types';
 import { formatPrice } from '@/lib/utils';
 import Image from 'next/image';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { CustomizationForm } from './customization-form';
 import { Separator } from '@/components/ui/separator';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Image as ImageIcon } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 
 interface CustomizationModalProps {
@@ -101,8 +100,6 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
     onClose();
   };
 
-  const cakeImage = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0">
@@ -112,14 +109,19 @@ export function CustomizationModal({ cake, isOpen, onClose, customizationOptions
         </DialogHeader>
         
         <div className="grid md:grid-cols-2 gap-6 overflow-y-auto px-6 pb-6">
-          <div className="relative rounded-lg overflow-hidden h-64 md:h-full">
-            <Image
-              src={cakeImage.imageUrl}
-              alt={cake.name}
-              fill
-              className="object-cover"
-              data-ai-hint={cakeImage.imageHint}
-            />
+          <div className="relative rounded-lg overflow-hidden h-64 md:h-full bg-muted">
+            {cake.image_data_uri ? (
+                <Image
+                  src={cake.image_data_uri}
+                  alt={cake.name}
+                  fill
+                  className="object-cover"
+                />
+            ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                    <ImageIcon className="w-16 h-16 text-muted-foreground" />
+                </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
             <div className="absolute bottom-4 left-4 text-white">
                 <h3 className="text-2xl font-bold font-headline">{cake.name}</h3>
