@@ -195,7 +195,7 @@ INSERT INTO `special_offers` (`cake_id`, `discount_percentage`) VALUES ('chocola
 
 ## 4. API Endpoints and Database Connection
 
-This project uses Next.js API Routes to create a backend directly within the Next.js application. This avoids the need for a separate backend server.
+This project uses Next.js API Routes to create a backend directly within the Next.js application. This avoids the need for a separate backend server. The admin panel performs live, permanent CRUD operations on your database.
 
 ### a. Backend Architecture
 
@@ -258,20 +258,24 @@ This command creates a `.next` directory with the compiled code. Because `output
 
 ### b. File Structure for Deployment
 
-The folder you need to upload to your hosting server is the `.next/standalone` directory. Its structure will contain everything needed to run the app:
+After running `npm run build`, your project will have a `.next/standalone` directory. You must upload the **entire contents** of this directory to your hosting provider's "Application root" folder (in your case, `test.gle360dcapital.africa`).
+
+Your final file structure on the server should look like this:
+
 ```
-/.next/standalone/
+/home/gledcapi/test.gle360dcapital.africa/
 ├── .next/
 │   ├── server/
 │   └── static/
 ├── node_modules/
-├── server.js
-└── ... (other necessary files)
+├── package.json
+└── server.js
 ```
+**Important**: Do NOT upload the entire `.next/standalone` folder itself. Upload the files and folders *inside* it.
 
 ### c. Running the Application on Shared Hosting
 
-1.  **Upload Files**: Upload the entire contents of the `.next/standalone` directory to your shared hosting account.
+1.  **Upload Files**: Upload the entire contents of the `.next/standalone` directory to your shared hosting account's "Application Root".
 2.  **Configure Node.js**: In your hosting control panel (like cPanel), find the section for setting up a Node.js application.
 3.  **Set Environment Variables**: In that same section, you must configure your production environment variables. This is the most critical step. The variables must match those in your `.env` file, but with production values (e.g., your live database credentials, a new strong `JWT_SECRET`). Most importantly, set:
     -   `NEXT_PUBLIC_API_URL` to `https://test.gle360dcapital.africa/api`
