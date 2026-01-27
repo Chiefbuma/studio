@@ -257,14 +257,17 @@ export function CakeDialog({ isOpen, onOpenChange, onFormSubmit, cakeToEdit, fla
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Default Flavor</FormLabel>
-                                         <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                                         <Select 
+                                            onValueChange={(value) => field.onChange(value === '__none__' ? null : value)} 
+                                            value={field.value ?? ''}
+                                        >
                                             <FormControl>
                                                 <SelectTrigger>
                                                     <SelectValue placeholder="Select a default flavor" />
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
-                                                <SelectItem value="">None</SelectItem>
+                                                <SelectItem value="__none__">None</SelectItem>
                                                 {flavors.map(flavor => <SelectItem key={flavor.id} value={flavor.id}>{flavor.name}</SelectItem>)}
                                             </SelectContent>
                                         </Select>
