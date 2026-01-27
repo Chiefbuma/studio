@@ -340,9 +340,9 @@ If permissions are correct, you may need to explicitly tell the Apache server to
     ```htaccess
     # CLOUDLINUX PASSENGER CONFIGURATION
     # Ensure these paths match your cPanel Node.js setup exactly.
-    PassengerAppRoot "/home/gledcapi/test.gle360dcapital.africa"
+    PassengerAppRoot "/home/gledcapi/domains/test.gle360dcapital.africa"
     PassengerBaseURI "/"
-    PassengerNodejs "/home/gledcapi/nodevenv/test.gle360dcapital.africa/20/bin/node"
+    PassengerNodejs "/home/gledcapi/nodevenv/domains/test.gle360dcapital.africa/20/bin/node"
     PassengerAppType node
     PassengerStartupFile server.js
     
@@ -350,7 +350,7 @@ If permissions are correct, you may need to explicitly tell the Apache server to
     RewriteEngine On
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ http://127.0.0.1:%{SERVER_PORT}/$1 [P,L]
+    RewriteRule ^(.*)$ https://127.0.0.1:%{SERVER_PORT}/$1 [P,L]
     ```
 4.  Save the `.htaccess` file.
 5.  Go back to your Node.js setup panel and **restart** your application.
