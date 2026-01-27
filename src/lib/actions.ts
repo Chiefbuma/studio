@@ -3,7 +3,7 @@
 
 import type { OrderPayload } from './types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api`;
 
 /**
  * Places an order by sending the data to the backend API.

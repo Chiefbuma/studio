@@ -1,7 +1,7 @@
 
 import type { Cake, SpecialOffer, CustomizationOptions, Order, LoginCredentials, SpecialOfferUpdatePayload, CustomizationCategory, CustomizationData } from '@/lib/types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api`;
 
 // Helper to get auth token from localStorage
 const getAuthHeaders = () => {
@@ -172,5 +172,3 @@ export async function updateOrderStatus(orderId: number, status: 'processing' | 
     if (!res.ok) throw await getErrorFromResponse(res);
     return res.json();
 }
-
-    
