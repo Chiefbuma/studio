@@ -9,7 +9,7 @@ export async function GET() {
         const [rows]: any[] = await connection.query(`
             SELECT 
                 so.discount_percentage,
-                c.id, c.name, c.description, c.base_price, c.image_id, c.rating, c.category, c.orders_count, c.ready_time, c.defaultFlavorId, c.customizable
+                c.id, c.name, c.description, c.base_price, c.image_data_uri, c.rating, c.category, c.orders_count, c.ready_time, c.defaultFlavorId, c.customizable
             FROM special_offers so
             JOIN cakes c ON so.cake_id = c.id
             LIMIT 1
@@ -32,7 +32,7 @@ export async function GET() {
                 name: offer.name,
                 description: offer.description,
                 base_price: original_price,
-                image_id: offer.image_id,
+                image_data_uri: offer.image_data_uri,
                 rating: parseFloat(offer.rating),
                 category: offer.category,
                 orders_count: parseInt(offer.orders_count, 10),
