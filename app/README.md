@@ -254,7 +254,7 @@ Run the following command in your local terminal to create a production-optimize
 ```bash
 npm run build
 ```
-This command creates a `.next/standalone` directory. This folder contains a minimal copy of your project with everything needed to run it.
+This command creates a `.next/standalone` directory. This folder contains a minimal copy of your project with everything needed to run it. The `postbuild` script automatically copies your `package.json` into this folder.
 
 ### b. Step 2: Upload Application Files
 
@@ -268,96 +268,87 @@ Upload the following files and folders from your **local `.next/standalone` dire
 
 **IMPORTANT**: Do **NOT** upload the `node_modules` folder from the `.next/standalone` directory. Your hosting provider will create this for you.
 
-Your final file structure on the server must look like this:
+### c. Step 3: Verify the Production File Structure
+
+After uploading, your final file structure on the server **must** look like this. The `static` folder, which contains your CSS and JavaScript, is located inside the `.next` folder.
+
 ```
 /home/gledcapi/test.gle360dcapital.africa/
+|
 ├── .next/
 │   ├── server/
 │   └── static/
-├── package.json
-└── server.js
+│       ├── chunks/
+│       └── css/
+|
+├── server.js
+|
+└── package.json
 ```
-(There should be no `node_modules` folder at this stage).
+(The server will create a `node_modules` folder or a symlink to it).
 
-### c. Step 3: Configure the Node.js Application
+### d. Step 4: Configure the Node.js Application
 
 In your hosting control panel's "Setup Node.js App" section, ensure your settings match the following:
 
 -   **Node.js version**: `20.x` or higher.
 -   **Application mode**: `production`
--   **Application root**: `/home/gledcapi/test.gle360dcapital.africa` (or the folder where you uploaded your files).
+-   **Application root**: The folder where you uploaded your files (e.g., `test.gle360dcapital.africa`).
 -   **Application URL**: The public domain for your app (e.g., `https://test.gle360dcapital.africa`).
 -   **Application startup file**: `server.js`
+-   **Passenger log file**: `/home/gledcapi/logs/passenger.log`
 
-### d. Step 4: Install Dependencies
+### e. Step 5: Install Dependencies
 
-Once your files are uploaded and your application is configured, find and click the **"Run NPM Install"** button in your hosting panel. This will trigger the server to install the dependencies based on your `package.json` file and create the necessary `node_modules` virtual environment.
+Once your files are uploaded and your application is configured, find and click the **"Run NPM Install"** button in your hosting panel. This will trigger the server to install the dependencies based on your `package.json` file.
 
-### e. Step 5: Set Environment Variables
+### f. Step 6: Set Environment Variables
 
-This is the most critical step. In the "Environment Variables" section of your hosting panel, add each of the following variables one by one. **Do not upload your `.env` file.**
+In the "Environment Variables" section of your hosting panel, add each of the following variables one by one. **Do not upload your `.env` file.**
 
 -   `DB_HOST`: Your production database host (e.g., `localhost`).
 -   `DB_DATABASE`: Your production database name.
 -   `DB_USER`: Your production database user.
 -   `DB_PASSWORD`: Your production database password.
--   `JWT_SECRET`: A **new, long, random string** for production.
+-   `JWT_SECRET`: A **new, long, random string** for production. It cannot be the same as your Paystack key.
 -   `NEXT_PUBLIC_API_URL`: Your full application URL with `/api` (e.g., `https://test.gle360dcapital.africa/api`).
 -   `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your **LIVE** Paystack public key.
 -   `NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER`: Your business WhatsApp number.
 
-### f. Step 6: Start the App
+### g. Step 7: Finalize with `.htaccess`
 
-After setting the variables and running NPM install, click the **"Restart"** button. Your application should now be live on your domain.
+To ensure all requests are correctly routed to your Next.js application, you need to create a `.htaccess` file in your **Application Root** directory (`/home/gledcapi/test.gle360dcapital.africa`).
 
-### g. Troubleshooting
+Create a new file named `.htaccess` and paste the following content **exactly**:
+```htaccess
+# CLOUDLINUX PASSENGER CONFIGURATION
+PassengerAppRoot "/home/gledcapi/domains/test.gle360dcapital.africa"
+PassengerBaseURI "/"
+PassengerNodejs "/home/gledcapi/nodevenv/domains/test.gle360dcapital.africa/20/bin/node"
+PassengerAppType node
+PassengerStartupFile server.js
+
+# Rule to handle Next.js static files and routing
+RewriteEngine On
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ https://127.0.0.1:%{SERVER_PORT}/$1 [P,L]
+```
+
+### h. Step 8: Start the App
+
+After setting the variables and creating the `.htaccess` file, click the **"Restart"** button. Your application should now be live on your domain.
+
+### i. Troubleshooting
 
 #### Error: Phusion Passenger shows "We're sorry, but something went wrong"
-If you see this generic error page, it means your Next.js application crashed during startup. The server is running, but your application code has an error.
+This means your Next.js application crashed. **Check your log file**: `/home/gledcapi/logs/passenger.log`. Common causes are incorrect database credentials or a missing `JWT_SECRET`.
 
-**The most important step is to check your log file.**
-1.  Log in to your server via File Manager or SSH.
-2.  Open the **Passenger log file** you configured in your control panel (e.g., `/home/gledcapi/logs/passenger.log`).
-3.  Scroll to the bottom of the file. You will find a detailed error message that shows exactly why the application failed.
+#### Error: "It works!" or "404 Not Found"
+This means your application startup file or root path is incorrect. Double-check your settings in the Node.js panel.
 
-Common causes for this error include:
-*   **Incorrect Database Credentials**: This is the most frequent cause. The log file might show an "Access denied for user" or "Unknown database" error. Double-check your `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_DATABASE` environment variables in your hosting panel and make sure they are 100% correct.
-*   **Missing or Invalid `JWT_SECRET`**: The log might show an error related to 'jwt' or 'secret'. Ensure the `JWT_SECRET` environment variable exists and is set to a long, random string. It cannot be the same as your Paystack key.
-*   **File Permissions**: Less common, but the log might show a "Permission denied" error when trying to read a file. Ensure your application directories have `755` permissions and files have `644` permissions.
+#### Error: `Unable to stat() directory`
+This means your "Application root" path in the hosting panel does not match the actual directory where you uploaded your files. Double-check the path for any typos.
 
-#### Error: App Crashes or Shows "It works!"
-
-If you see an "It works!" page or an error after deployment, it usually means your application crashed on startup. Check the **Passenger log file** (e.g., `/home/gledcapi/logs/passenger.log`).
-
--   `Error: Unable to stat() directory`: This means your "Application root" path in the hosting panel does not match the actual directory where you uploaded your files. Double-check the path for any typos.
--   **Other App Crashes**: Check the log file for errors related to missing environment variables or database connection issues. Ensure all variables from Step 5 are set correctly.
-
-#### Error: 404 Not Found for `_next/static/...` files (Broken Page)
-
-If your homepage loads but looks broken (no styles, no interactivity) and you see 404 errors for JavaScript (`.js`) or CSS (`.css`) files in the browser's developer console, it means the web server is not correctly serving your application's static assets.
-
-**Cause**: This is a common issue in shared hosting environments where the main web server (Apache) is not correctly configured to pass all requests to your running Node.js application (managed by Passenger).
-
-**Solution: Add a `.htaccess` file**
-This is the most reliable way to fix the issue.
-
-1.  In your hosting's File Manager, go to the application root directory (`/home/gledcapi/test.gle360dcapital.africa`).
-2.  Create a new file named `.htaccess` (the dot at the beginning is important).
-3.  Edit the file and paste the following content **exactly**:
-    ```htaccess
-    # CLOUDLINUX PASSENGER CONFIGURATION
-    PassengerAppRoot "/home/gledcapi/domains/test.gle360dcapital.africa"
-    PassengerBaseURI "/"
-    PassengerNodejs "/home/gledcapi/nodevenv/domains/test.gle360dcapital.africa/20/bin/node"
-    PassengerAppType node
-    PassengerStartupFile server.js
-
-    # Rule to handle Next.js static files and routing
-    RewriteEngine On
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^(.*)$ https://127.0.0.1:%{SERVER_PORT}/$1 [P,L]
-    ```
-4.  Save the `.htaccess` file.
-5.  Go back to your Node.js setup panel and **restart** your application.
-```
+#### Error: `404 Not Found` for `.js` or `.css` files (Broken Page)
+If your homepage loads but looks broken, it's almost always an issue with your `.htaccess` file. Ensure the file exists in your application root and contains the exact content from Step 7.
