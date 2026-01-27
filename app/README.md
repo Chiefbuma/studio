@@ -244,53 +244,74 @@ Here is a complete list of all backend API endpoints implemented in this project
     -   `GET /api/special-offer`: Fetches the current special offer by joining the `special_offers` and `cakes` tables.
     -   `PUT /api/special-offer`: Updates the special offer using the form on the "Offers" page. This action first removes the old offer and then inserts the new one. (Admin Only)
 
-## 5. Deploying to Production
+## 5. Deploying to Production (Shared Hosting)
 
-This Next.js application is configured for a standalone deployment, which is suitable for running on a Node.js server, including many shared hosting environments that support Node.js.
+This guide is specifically for deploying to a shared hosting environment that uses a **Node.js Selector** (like cPanel with CloudLinux).
 
-### a. Build the Application
+### a. Step 1: Build the Application
 
-Run the following command in your terminal to create a production-optimized build of your application:
+Run the following command in your local terminal to create a production-optimized build of your application:
 ```bash
 npm run build
 ```
-This command creates a `.next` directory with the compiled code. Because `output: 'standalone'` is set in `next.config.ts`, Next.js will also create a `.next/standalone` folder. This folder contains a minimal copy of your project, including only the necessary files and `node_modules` to run the app in production.
+This command creates a `.next/standalone` directory. This folder contains a minimal copy of your project with everything needed to run it.
 
-### b. File Structure for Deployment
+### b. Step 2: Upload Application Files
 
-After running `npm run build`, your project will have a `.next/standalone` directory. You must upload the **entire contents** of this directory to your hosting provider's "Application root" folder (e.g., `/home/gledcapi/test.gle360dcapital.africa`).
+Log in to your hosting's File Manager and navigate to the **Application Root** directory you specified in your Node.js setup panel (e.g., `/home/gledcapi/test.gle360dcapital.africa`).
 
-Your final file structure on the server must be as follows:
+Upload the following files and folders from your **local `.next/standalone` directory** to your server's Application Root:
+
+-   `server.js`
+-   `package.json`
+-   The entire `.next` folder
+
+**IMPORTANT**: Do **NOT** upload the `node_modules` folder from the `.next/standalone` directory. Your hosting provider will create this for you.
+
+Your final file structure on the server must look like this:
 ```
 /home/gledcapi/test.gle360dcapital.africa/
 ├── .next/
 │   ├── server/
 │   └── static/
-├── node_modules/
 ├── package.json
 └── server.js
 ```
-**Important**: Do NOT upload the entire `.next/standalone` folder itself. Upload the files and folders *inside* it.
+(There should be no `node_modules` folder at this stage).
 
-### c. Troubleshooting Deployment
+### c. Step 3: Configure the Node.js Application
 
-If you see an "It works!" page instead of your application, it means your Next.js app is crashing on startup. Here are the most common causes:
+In your hosting control panel's "Setup Node.js App" section, ensure your settings match the following:
 
-1.  **"No such file or directory" Error**: The `passenger.log` file shows `Error: Unable to stat() directory ...`. This means the "Application root" path in your hosting panel does not match the actual directory on your server. Ensure they are identical.
-2.  **Incorrect Node.js Version**: Your hosting panel must be set to use **Node.js 20.x** or higher. Version 16 will cause the app to crash.
-3.  **Missing Environment Variables**: You must set all environment variables (especially `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`, and `JWT_SECRET`) in your hosting control panel. A missing variable will cause a crash.
+-   **Node.js version**: `20.x` or higher.
+-   **Application mode**: `production`
+-   **Application root**: `/home/gledcapi/test.gle360dcapital.africa` (or the folder where you uploaded your files).
+-   **Application URL**: The public domain for your app (e.g., `https://test.gle360dcapital.africa`).
+-   **Application startup file**: `server.js`
 
-### d. Running the Application on Shared Hosting
+### d. Step 4: Install Dependencies
 
-1.  **Upload Files**: Upload the entire contents of your local `.next/standalone` directory to your shared hosting account's "Application Root".
-2.  **Configure Node.js**: In your hosting control panel (like cPanel), find the section for setting up a Node.js application.
-3.  **Set Environment Variables**: In that same section, you must configure your production environment variables. This is the most critical step. The variables must match those in your `.env` file, but with production values (e.g., your live database credentials, a new strong `JWT_SECRET`). Most importantly, set:
-    -   `NEXT_PUBLIC_API_URL` to `https://test.gle360dcapital.africa/api`
-    -   `PORT` (your host will often provide this variable, e.g., `3000`)
-4.  **Define Startup Command**: The command to start the server will be:
-    ```
-    node server.js
-    ```
-5.  **Start the App**: Save your configuration and start the application. Your hosting provider will then run this command and route traffic from your domain to the running Node.js process.
+Once your files are uploaded and your application is configured, find and click the **"Run NPM Install"** button in your hosting panel. This will trigger the server to install the dependencies based on your `package.json` file and create the necessary `node_modules` virtual environment.
 
-  
+### e. Step 5: Set Environment Variables
+
+This is the most critical step. In the "Environment Variables" section of your hosting panel, add each of the following variables one by one. **Do not upload your `.env` file.**
+
+-   `DB_HOST`: Your production database host (e.g., `localhost`).
+-   `DB_DATABASE`: Your production database name.
+-   `DB_USER`: Your production database user.
+-   `DB_PASSWORD`: Your production database password.
+-   `JWT_SECRET`: A **new, long, random string** for production.
+-   `NEXT_PUBLIC_API_URL`: Your full application URL with `/api` (e.g., `https://test.gle360dcapital.africa/api`).
+-   `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your **LIVE** Paystack public key.
+-   `NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER`: Your business WhatsApp number.
+
+### f. Step 6: Start the App
+
+After setting the variables and running NPM install, click the **"Restart"** button. Your application should now be live on your domain.
+
+### g. Troubleshooting
+
+If you see an "It works!" page or an error, check the **Passenger log file**.
+-   `Error: Unable to stat() directory`: This means your "Application root" path in the hosting panel does not match the actual directory where you uploaded your files. Double-check the path for any typos.
+-   **App Crashes**: Check the log file for errors related to missing environment variables or database connection issues.
