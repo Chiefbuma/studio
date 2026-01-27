@@ -175,7 +175,7 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
     const minDate = format(addDays(new Date(), 2), 'yyyy-MM-dd');
 
     return (
-        <div className="space-y-6 max-h-[65vh] overflow-y-auto pr-3">
+        <div className="space-y-6">
             <div>
                 <Label>Delivery Method</Label>
                 <RadioGroup

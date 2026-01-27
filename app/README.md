@@ -310,7 +310,7 @@ In the "Environment Variables" section of your hosting panel, add each of the fo
 -   `DB_DATABASE`: Your production database name.
 -   `DB_USER`: Your production database user.
 -   `DB_PASSWORD`: Your production database password.
--   `JWT_SECRET`: A **new, long, random string** for production. It cannot be the same as your Paystack key.
+-   `JWT_SECRET`: **CRITICAL!** Use a **new, long, random string** for production. It cannot be the same as your Paystack key. This is for security.
 -   `NEXT_PUBLIC_API_URL`: Your full application URL with `/api` (e.g., `https://test.gle360dcapital.africa/api`).
 -   `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your **LIVE** Paystack public key.
 -   `NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER`: Your business WhatsApp number.
@@ -360,4 +360,3 @@ This means your "Application root" path in the hosting panel does not match the 
 
 #### Error: `404 Not Found` for `.js` or `.css` files (Broken Page)
 If your homepage loads but looks broken, it's almost always an issue with your `.htaccess` file. Ensure the file exists in your application root and contains the exact content from Step 7.
-

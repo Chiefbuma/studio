@@ -23,11 +23,9 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
     const cakeImage = PlaceHolderImages.find(img => img.id === cake.image_id) || PlaceHolderImages[0];
 
     return (
-        <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-8">
-            <div className="absolute inset-0 bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white"></div>
-            
+        <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-8 bg-background">
             <div className="relative z-10 w-full max-w-6xl mx-auto">
-                <div className="relative bg-card/5 backdrop-blur-lg rounded-2xl shadow-2xl border border-primary/20 overflow-hidden group grid md:grid-cols-2 md:items-center">
+                <div className="relative bg-gradient-to-br from-stone-800 via-stone-900 to-black text-white rounded-2xl shadow-2xl border border-primary/20 overflow-hidden group grid md:grid-cols-2 md:items-center">
                     
                     {/* Image section */}
                     <div className="relative h-80 md:h-full min-h-[300px] md:min-h-[600px]">
@@ -64,7 +62,7 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
                     {/* Text content section */}
                     <div className="p-6 sm:p-8 md:p-12 text-center md:text-left">
                         <h1 className="text-3xl sm:text-4xl font-bold text-white mb-3 leading-tight text-balance mt-6 md:mt-0">{cake.name}</h1>
-                        <p className="text-muted-foreground text-sm sm:text-base mb-6 max-w-xl text-balance mx-auto md:mx-0">{cake.description}</p>
+                        <p className="text-stone-300 text-sm sm:text-base mb-6 max-w-xl text-balance mx-auto md:mx-0">{cake.description}</p>
                         
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-3 mb-6 text-sm text-white">
                             <div className="flex items-center gap-2">
@@ -87,7 +85,7 @@ export default function SpecialOffer({ specialOffer, onOrder, onOrderCustom, onN
 
                         <div className="grid gap-3 sm:grid-cols-2">
                             <Button size="lg" className="shadow-lg hover:shadow-primary/50 transition-shadow w-full" onClick={() => onOrder(cake)}>
-                                <CakeIcon className="mr-2 h-5 w-5" /> Add to Cart
+                                <CakeIcon className="mr-2 h-5 w-5" /> Order This Cake
                             </Button>
                              <Button size="lg" variant="secondary" className="w-full" onClick={onOrderCustom}>
                                 <Sparkles className="mr-2 h-5 w-5" /> Create Your Own

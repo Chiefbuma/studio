@@ -114,6 +114,11 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
         return () => clearInterval(autoplay);
     }, [isInteracting, cakes.length]);
     
+    const swipeConfidenceThreshold = 10000;
+    const swipePower = (offset: number, velocity: number) => {
+        return Math.abs(offset) * velocity;
+    };
+
     if (!cakes || cakes.length === 0) {
         return <div>Loading cakes...</div>
     }
@@ -138,7 +143,7 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
 
                 {isMobile ? (
                     // Mobile: Simple Swiper
-                    <div className="relative w-full max-w-sm mx-auto h-[550px] flex items-center justify-center">
+                    <div className="relative w-full max-w-sm mx-auto h-[550px] flex items-center justify-center overflow-hidden">
                          <AnimatePresence initial={false}>
                             <motion.div
                                 key={currentSlide}
@@ -147,6 +152,18 @@ export default function Menu({ cakes, onOrder, onBack }: MenuProps) {
                                 animate={{ x: '0%', opacity: 1, scale: 1 }}
                                 exit={{ x: '-100%', opacity: 0, scale: 0.8 }}
                                 transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                drag="x"
+                                dragConstraints={{ left: 0, right: 0 }}
+                                dragElastic={1}
+                                onDragEnd={(e, { offset, velocity }) => {
+                                    setIsInteracting(true);
+                                    const swipe = swipePower(offset.x, velocity.x);
+                                    if (swipe < -swipeConfidenceThreshold) {
+                                        nextSlide();
+                                    } else if (swipe > swipeConfidenceThreshold) {
+                                        prevSlide();
+                                    }
+                                }}
                             >
                                 <CakeCard cake={cakes[currentSlide]} onOrder={onOrder} />
                             </motion.div>
