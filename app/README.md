@@ -342,13 +342,22 @@ After setting the variables and creating the `.htaccess` file, click the **"Rest
 ### i. Troubleshooting
 
 #### Error: Phusion Passenger shows "We're sorry, but something went wrong"
-This means your Next.js application crashed. **Check your log file**: `/home/gledcapi/logs/passenger.log`. Common causes are incorrect database credentials or a missing `JWT_SECRET`.
+This means your Next.js application crashed. **Check your log file**: `/home/gledcapi/logs/passenger.log`. Common causes are incorrect environment variables (like a bad database password or missing `JWT_SECRET`).
 
-#### Error: "It works!" or "404 Not Found"
-This means your application startup file or root path is incorrect. Double-check your settings in the Node.js panel.
+#### Error: Database `Access denied for user...`
+This error means your application started but could not log into the database.
+1.  Go to your hosting control panel's **MySQL Databases** section.
+2.  **Reset Password**: Find your database user and reset its password.
+3.  **Update Environment Variable**: Copy the new password and update the `DB_PASSWORD` environment variable in your Node.js application setup.
+4.  **Check Privileges**: Ensure your user is added to the database and has **"ALL PRIVILEGES"**.
+5.  **Restart** the application.
+
+#### Error: "It works!" or "404 Not Found" (for the whole page)
+This means your application startup file or root path is incorrect, or your `.htaccess` file is missing. Double-check your settings in the Node.js panel.
 
 #### Error: `Unable to stat() directory`
 This means your "Application root" path in the hosting panel does not match the actual directory where you uploaded your files. Double-check the path for any typos.
 
 #### Error: `404 Not Found` for `.js` or `.css` files (Broken Page)
 If your homepage loads but looks broken, it's almost always an issue with your `.htaccess` file. Ensure the file exists in your application root and contains the exact content from Step 7.
+
