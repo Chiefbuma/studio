@@ -312,6 +312,44 @@ After setting the variables and running NPM install, click the **"Restart"** but
 
 ### g. Troubleshooting
 
-If you see an "It works!" page or an error, check the **Passenger log file**.
+#### Error: App Crashes or Shows "It works!"
+
+If you see an "It works!" page or an error after deployment, it usually means your application crashed on startup. Check the **Passenger log file** (e.g., `/home/gledcapi/logs/passenger.log`).
+
 -   `Error: Unable to stat() directory`: This means your "Application root" path in the hosting panel does not match the actual directory where you uploaded your files. Double-check the path for any typos.
--   **App Crashes**: Check the log file for errors related to missing environment variables or database connection issues.
+-   **Other App Crashes**: Check the log file for errors related to missing environment variables or database connection issues. Ensure all variables from Step 5 are set correctly.
+
+#### Error: 404 Not Found for `_next/static/...` files (Broken Page)
+
+If your homepage loads but looks broken (no styles, no interactivity) and you see 404 errors for JavaScript (`.js`) or CSS (`.css`) files in the browser's developer console, it means the web server is not correctly serving your application's static assets.
+
+**Cause**: This is a common issue in shared hosting environments where the main web server (Apache) is not correctly configured to pass all requests to your running Node.js application (managed by Passenger).
+
+**Solution 1: Check File Permissions**
+1.  Log in to your hosting's File Manager.
+2.  Navigate to your application root (`/home/gledcapi/test.gle360dcapital.africa`).
+3.  Ensure that all directories (like `.next`, `static`, `chunks`, `app`) have permissions set to `755`.
+4.  Ensure that all files (like `server.js` and all files inside `.next/static`) have permissions set to `644`.
+
+**Solution 2: Add a `.htaccess` file**
+If permissions are correct, you may need to explicitly tell the Apache server to let your Node.js application handle all requests.
+
+1.  In your hosting's File Manager, go to the application root directory (`/home/gledcapi/test.gle360dcapital.africa`).
+2.  Create a new file named `.htaccess` (the dot at the beginning is important).
+3.  Edit the file and paste the following content **exactly**:
+    ```htaccess
+    PassengerAppRoot "/home/gledcapi/test.gle360dcapital.africa"
+    PassengerBaseURI "/"
+    PassengerNodejs "/home/gledcapi/nodevenv/test.gle360dcapital.africa/20/bin/node"
+    PassengerAppType node
+    PassengerStartupFile server.js
+    PassengerAppEnv "production"
+    
+    # Rule to handle static files for Next.js
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ http://127.0.0.1:%{SERVER_PORT}/$1 [P,L]
+    ```
+4.  Save the `.htaccess` file.
+5.  Go back to your Node.js setup panel and **restart** your application.
