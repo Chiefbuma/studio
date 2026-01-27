@@ -154,13 +154,13 @@ INSERT INTO `admins` (`name`, `email`, `password_hash`) VALUES ('Admin', 'admin@
 
 -- Seed Cakes
 INSERT INTO `cakes` (`id`, `name`, `description`, `base_price`, `image_data_uri`, `rating`, `category`, `orders_count`, `ready_time`, `defaultFlavorId`, `customizable`) VALUES
-('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake...', 3200.00, NULL, 4.9, 'Chocolate', 150, '24h', 'f2', true),
-('red-velvet-delight', 'Red Velvet Delight', 'The timeless classic...', 2800.00, NULL, 4.8, 'Classic', 120, '24h', 'f3', true),
-('strawberry-dream', 'Strawberry Dream', 'A light and fluffy vanilla sponge cake...', 2500.00, NULL, 4.7, 'Fruit', 95, '24h', NULL, false),
-('lemon-zest-creation', 'Lemon Zest Creation', 'A zesty and refreshing lemon cake...', 2600.00, NULL, 4.6, 'Fruit', 80, '24h', NULL, false),
-('vanilla-bean-classic', 'Vanilla Bean Classic', 'A simple yet elegant cake...', 2400.00, NULL, 4.5, 'Classic', 110, '24h', 'f1', true),
-('matcha-elegance', 'Matcha Elegance', 'An earthy and refined cake...', 3000.00, NULL, 4.7, 'Specialty', 60, '48h', 'f1', true),
-('custom-cake', 'Custom Creation', 'Design your own cake from scratch...', 1200.00, NULL, 0, 'Custom', 0, '48h+', NULL, true);
+('chocolate-fudge-delight', 'Chocolate Fudge Delight', 'A rich and decadent chocolate fudge cake...', 3200.00, 'https://images.unsplash.com/photo-1602351447937-745cb720612f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxjaG9jb2xhdGUlMjBjYWtlfGVufDB8fHx8MTc2OTE0NTM0OHww&ixlib=rb-4.1.0&q=80&w=1080', 4.9, 'Chocolate', 150, '24h', 'f2', true),
+('red-velvet-delight', 'Red Velvet Delight', 'The timeless classic...', 2800.00, 'https://images.unsplash.com/photo-1645366188121-2a19e02fcbd5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxyZWQlMjB2ZWx2ZXR8ZW58MHx8fHwxNzY5MTgxNjE4fDA&ixlib=rb-4.1.0&q=80&w=1080', 4.8, 'Classic', 120, '24h', 'f3', true),
+('strawberry-dream', 'Strawberry Dream', 'A light and fluffy vanilla sponge cake...', 2500.00, 'https://images.unsplash.com/photo-1650419424455-d0513aaf0dd6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxzdHJhd2JlcnJ5JTIwY2FrZXxlbnwwfHx8fDE3NjkxODE2MTh8MA&ixlib=rb-4.1.0&q=80&w=1080', 4.7, 'Fruit', 95, '24h', NULL, false),
+('lemon-zest-creation', 'Lemon Zest Creation', 'A zesty and refreshing lemon cake...', 2600.00, 'https://images.unsplash.com/photo-1691242720316-7bea97eb655f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxsZW1vbiUyMGNha2V8ZW58MHx8fHwxNzY5MTgxNjE4fDA&ixlib=rb-4.1.0&q=80&w=1080', 4.6, 'Fruit', 80, '24h', NULL, false),
+('vanilla-bean-classic', 'Vanilla Bean Classic', 'A simple yet elegant cake...', 2400.00, 'https://images.unsplash.com/photo-1588195538326-c5b1e9f80a1b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHx2YW5pbGxhJTIwY2FrZXxlbnwwfHx8fDE3NjkxODE2MTh8MA&ixlib=rb-4.1.0&q=80&w=1080', 4.5, 'Classic', 110, '24h', 'f1', true),
+('matcha-elegance', 'Matcha Elegance', 'An earthy and refined cake...', 3000.00, 'https://images.unsplash.com/photo-1567945520067-d37a381fd5e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxtYXRjaGElMjBjYWtlfGVufDB8fHx8MTc2OTE4MTYxOHww&ixlib=rb-4.1.0&q=80&w=1080', 4.7, 'Specialty', 60, '48h', 'f1', true),
+('custom-cake', 'Custom Creation', 'Design your own cake from scratch...', 1200.00, 'https://images.unsplash.com/photo-1621303837174-89787a7d4729?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwbGFpbiUyMHdoaXRlJTIwY2FrZXxlbnwwfHx8fDE2OTI4MDc4ODV8MA&ixlib=rb-4.1.0&q=80&w=1080', 0, 'Custom', 0, '48h+', NULL, true);
 
 -- Seed Flavors
 INSERT INTO `flavors` (`id`, `name`, `price`, `description`, `color`) VALUES
@@ -360,3 +360,5 @@ This means your "Application root" path in the hosting panel does not match the 
 
 #### Error: `404 Not Found` for `.js` or `.css` files (Broken Page)
 If your homepage loads but looks broken, it's almost always an issue with your `.htaccess` file. Ensure the file exists in your application root and contains the exact content from Step 7.
+
+  
