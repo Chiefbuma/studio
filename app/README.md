@@ -360,3 +360,5 @@ This means your "Application root" path in the hosting panel does not match the 
 
 #### Error: `404 Not Found` for `.js` or `.css` files (Broken Page)
 If your homepage loads but looks broken, it's almost always an issue with your `.htaccess` file. Ensure the file exists in your application root and contains the exact content from Step 7.
+
+    
