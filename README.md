@@ -31,7 +31,7 @@ Before starting, create a `.env` file in the project root. This file is ignored 
 2.  Fill in the values:
     -   `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your public key from the Paystack dashboard.
     -   `NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER`: Your business WhatsApp number.
-    -   `NEXT_PUBLIC_API_URL`: The base URL for your application. For local development, this should be `http://localhost:3000`.
+    -   `NEXT_PUBLIC_API_URL`: The base URL for your application's API. For local development, this should be `http://localhost:3000/api`.
     -   The `DB_*` variables are pre-configured for the Docker environment.
 
 ### c. How to Run the Application
@@ -311,7 +311,7 @@ In the "Environment Variables" section of your hosting panel, add each of the fo
 -   `DB_USER`: Your production database user.
 -   `DB_PASSWORD`: Your production database password.
 -   `JWT_SECRET`: **CRITICAL!** Use a **new, long, random string** for production. It cannot be the same as your Paystack key. This is for security.
--   `NEXT_PUBLIC_API_URL`: Your full application URL (e.g., `https://test.gle360dcapital.africa`).
+-   `NEXT_PUBLIC_API_URL`: Your full application API URL (e.g., `https://test.gle360dcapital.africa/api`).
 -   `NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY`: Your **LIVE** Paystack public key.
 -   `NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER`: Your business WhatsApp number.
 

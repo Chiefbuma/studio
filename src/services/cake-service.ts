@@ -1,10 +1,11 @@
 
 import type { Cake, SpecialOffer, CustomizationOptions, Order, LoginCredentials, SpecialOfferUpdatePayload, CustomizationCategory, CustomizationData } from '@/lib/types';
 
-const API_URL = `${process.env.NEXT_PUBLIC_API_URL}/api`;
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Helper to get auth token from localStorage
 const getAuthHeaders = () => {
+    // This function will only be called on the client side, where localStorage is available.
     const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     if (token) {
