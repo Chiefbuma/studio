@@ -258,10 +258,9 @@ This command creates a `.next` directory with the compiled code. Because `output
 
 ### b. File Structure for Deployment
 
-After running `npm run build`, your project will have a `.next/standalone` directory. You must upload the **entire contents** of this directory to your hosting provider's "Application root" folder (in your case, `test.gle360dcapital.africa`).
+After running `npm run build`, your project will have a `.next/standalone` directory. You must upload the **entire contents** of this directory to your hosting provider's "Application root" folder (e.g., `/home/gledcapi/test.gle360dcapital.africa`).
 
-Your final file structure on the server should look like this:
-
+Your final file structure on the server must be as follows:
 ```
 /home/gledcapi/test.gle360dcapital.africa/
 ├── .next/
@@ -273,9 +272,17 @@ Your final file structure on the server should look like this:
 ```
 **Important**: Do NOT upload the entire `.next/standalone` folder itself. Upload the files and folders *inside* it.
 
-### c. Running the Application on Shared Hosting
+### c. Troubleshooting Deployment
 
-1.  **Upload Files**: Upload the entire contents of the `.next/standalone` directory to your shared hosting account's "Application Root".
+If you see an "It works!" page instead of your application, it means your Next.js app is crashing on startup. Here are the most common causes:
+
+1.  **"No such file or directory" Error**: The `passenger.log` file shows `Error: Unable to stat() directory ...`. This means the "Application root" path in your hosting panel does not match the actual directory on your server. Ensure they are identical.
+2.  **Incorrect Node.js Version**: Your hosting panel must be set to use **Node.js 20.x** or higher. Version 16 will cause the app to crash.
+3.  **Missing Environment Variables**: You must set all environment variables (especially `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`, and `JWT_SECRET`) in your hosting control panel. A missing variable will cause a crash.
+
+### d. Running the Application on Shared Hosting
+
+1.  **Upload Files**: Upload the entire contents of your local `.next/standalone` directory to your shared hosting account's "Application Root".
 2.  **Configure Node.js**: In your hosting control panel (like cPanel), find the section for setting up a Node.js application.
 3.  **Set Environment Variables**: In that same section, you must configure your production environment variables. This is the most critical step. The variables must match those in your `.env` file, but with production values (e.g., your live database credentials, a new strong `JWT_SECRET`). Most importantly, set:
     -   `NEXT_PUBLIC_API_URL` to `https://test.gle360dcapital.africa/api`
@@ -285,3 +292,5 @@ Your final file structure on the server should look like this:
     node server.js
     ```
 5.  **Start the App**: Save your configuration and start the application. Your hosting provider will then run this command and route traffic from your domain to the running Node.js process.
+
+  
