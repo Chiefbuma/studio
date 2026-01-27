@@ -338,27 +338,20 @@ If your homepage loads but looks broken (no styles, no interactivity) and you se
 
 **Cause**: This is a common issue in shared hosting environments where the main web server (Apache) is not correctly configured to pass all requests to your running Node.js application (managed by Passenger).
 
-**Solution 1: Check File Permissions**
-1.  Log in to your hosting's File Manager.
-2.  Navigate to your application root (`/home/gledcapi/test.gle360dcapital.africa`).
-3.  Ensure that all directories (like `.next`, `static`, `chunks`, `app`) have permissions set to `755`.
-4.  Ensure that all files (like `server.js` and all files inside `.next/static`) have permissions set to `644`.
-
-**Solution 2: Add a `.htaccess` file**
-If permissions are correct, you may need to explicitly tell the Apache server to let your Node.js application handle all requests.
+**Solution: Add a `.htaccess` file**
+This is the most reliable way to fix the issue.
 
 1.  In your hosting's File Manager, go to the application root directory (`/home/gledcapi/test.gle360dcapital.africa`).
 2.  Create a new file named `.htaccess` (the dot at the beginning is important).
 3.  Edit the file and paste the following content **exactly**:
     ```htaccess
     # CLOUDLINUX PASSENGER CONFIGURATION
-    # Ensure these paths match your cPanel Node.js setup exactly.
     PassengerAppRoot "/home/gledcapi/domains/test.gle360dcapital.africa"
     PassengerBaseURI "/"
     PassengerNodejs "/home/gledcapi/nodevenv/domains/test.gle360dcapital.africa/20/bin/node"
     PassengerAppType node
     PassengerStartupFile server.js
-    
+
     # Rule to handle Next.js static files and routing
     RewriteEngine On
     RewriteCond %{REQUEST_FILENAME} !-f
@@ -367,3 +360,4 @@ If permissions are correct, you may need to explicitly tell the Apache server to
     ```
 4.  Save the `.htaccess` file.
 5.  Go back to your Node.js setup panel and **restart** your application.
+```
