@@ -338,14 +338,15 @@ If permissions are correct, you may need to explicitly tell the Apache server to
 2.  Create a new file named `.htaccess` (the dot at the beginning is important).
 3.  Edit the file and paste the following content **exactly**:
     ```htaccess
+    # CLOUDLINUX PASSENGER CONFIGURATION
+    # Ensure these paths match your cPanel Node.js setup exactly.
     PassengerAppRoot "/home/gledcapi/test.gle360dcapital.africa"
     PassengerBaseURI "/"
     PassengerNodejs "/home/gledcapi/nodevenv/test.gle360dcapital.africa/20/bin/node"
     PassengerAppType node
     PassengerStartupFile server.js
-    PassengerAppEnv "production"
     
-    # Rule to handle static files for Next.js
+    # Rule to handle Next.js static files and routing
     RewriteEngine On
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
