@@ -312,6 +312,19 @@ After setting the variables and running NPM install, click the **"Restart"** but
 
 ### g. Troubleshooting
 
+#### Error: Phusion Passenger shows "We're sorry, but something went wrong"
+If you see this generic error page, it means your Next.js application crashed during startup. The server is running, but your application code has an error.
+
+**The most important step is to check your log file.**
+1.  Log in to your server via File Manager or SSH.
+2.  Open the **Passenger log file** you configured in your control panel (e.g., `/home/gledcapi/logs/passenger.log`).
+3.  Scroll to the bottom of the file. You will find a detailed error message that shows exactly why the application failed.
+
+Common causes for this error include:
+*   **Incorrect Database Credentials**: This is the most frequent cause. The log file might show an "Access denied for user" or "Unknown database" error. Double-check your `DB_HOST`, `DB_USER`, `DB_PASSWORD`, and `DB_DATABASE` environment variables in your hosting panel and make sure they are 100% correct.
+*   **Missing or Invalid `JWT_SECRET`**: The log might show an error related to 'jwt' or 'secret'. Ensure the `JWT_SECRET` environment variable exists and is set to a long, random string. It cannot be the same as your Paystack key.
+*   **File Permissions**: Less common, but the log might show a "Permission denied" error when trying to read a file. Ensure your application directories have `755` permissions and files have `644` permissions.
+
 #### Error: App Crashes or Shows "It works!"
 
 If you see an "It works!" page or an error after deployment, it usually means your application crashed on startup. Check the **Passenger log file** (e.g., `/home/gledcapi/logs/passenger.log`).
