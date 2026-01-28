@@ -67,7 +67,7 @@ export async function getCustomCake(): Promise<Cake | null> {
         return allCakes.find(c => c.id === 'custom-cake') || null;
     } catch (error) {
         console.error('[GET_CUSTOM_CAKE_ERROR]', error);
-        return null;
+        throw error;
     }
 }
 
