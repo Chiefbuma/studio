@@ -2,7 +2,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import type { Cake, CartItem, Customizations } from '@/lib/types';
+import type { Cake, CartItem, Customizations, DeliveryInfo } from '@/lib/types';
 import { useToast } from './use-toast';
 
 interface CartContextType {
@@ -15,6 +15,9 @@ interface CartContextType {
   totalPrice: number;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
+  deliveryInfo: DeliveryInfo | null;
+  setDeliveryInfo: (info: DeliveryInfo) => void;
+  clearCheckoutData: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -22,16 +25,19 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     try {
       const storedCart = localStorage.getItem('whiskedelights-cart');
-      if (storedCart) {
-        setCart(JSON.parse(storedCart));
-      }
+      if (storedCart) setCart(JSON.parse(storedCart));
+      
+      const storedInfo = sessionStorage.getItem('whiskedelights-delivery-info');
+      if (storedInfo) setDeliveryInfo(JSON.parse(storedInfo));
+
     } catch (error) {
-      console.error("Failed to load cart from local storage", error);
+      console.error("Failed to load cart/delivery info from storage", error);
     }
   }, []);
 
@@ -43,9 +49,21 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [cart]);
 
+  useEffect(() => {
+    try {
+      if (deliveryInfo) {
+        sessionStorage.setItem('whiskedelights-delivery-info', JSON.stringify(deliveryInfo));
+      } else {
+        sessionStorage.removeItem('whiskedelights-delivery-info');
+      }
+    } catch (error) {
+        console.error("Failed to save delivery info to session storage", error);
+    }
+  }, [deliveryInfo]);
+
+
   const addToCart = (cake: Cake, quantity: number, price: number, customizations?: Customizations) => {
     setCart(prevCart => {
-      // If the item is non-customizable, check if it already exists and update quantity.
       if (!cake.customizable && !customizations) {
           const existingItemIndex = prevCart.findIndex(item => item.cakeId === cake.id && !item.customizations);
           if (existingItemIndex > -1) {
@@ -104,9 +122,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearCart = () => {
     setCart([]);
   };
+  
+  const clearCheckoutData = () => {
+      setCart([]);
+      setDeliveryInfo(null);
+      localStorage.removeItem('whiskedelights-cart');
+      sessionStorage.removeItem('whiskedelights-delivery-info');
+  }
 
   const itemCount = useMemo(() => cart.reduce((total, item) => total + item.quantity, 0), [cart]);
-
   const totalPrice = useMemo(() => cart.reduce((total, item) => total + (item.price * item.quantity), 0), [cart]);
   
   const value = { 
@@ -119,6 +143,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       totalPrice, 
       isCartOpen, 
       setIsCartOpen,
+      deliveryInfo,
+      setDeliveryInfo,
+      clearCheckoutData,
   };
   
   return (

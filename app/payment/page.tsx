@@ -1,13 +1,14 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { useCart } from '@/hooks/use-cart';
 import { formatPrice } from '@/lib/utils';
-import type { DeliveryInfo, CustomizationOptions } from '@/lib/types';
+import type { CustomizationOptions } from '@/lib/types';
 import { placeOrder, logError } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, Image as ImageIcon, Lock, MapPin, Store, Truck } from 'lucide-react';
+import { Loader2, ArrowLeft, Image as ImageIcon, Lock, Store, Truck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
