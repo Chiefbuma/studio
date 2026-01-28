@@ -15,7 +15,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { DeliveryForm } from '@/components/cake-paradise/customization/delivery-form';
 import { getCustomizationOptions } from '@/services/cake-service';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
 const ownerWhatsAppNumber = process.env.NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER || '';
@@ -273,30 +272,13 @@ export default function CheckoutPage() {
                                 <span className="font-bold text-primary">{formatPrice(depositAmount)}</span>
                             </div>
                             
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button size="lg" className="w-full" disabled={isFormInvalid || isProcessing}>
-                                        {isProcessing ? (
-                                            <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Please wait...</>
-                                        ) : (
-                                            <><Lock className="mr-2 h-4 w-4" />Place Order & Pay</>
-                                        )}
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                    <AlertDialogTitle>Confirm Your Order</AlertDialogTitle>
-                                    <AlertDialogDescription>
-                                        You are about to place your order. You will be redirected to Paystack to securely pay the 80% deposit of <span className="font-bold">{formatPrice(depositAmount)}</span>. Are you ready to proceed?
-                                    </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={handleCheckout}>Yes, Proceed to Pay</AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
-
+                            <Button size="lg" className="w-full" disabled={isFormInvalid || isProcessing} onClick={handleCheckout}>
+                                {isProcessing ? (
+                                    <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Please wait...</>
+                                ) : (
+                                    <><Lock className="mr-2 h-4 w-4" />Place Order & Pay</>
+                                )}
+                            </Button>
                         </CardContent>
                     </Card>
                 </div>
