@@ -1,7 +1,8 @@
+
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import type { Cake, CartItem, Customizations, DeliveryInfo } from '@/lib/types';
+import type { Cake, CartItem, Customizations } from '@/lib/types';
 import { useToast } from './use-toast';
 
 interface CartContextType {
@@ -9,20 +10,17 @@ interface CartContextType {
   addToCart: (cake: Cake, quantity: number, price: number, customizations?: Customizations) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
-  clearCheckoutData: () => void;
+  clearCart: () => void;
   itemCount: number;
   totalPrice: number;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
-  deliveryInfo: DeliveryInfo | null;
-  setDeliveryInfo: (info: DeliveryInfo) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { toast } = useToast();
 
@@ -32,32 +30,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (storedCart) {
         setCart(JSON.parse(storedCart));
       }
-      const storedDeliveryInfo = localStorage.getItem('whiskedelights-delivery-info');
-      if (storedDeliveryInfo) {
-        setDeliveryInfo(JSON.parse(storedDeliveryInfo));
-      }
     } catch (error) {
-      console.error("Failed to load data from local storage", error);
+      console.error("Failed to load cart from local storage", error);
     }
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem('whiskedelights-cart', JSON.stringify(cart));
-      if (deliveryInfo) {
-        localStorage.setItem('whiskedelights-delivery-info', JSON.stringify(deliveryInfo));
-      } else {
-        localStorage.removeItem('whiskedelights-delivery-info');
-      }
     } catch (error) {
-      console.error("Failed to save data to local storage", error);
+      console.error("Failed to save cart to local storage", error);
     }
-  }, [cart, deliveryInfo]);
+  }, [cart]);
 
   const addToCart = (cake: Cake, quantity: number, price: number, customizations?: Customizations) => {
     setCart(prevCart => {
-      // If the item is the non-customizable special offer, check if it already exists and update quantity.
-      if (cake.id === 'special-offer-cake' && !customizations) {
+      // If the item is non-customizable, check if it already exists and update quantity.
+      if (!cake.customizable && !customizations) {
           const existingItemIndex = prevCart.findIndex(item => item.cakeId === cake.id && !item.customizations);
           if (existingItemIndex > -1) {
               const newCart = [...prevCart];
@@ -68,6 +57,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 description: `Quantity for ${cake.name} is now ${newCart[existingItemIndex].quantity}.`,
               }), 0);
               
+              setIsCartOpen(true);
               return newCart;
           }
       }
@@ -111,9 +101,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const clearCheckoutData = () => {
+  const clearCart = () => {
     setCart([]);
-    setDeliveryInfo(null);
   };
 
   const itemCount = useMemo(() => cart.reduce((total, item) => total + item.quantity, 0), [cart]);
@@ -125,13 +114,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       addToCart, 
       removeFromCart, 
       updateQuantity, 
-      clearCheckoutData, 
+      clearCart, 
       itemCount, 
       totalPrice, 
       isCartOpen, 
       setIsCartOpen,
-      deliveryInfo,
-      setDeliveryInfo,
   };
   
   return (
