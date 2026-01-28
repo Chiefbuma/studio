@@ -144,8 +144,12 @@ CREATE TABLE `order_items` (
 );
 
 -- Add Indexes for Performance
-CREATE INDEX idx_orders_created_at ON orders(created_at);
-CREATE INDEX idx_order_items_order_id ON order_items(order_id);
+-- These indexes are crucial for speeding up common queries, especially in the admin panel.
+CREATE INDEX idx_orders_created_at ON orders(created_at);      -- Speeds up sorting orders by date.
+CREATE INDEX idx_order_items_order_id ON order_items(order_id); -- Speeds up fetching items for a specific order.
+CREATE INDEX idx_orders_customer_phone ON orders(customer_phone); -- Speeds up searching for a customer's orders.
+CREATE INDEX idx_orders_status ON orders(order_status);         -- Speeds up filtering orders by status (e.g., 'processing').
+CREATE INDEX idx_cakes_category ON cakes(category);             -- Speeds up filtering cakes by category.
 ```
 
 ### c. Database Seed Script (MySQL/MariaDB)
@@ -353,12 +357,15 @@ The initial cover/splash screen has been removed. The application now loads dire
 
 ### b. Database Indexing
 
-The database schema has been updated with indexes on frequently queried columns. This significantly speeds up data retrieval operations, making the entire application, particularly the admin panel, feel more responsive.
+To ensure fast query performance, especially as the number of orders and cakes grows, several columns have been indexed. Indexes significantly speed up data retrieval operations, making the entire application—particularly the admin panel—feel more responsive.
 
--   `CREATE INDEX idx_orders_created_at ON orders(created_at);`: Speeds up the sorting of orders by their creation date on the main orders page.
--   `CREATE INDEX idx_order_items_order_id ON order_items(order_id);`: Dramatically improves the speed of fetching all items associated with a specific order.
+-   **`orders(created_at)`**: Speeds up the sorting of orders by their creation date on the main orders page.
+-   **`orders(order_status)`**: Allows for efficient filtering of orders by their status (e.g., finding all "processing" orders).
+-   **`orders(customer_phone)`**: Dramatically improves the speed of searching for all orders placed by a specific customer.
+-   **`order_items(order_id)`**: Critical for quickly fetching all items associated with a specific order.
+-   **`cakes(category)`**: Speeds up filtering cakes by category on the menu pages.
 
-These indexes should be applied to your database to see the performance benefits.
+You should apply these indexes to your database to get the full performance benefits. The SQL scripts are provided in the schema section.
 
 ### c. Image Loading Strategy
 
