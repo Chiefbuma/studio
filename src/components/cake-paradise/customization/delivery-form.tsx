@@ -220,7 +220,7 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
                         initialValue={deliveryInfo.address}
                     />
                     <div className="flex justify-between items-center pt-1">
-                        <p className="text-xs text-muted-foreground">Search, or use the location button.</p>
+                        <p className="text-xs text-muted-foreground">Search for your address or use the location button.</p>
                         {deliveryInfo.coordinates && (
                             <p className="text-xs text-green-600 font-medium flex items-center gap-1">
                                 <MapPin className="h-3 w-3" />
@@ -259,7 +259,7 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
 
              <div className="space-y-2">
                 <Label htmlFor="special_instructions">Special Instructions</Label>
-                <Textarea id="special_instructions" value={deliveryInfo.special_instructions} onChange={(e) => handleInputChange('special_instructions', e.target.value)} />
+                <Textarea id="special_instructions" placeholder="e.g., allergies, custom message on cake" value={deliveryInfo.special_instructions} onChange={(e) => handleInputChange('special_instructions', e.target.value)} />
             </div>
         </div>
     );

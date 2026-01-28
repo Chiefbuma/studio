@@ -6,7 +6,7 @@ import { useCart } from '@/hooks/use-cart';
 import { formatPrice } from '@/lib/utils';
 import { DeliveryForm } from '@/components/cake-paradise/customization/delivery-form';
 import type { DeliveryInfo, CustomizationOptions } from '@/lib/types';
-import { placeOrder } from '@/lib/actions';
+import { placeOrder, logError } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft, ShoppingCart, ChevronDown, Lock, Image as ImageIcon } from 'lucide-react';
@@ -277,7 +277,8 @@ export default function CheckoutPage() {
       },
       onClose: function() {
         setIsProcessing(false);
-        console.error('Paystack payment was not completed or was closed by the user.');
+        const errorMessage = `Paystack payment was not completed for order ${orderNumber}. User closed the modal.`;
+        logError(errorMessage);
         toast({
           variant: "destructive",
           title: 'Payment Incomplete',

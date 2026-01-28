@@ -72,3 +72,13 @@ export async function placeOrder(payload: OrderPayload): Promise<{ success: bool
       if (connection) connection.release();
   }
 }
+
+/**
+ * Logs a client-side error message to the server's console.
+ * This is useful for capturing errors that happen in the user's browser,
+ * such as payment modal issues, without exposing details to the client.
+ * @param errorMessage The error message to log.
+ */
+export async function logError(errorMessage: string) {
+  console.error('[CLIENT_ACTION_ERROR]', errorMessage);
+}
