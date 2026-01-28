@@ -13,7 +13,7 @@ import { Loader2, ArrowLeft, ShoppingCart, ChevronDown, Lock, Image as ImageIcon
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { getCustomizationOptions } from '@/services/cake-service';
 
 // Paystack public key from environment variables
@@ -72,6 +72,7 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions | null>(null);
+  const [confirmedOrder, setConfirmedOrder] = useState<{ orderNumber: string, depositAmount: number } | null>(null);
 
   const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
     name: '',
@@ -87,10 +88,10 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     // Redirect to home if cart is empty on mount.
-    if (cart.length === 0) {
+    if (cart.length === 0 && !confirmedOrder) {
         router.replace('/');
     }
-  }, [cart, router]);
+  }, [cart, router, confirmedOrder]);
 
   useEffect(() => {
     // Fetch customization options to build the WhatsApp message
@@ -187,7 +188,7 @@ export default function CheckoutPage() {
     return message;
   };
 
-  const handlePlaceOrderAndPay = async () => {
+  const handleConfirmDetails = async () => {
     // Basic validation
     if (!deliveryInfo.name.trim() || !deliveryInfo.phone.trim()) {
         toast({ variant: 'destructive', title: 'Missing Information', description: 'Please enter your name and phone number.' });
@@ -213,13 +214,14 @@ export default function CheckoutPage() {
     });
 
     if (result.success) {
-      // Order placed successfully, now trigger payment
       toast({
         title: "Order Placed!",
         description: `Your order #${result.orderNumber} is ready for payment.`,
       });
-      // The `depositAmount` is now passed to the payment trigger
-      triggerPaystackPayment(result.orderNumber, result.depositAmount);
+      setConfirmedOrder({
+          orderNumber: result.orderNumber,
+          depositAmount: result.depositAmount,
+      });
     } else {
       // Order failed
       toast({
@@ -227,8 +229,14 @@ export default function CheckoutPage() {
         title: "Order Failed",
         description: result.error || "An unknown error occurred.",
       });
-      setIsProcessing(false);
     }
+    setIsProcessing(false);
+  };
+
+  const handlePayNow = () => {
+    if (!confirmedOrder) return;
+    setIsProcessing(true);
+    triggerPaystackPayment(confirmedOrder.orderNumber, confirmedOrder.depositAmount);
   };
 
   const triggerPaystackPayment = (orderNumber: string, amount: number) => {
@@ -263,8 +271,8 @@ export default function CheckoutPage() {
         setIsProcessing(false);
         toast({
           variant: "destructive",
-          title: 'Payment Cancelled',
-          description: 'Your order is saved. You can complete the payment later.',
+          title: 'Payment Incomplete',
+          description: 'Your payment was not completed. Please try again.',
         });
       }
     });
@@ -272,7 +280,7 @@ export default function CheckoutPage() {
     handler.openIframe();
   }
 
-  if (cart.length === 0) {
+  if (cart.length === 0 && !confirmedOrder) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-background">
             <div className="text-center space-y-4">
@@ -302,22 +310,51 @@ export default function CheckoutPage() {
         
         <main className="container mx-auto p-4 md:p-8 max-w-3xl">
              <OrderSummaryCollapsible />
-
-             <Card>
-                <CardContent className="p-6">
-                    <h3 className="text-xl font-bold mb-4">Delivery Details</h3>
-                    <DeliveryForm deliveryInfo={deliveryInfo} setDeliveryInfo={setDeliveryInfo} />
-                    <Button onClick={handlePlaceOrderAndPay} className="w-full mt-6" size="lg" disabled={isProcessing}>
-                        {isProcessing ? <Loader2 className="animate-spin" /> : (
-                          <>
-                            <Lock className="mr-2 h-5 w-5" />
-                            {`Place Order & Pay ${formatPrice(depositAmount)}`}
-                          </>
-                        )}
-                    </Button>
-                </CardContent>
-            </Card>
+            
+             {!confirmedOrder ? (
+                 <Card>
+                    <CardContent className="p-6">
+                        <h3 className="text-xl font-bold mb-4">Delivery Details</h3>
+                        <DeliveryForm deliveryInfo={deliveryInfo} setDeliveryInfo={setDeliveryInfo} />
+                        <Button onClick={handleConfirmDetails} className="w-full mt-6" size="lg" disabled={isProcessing}>
+                            {isProcessing ? <Loader2 className="animate-spin" /> : 'Confirm & Proceed to Payment'}
+                        </Button>
+                    </CardContent>
+                </Card>
+             ) : (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Ready to Pay</CardTitle>
+                        <CardDescription>Your order has been placed. Please complete the payment to finalize it.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <div className="p-4 bg-muted/50 rounded-lg space-y-2 border">
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Order Number:</span>
+                                <span className="font-mono font-medium">{confirmedOrder.orderNumber}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-lg">
+                                <span className="text-muted-foreground">Deposit to Pay:</span>
+                                <span className="font-bold text-primary">{formatPrice(confirmedOrder.depositAmount)}</span>
+                            </div>
+                        </div>
+                        <Button onClick={handlePayNow} className="w-full" size="lg" disabled={isProcessing}>
+                            {isProcessing ? <Loader2 className="animate-spin" /> : (
+                            <>
+                                <Lock className="mr-2 h-5 w-5" />
+                                Pay Now with Paystack
+                            </>
+                            )}
+                        </Button>
+                         <Button onClick={() => setConfirmedOrder(null)} className="w-full" variant="outline" disabled={isProcessing}>
+                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            Back to Edit Details
+                        </Button>
+                    </CardContent>
+                </Card>
+             )}
         </main>
     </div>
   );
 }
+
