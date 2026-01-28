@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import type { Cake, CartItem, Customizations } from '@/lib/types';
+import type { Cake, CartItem, Customizations, DeliveryInfo } from '@/lib/types';
 import { useToast } from './use-toast';
 
 interface CartContextType {
@@ -9,17 +9,20 @@ interface CartContextType {
   addToCart: (cake: Cake, quantity: number, price: number, customizations?: Customizations) => void;
   removeFromCart: (itemId: string) => void;
   updateQuantity: (itemId: string, quantity: number) => void;
-  clearCart: () => void;
+  clearCheckoutData: () => void;
   itemCount: number;
   totalPrice: number;
   isCartOpen: boolean;
   setIsCartOpen: (isOpen: boolean) => void;
+  deliveryInfo: DeliveryInfo | null;
+  setDeliveryInfo: (info: DeliveryInfo) => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const { toast } = useToast();
 
@@ -29,18 +32,27 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (storedCart) {
         setCart(JSON.parse(storedCart));
       }
+      const storedDeliveryInfo = localStorage.getItem('whiskedelights-delivery-info');
+      if (storedDeliveryInfo) {
+        setDeliveryInfo(JSON.parse(storedDeliveryInfo));
+      }
     } catch (error) {
-      console.error("Failed to load cart from local storage", error);
+      console.error("Failed to load data from local storage", error);
     }
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem('whiskedelights-cart', JSON.stringify(cart));
+      if (deliveryInfo) {
+        localStorage.setItem('whiskedelights-delivery-info', JSON.stringify(deliveryInfo));
+      } else {
+        localStorage.removeItem('whiskedelights-delivery-info');
+      }
     } catch (error) {
-      console.error("Failed to save cart to local storage", error);
+      console.error("Failed to save data to local storage", error);
     }
-  }, [cart]);
+  }, [cart, deliveryInfo]);
 
   const addToCart = (cake: Cake, quantity: number, price: number, customizations?: Customizations) => {
     setCart(prevCart => {
@@ -51,7 +63,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
               const newCart = [...prevCart];
               newCart[existingItemIndex].quantity += quantity;
               
-              // Schedule toast to avoid state update collision
               setTimeout(() => toast({
                 title: "Cart Updated!",
                 description: `Quantity for ${cake.name} is now ${newCart[existingItemIndex].quantity}.`,
@@ -61,7 +72,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
       }
       
-      // For all other cakes (including customized ones), add as a new unique item.
       const newItem: CartItem = {
         id: `${cake.id}-${Date.now()}`,
         cakeId: cake.id,
@@ -72,7 +82,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         customizations,
       };
 
-      // Schedule toast to avoid state update collision
       setTimeout(() => toast({
         title: "Added to Cart!",
         description: `${quantity} x ${cake.name} added.`,
@@ -85,7 +94,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const removeFromCart = (itemId: string) => {
     setCart(prevCart => prevCart.filter(item => item.id !== itemId));
-    // Schedule toast to avoid state update collision
     setTimeout(() => toast({
         variant: 'destructive',
         title: "Item Removed",
@@ -103,25 +111,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const clearCart = () => {
-    setCart(prevCart => {
-      if (prevCart.length > 0) {
-        // Schedule toast to avoid state update collision
-        setTimeout(() => toast({
-            title: "Cart Cleared",
-            description: `Your cart is now empty.`,
-        }), 0);
-      }
-      return [];
-    });
+  const clearCheckoutData = () => {
+    setCart([]);
+    setDeliveryInfo(null);
   };
 
   const itemCount = useMemo(() => cart.reduce((total, item) => total + item.quantity, 0), [cart]);
 
   const totalPrice = useMemo(() => cart.reduce((total, item) => total + (item.price * item.quantity), 0), [cart]);
   
+  const value = { 
+      cart, 
+      addToCart, 
+      removeFromCart, 
+      updateQuantity, 
+      clearCheckoutData, 
+      itemCount, 
+      totalPrice, 
+      isCartOpen, 
+      setIsCartOpen,
+      deliveryInfo,
+      setDeliveryInfo,
+  };
+  
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, updateQuantity, clearCart, itemCount, totalPrice, isCartOpen, setIsCartOpen }}>
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

@@ -4,95 +4,32 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/hooks/use-cart';
 import { formatPrice } from '@/lib/utils';
 import { DeliveryForm } from '@/components/cake-paradise/customization/delivery-form';
-import type { DeliveryInfo, CustomizationOptions } from '@/lib/types';
-import { placeOrder, logError } from '@/lib/actions';
+import type { DeliveryInfo } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, ShoppingCart, ChevronDown, Lock, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent } from '@/components/ui/card';
 import { getCustomizationOptions } from '@/services/cake-service';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
-// Paystack public key from environment variables
-const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
-const ownerWhatsAppNumber = process.env.NEXT_PUBLIC_OWNER_WHATSAPP_NUMBER || '';
-
-
-// Component for Order Summary, now collapsible
-const OrderSummaryCollapsible = () => {
-    const { cart, totalPrice } = useCart();
-    const [isOpen, setIsOpen] = useState(false);
-    
-    return (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full mb-8">
-            <CollapsibleTrigger asChild>
-                <div className="flex justify-between items-center w-full p-4 border rounded-lg bg-card cursor-pointer hover:bg-muted/50 transition-colors">
-                    <div className="flex items-center gap-3">
-                         <ShoppingCart className="h-5 w-5 text-primary" />
-                         <span className="font-semibold">{isOpen ? 'Hide' : 'Show'} Order Summary</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                        <span className="font-bold text-primary">{formatPrice(totalPrice)}</span>
-                        <ChevronDown className={`h-5 w-5 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} />
-                    </div>
-                </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-                 <div className="py-4 space-y-4">
-                    {cart.map(item => {
-                        return (
-                            <div key={item.id} className="flex items-start gap-4">
-                                {item.image_data_uri ? (
-                                    <Image src={item.image_data_uri} alt={item.name} width={64} height={64} className="rounded-md object-cover h-16 w-16" />
-                                ) : (
-                                    <div className="h-16 w-16 rounded-md bg-muted flex items-center justify-center">
-                                        <ImageIcon className="w-8 h-8 text-muted-foreground" />
-                                    </div>
-                                )}
-                                <div className="flex-1">
-                                    <p className="font-medium">{item.name}</p>
-                                    <p className="text-sm text-muted-foreground">Qty: {item.quantity}</p>
-                                </div>
-                                <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
-                            </div>
-                        );
-                    })}
-                </div>
-            </CollapsibleContent>
-        </Collapsible>
-    );
-}
 
 export default function CheckoutPage() {
-  const { cart, totalPrice, clearCart } = useCart();
+  const { cart, deliveryInfo: contextDeliveryInfo, setDeliveryInfo } = useCart();
   const router = useRouter();
   const { toast } = useToast();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions | null>(null);
 
-  const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
-    name: '',
-    phone: '',
-    address: '',
-    delivery_date: '',
-    delivery_time: '',
-    delivery_method: 'delivery',
-    pickup_location: '',
-    special_instructions: '',
-    coordinates: null
+  const [formDeliveryInfo, setFormDeliveryInfo] = useState<DeliveryInfo>(
+    contextDeliveryInfo || {
+      name: '',
+      phone: '',
+      address: '',
+      delivery_date: '',
+      delivery_time: '',
+      delivery_method: 'delivery',
+      pickup_location: '',
+      special_instructions: '',
+      coordinates: null
   });
 
   useEffect(() => {
@@ -102,196 +39,24 @@ export default function CheckoutPage() {
     }
   }, [cart, router]);
 
-  useEffect(() => {
-    // Fetch customization options to build the WhatsApp message
-    async function fetchOptions() {
-      try {
-          const options = await getCustomizationOptions();
-          setCustomizationOptions(options);
-      } catch (error) {
-          console.error("Failed to fetch customization options for checkout", error);
-          toast({variant: "destructive", title: "Could not load required data."});
-      }
+
+  const isFormInvalid = !formDeliveryInfo.name.trim() || 
+                      !formDeliveryInfo.phone.trim() ||
+                      (formDeliveryInfo.delivery_method === 'delivery' && !formDeliveryInfo.address.trim()) ||
+                      (formDeliveryInfo.delivery_method === 'pickup' && !formDeliveryInfo.pickup_location.trim());
+
+  const handleReviewOrder = () => {
+    if (isFormInvalid) {
+      toast({
+        variant: "destructive",
+        title: "Incomplete Form",
+        description: "Please fill in all the required fields to continue."
+      });
+      return;
     }
-    fetchOptions();
-  }, [toast]);
-
-  const depositAmount = totalPrice * 0.8;
-  const customerEmail = `${deliveryInfo.phone}@whiskedelights.com`; 
-
-  const handlePaymentSuccess = (response: { reference: string }, orderNumber: string) => {
-    // Generate and send WhatsApp message for immediate notification to the owner
-    const message = generateWhatsAppMessage(orderNumber);
-    const whatsappUrl = `https://wa.me/${ownerWhatsAppNumber}?text=${encodeURIComponent(message)}`;
-    
-    if (ownerWhatsAppNumber) {
-      window.open(whatsappUrl, '_blank');
-    } else {
-      console.warn("Owner's WhatsApp number is not configured in .env file.");
-    }
-
-    toast({
-      title: "Payment Confirmed!",
-      description: `Your order #${orderNumber} is being prepared. Ref: ${response.reference}`,
-    });
-    
-    clearCart();
-    router.push('/');
+    setDeliveryInfo(formDeliveryInfo);
+    router.push('/payment');
   }
-
-  const generateWhatsAppMessage = (orderNumber: string): string => {
-    if (!customizationOptions) return 'Order details are incomplete.';
-
-    let message = `*New Cake Order!* 🎉\n\n`;
-    message += `*Order Number:* ${orderNumber}\n\n`;
-    message += `*--- Order Details ---*\n`;
-
-    cart.forEach(item => {
-      message += `*🎂 ${item.name} (x${item.quantity})*\n`;
-      message += `   - *Price:* ${formatPrice(item.price * item.quantity)}\n`;
-
-      if (item.customizations) {
-        const { flavor, size, color, toppings } = item.customizations;
-        const flavorName = customizationOptions.flavors.find(f => f.id === flavor)?.name;
-        const sizeName = customizationOptions.sizes.find(s => s.id === size)?.name;
-        const colorName = customizationOptions.colors.find(c => c.id === color)?.name;
-        const toppingNames = toppings.map(tId => customizationOptions.toppings.find(t => t.id === tId)?.name).filter(Boolean);
-
-        message += `   *Customizations:*\n`;
-        if (flavorName) message += `     - *Flavor:* ${flavorName}\n`;
-        if (sizeName) message += `     - *Size:* ${sizeName}\n`;
-        if (colorName) message += `     - *Color:* ${colorName}\n`;
-        if (toppingNames.length > 0) message += `     - *Toppings:* ${toppingNames.join(', ')}\n`;
-      }
-      message += '\n';
-    });
-
-    message += `*--- Delivery Info ---*\n`;
-    message += `*Customer:* ${deliveryInfo.name}\n`;
-    message += `*Phone:* ${deliveryInfo.phone}\n`;
-    message += `*Method:* ${deliveryInfo.delivery_method}\n`;
-
-    if (deliveryInfo.delivery_method === 'delivery') {
-      message += `*Address:* ${deliveryInfo.address}\n`;
-      if (deliveryInfo.coordinates) {
-        const { lat, lng } = deliveryInfo.coordinates;
-        message += `*Map Link:* https://maps.google.com/?q=${lat},${lng}\n`;
-      }
-    } else {
-      message += `*Pickup Location:* ${deliveryInfo.pickup_location}\n`;
-    }
-
-    if (deliveryInfo.delivery_date) message += `*Date:* ${deliveryInfo.delivery_date}\n`;
-    if (deliveryInfo.delivery_time) message += `*Time:* ${deliveryInfo.delivery_time}\n`;
-    if (deliveryInfo.special_instructions) message += `*Instructions:* ${deliveryInfo.special_instructions}\n`;
-
-    message += `\n*--- Payment ---*\n`;
-    message += `*Total Price:* ${formatPrice(totalPrice)}\n`;
-    message += `*Deposit Paid:* ${formatPrice(depositAmount)}\n`;
-    message += `*Status:* PAID ✅`;
-
-    return message;
-  };
-
-  const handleCheckout = async () => {
-    setIsProcessing(true);
-    try {
-        const result = await placeOrder({
-            items: cart,
-            deliveryInfo,
-            totalPrice,
-            depositAmount
-        });
-
-        if (result.success) {
-          toast({
-            title: "Order Confirmed!",
-            description: `Your order #${result.orderNumber} is confirmed. Proceeding to payment...`,
-          });
-          // Immediately trigger payment
-          triggerPaystackPayment(result.orderNumber, result.depositAmount);
-        } else {
-          // Order placement failed
-          toast({
-            variant: "destructive",
-            title: "Order Failed",
-            description: result.error || "An unknown error occurred while placing your order.",
-          });
-          setIsProcessing(false);
-        }
-    } catch (error) {
-        console.error("Checkout failed unexpectedly:", error);
-        await logError(`Checkout failed unexpectedly: ${error instanceof Error ? error.message : 'Unknown error'}`);
-        toast({
-            variant: "destructive",
-            title: "An Unexpected Error Occurred",
-            description: "Could not place your order. Please try again later.",
-        });
-        setIsProcessing(false);
-    }
-  };
-
-  const triggerPaystackPayment = (orderNumber: string, amount: number) => {
-     if (!paystackPublicKey || (!paystackPublicKey.startsWith('pk_test_') && !paystackPublicKey.startsWith('pk_live_'))) {
-        toast({
-            variant: 'destructive',
-            title: 'Payment Gateway Error',
-            description: 'The payment gateway is not configured correctly.',
-        });
-        const errorMsg = "Paystack public key is missing or invalid.";
-        console.error(errorMsg);
-        logError(errorMsg);
-        setIsProcessing(false);
-        return;
-    }
-
-    const handler = (window as any).PaystackPop.setup({
-      key: paystackPublicKey,
-      email: customerEmail,
-      amount: Math.round(amount * 100), // Amount in kobo/cents
-      currency: 'KES', // Explicitly set currency
-      phone: deliveryInfo.phone,
-      ref: `WD_${orderNumber}_${Date.now()}`,
-      metadata: {
-        order_number: orderNumber,
-        customer_phone: deliveryInfo.phone,
-        payment_type: "Deposit"
-      },
-      callback: function(response: any) {
-        // Success is handled, page will navigate away
-        handlePaymentSuccess(response, orderNumber);
-      },
-      onClose: function() {
-        setIsProcessing(false);
-        const errorMessage = `Paystack payment was not completed for order ${orderNumber}. User closed the modal.`;
-        logError(errorMessage);
-        toast({
-          variant: "destructive",
-          title: 'Payment Incomplete',
-          description: 'Your payment was not completed. You can try paying again.',
-        });
-      }
-    });
-
-    handler.openIframe();
-  }
-
-  if (cart.length === 0) {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
-            <div className="text-center space-y-4">
-                <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-                <p className="text-muted-foreground">Your cart is empty. Redirecting...</p>
-            </div>
-        </div>
-    );
-  }
-
-  const isFormInvalid = !deliveryInfo.name.trim() || 
-                      !deliveryInfo.phone.trim() ||
-                      (deliveryInfo.delivery_method === 'delivery' && !deliveryInfo.address.trim()) ||
-                      (deliveryInfo.delivery_method === 'pickup' && !deliveryInfo.pickup_location.trim());
-
 
   return (
     <div className="min-h-screen bg-background">
@@ -303,7 +68,7 @@ export default function CheckoutPage() {
                 </Button>
                 <div className="flex-1 text-center">
                     <h1 className="text-xl md:text-2xl font-bold font-headline">
-                        Checkout
+                        Delivery Details
                     </h1>
                 </div>
                 <div className="w-32"></div> {/* Spacer to balance the back button */}
@@ -311,40 +76,15 @@ export default function CheckoutPage() {
         </header>
         
         <main className="container mx-auto p-4 md:p-8 max-w-3xl">
-             <OrderSummaryCollapsible />
-            
             <Card>
                 <CardContent className="p-6">
-                    <h3 className="text-xl font-bold mb-4">Delivery Details</h3>
-                    <DeliveryForm deliveryInfo={deliveryInfo} setDeliveryInfo={setDeliveryInfo} />
-                     <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button className="w-full mt-6" size="lg" disabled={isFormInvalid}>
-                                Proceed to Payment
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                            <AlertDialogHeader>
-                                <AlertDialogTitle>Confirm Your Order</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    You are about to place your order. An 80% deposit of <strong>{formatPrice(depositAmount)}</strong> will be required to finalize it.
-                                    <br/><br/>
-                                    Please ensure all details are correct before proceeding.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={handleCheckout} disabled={isProcessing}>
-                                    {isProcessing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...</> : 'Pay with Paystack'}
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                    </AlertDialog>
+                    <DeliveryForm deliveryInfo={formDeliveryInfo} setDeliveryInfo={setFormDeliveryInfo} />
+                    <Button onClick={handleReviewOrder} className="w-full mt-6" size="lg" disabled={isFormInvalid}>
+                        Review Your Order
+                    </Button>
                 </CardContent>
             </Card>
         </main>
     </div>
   );
 }
-
-    
