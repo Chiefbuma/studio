@@ -45,7 +45,7 @@ export default function CustomizationsPage() {
         } finally {
             setLoading(false);
         }
-    }, [toast]);
+    }, []);
 
     useEffect(() => {
         fetchData();
@@ -224,5 +224,3 @@ export default function CustomizationsPage() {
         </div>
     );
 }
-
-    

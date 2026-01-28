@@ -38,7 +38,7 @@ export default function CakesPage() {
         } finally {
             setLoading(false);
         }
-    }, [toast]);
+    }, []);
 
     useEffect(() => {
         fetchData();
@@ -216,5 +216,3 @@ export default function CakesPage() {
         </>
     );
 }
-
-    

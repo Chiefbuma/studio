@@ -31,7 +31,7 @@ export default function OrdersPage() {
         } finally {
             setLoading(false);
         }
-    }, [toast]);
+    }, []);
     
     useEffect(() => {
         fetchData();
@@ -177,5 +177,3 @@ export default function OrdersPage() {
         </Card>
     );
 }
-
-    

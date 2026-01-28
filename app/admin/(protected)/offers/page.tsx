@@ -38,7 +38,7 @@ export default function OffersPage() {
         } finally {
             setLoading(false);
         }
-    }, [toast]);
+    }, []);
 
     useEffect(() => {
         fetchData();
@@ -166,5 +166,3 @@ export default function OffersPage() {
         </Card>
     );
 }
-
-    

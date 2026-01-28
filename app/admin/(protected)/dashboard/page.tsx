@@ -39,7 +39,7 @@ export default function DashboardPage() {
             }
         }
         fetchData();
-    }, [toast]);
+    }, []);
 
     const totalRevenue = orders.reduce((sum, order) => sum + order.total_price, 0);
     const totalOrders = orders.length;
@@ -126,5 +126,3 @@ export default function DashboardPage() {
         </div>
     );
 }
-
-    
