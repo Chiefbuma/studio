@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -204,33 +203,41 @@ export default function CheckoutPage() {
     }
 
     setIsProcessing(true);
+    try {
+        const result = await placeOrder({
+            items: cart,
+            deliveryInfo,
+            totalPrice,
+            depositAmount
+        });
 
-    // Create the order in the database with a 'pending' payment status.
-    const result = await placeOrder({
-        items: cart,
-        deliveryInfo,
-        totalPrice,
-        depositAmount
-    });
-
-    if (result.success) {
-      toast({
-        title: "Order Placed!",
-        description: `Your order #${result.orderNumber} is ready for payment.`,
-      });
-      setConfirmedOrder({
-          orderNumber: result.orderNumber,
-          depositAmount: result.depositAmount,
-      });
-    } else {
-      // Order failed
-      toast({
-        variant: "destructive",
-        title: "Order Failed",
-        description: result.error || "An unknown error occurred.",
-      });
+        if (result.success) {
+          toast({
+            title: "Order Placed!",
+            description: `Your order #${result.orderNumber} is ready for payment.`,
+          });
+          setConfirmedOrder({
+              orderNumber: result.orderNumber,
+              depositAmount: result.depositAmount,
+          });
+        } else {
+          // Order failed
+          toast({
+            variant: "destructive",
+            title: "Order Failed",
+            description: result.error || "An unknown error occurred.",
+          });
+        }
+    } catch (error) {
+        console.error("Checkout failed unexpectedly:", error);
+        toast({
+            variant: "destructive",
+            title: "An Unexpected Error Occurred",
+            description: "Could not place your order. Please try again later.",
+        });
+    } finally {
+        setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
   const handlePayNow = () => {
@@ -357,4 +364,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-
