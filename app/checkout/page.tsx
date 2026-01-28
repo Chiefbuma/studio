@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -276,6 +277,7 @@ export default function CheckoutPage() {
       },
       onClose: function() {
         setIsProcessing(false);
+        console.error('Paystack payment was not completed or was closed by the user.');
         toast({
           variant: "destructive",
           title: 'Payment Incomplete',
@@ -364,3 +366,5 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
+    

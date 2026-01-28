@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, Dispatch, SetStateAction, useEffect } from 'react';
@@ -116,7 +117,6 @@ function LocationSearchInput({ onLocationSelect, initialValue = '' }: LocationSe
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         type="text"
-                        placeholder="Search for your address, estate or building..."
                         value={query}
                         onChange={handleQueryChange}
                         onFocus={() => query.length > 2 && setShowResults(true)}
@@ -204,7 +204,7 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
             <div className="space-y-4">
                 <div className="space-y-2">
                     <Label htmlFor="name">Full Name *</Label>
-                    <Input id="name" placeholder="John Doe" value={deliveryInfo.name} onChange={(e) => handleInputChange('name', e.target.value)} required />
+                    <Input id="name" value={deliveryInfo.name} onChange={(e) => handleInputChange('name', e.target.value)} required />
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
@@ -259,8 +259,10 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
 
              <div className="space-y-2">
                 <Label htmlFor="special_instructions">Special Instructions</Label>
-                <Textarea id="special_instructions" placeholder="e.g., 'Happy Birthday, Jane!' message on the cake." value={deliveryInfo.special_instructions} onChange={(e) => handleInputChange('special_instructions', e.target.value)} />
+                <Textarea id="special_instructions" value={deliveryInfo.special_instructions} onChange={(e) => handleInputChange('special_instructions', e.target.value)} />
             </div>
         </div>
     );
 }
+
+    
