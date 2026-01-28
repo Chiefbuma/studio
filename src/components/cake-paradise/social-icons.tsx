@@ -1,3 +1,4 @@
+
 'use client';
 
 import { InstagramIcon } from '@/components/icons/instagram-icon';
@@ -36,7 +37,7 @@ export function SocialIcons() {
     // NOTE: This component is hidden on mobile screens (below md breakpoint) to avoid obstructing content.
     <div className="fixed z-50 left-4 top-1/2 -translate-y-1/2 hidden md:flex flex-col items-center gap-4">
         
-        <div style={{ writingMode: 'vertical-rl' }} className="transform rotate-180 text-xs font-semibold tracking-widest uppercase text-muted-foreground transition-all hover:text-primary cursor-default">
+        <div style={{ writingMode: 'vertical-rl' }} className="transform rotate-180 text-xs font-medium tracking-wider text-muted-foreground transition-colors hover:text-primary cursor-default">
             Happy Customers
         </div>
         
