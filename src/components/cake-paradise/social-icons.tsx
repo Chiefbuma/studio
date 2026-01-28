@@ -33,10 +33,9 @@ const socialIcons = [
 
 export function SocialIcons() {
   return (
-    // NOTE: This component is hidden on mobile screens (below md breakpoint) to avoid obstructing content.
-    <div className="fixed z-50 left-0 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-3 bg-primary/10 backdrop-blur-sm p-3 rounded-r-lg border-y border-r border-primary/20 shadow-lg">
-        <div style={{ writingMode: 'vertical-rl' }} className="transform rotate-180 text-xs font-medium tracking-wider text-primary">
-            Happy Customers
+    <div className="fixed z-50 left-0 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-primary/10 backdrop-blur-sm p-3 rounded-r-lg border-y border-r border-primary/20 shadow-lg transform-gpu scale-90 md:scale-100 origin-left transition-transform duration-300">
+        <div style={{ writingMode: 'vertical-rl' }} className="transform rotate-180 text-xs font-semibold text-primary tracking-wider">
+            Happy Deliveries
         </div>
 
         <TooltipProvider>
