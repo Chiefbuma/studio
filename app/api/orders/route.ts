@@ -27,65 +27,6 @@ export async function GET(req: NextRequest) {
     }
 }
 
-export async function POST(req: NextRequest) {
-    const connection = await pool.getConnection();
-    try {
-        const { items, deliveryInfo, totalPrice, depositAmount } = await req.json();
-        
-        await connection.beginTransaction();
-
-        const orderNumber = `WD${Date.now()}`;
-        const deliveryDate = deliveryInfo.delivery_date && deliveryInfo.delivery_time 
-            ? `${deliveryInfo.delivery_date} ${deliveryInfo.delivery_time}` 
-            : deliveryInfo.delivery_date;
-
-        const [orderResult]: any = await connection.query(
-            `INSERT INTO orders (
-                order_number, customer_name, customer_phone, delivery_method, delivery_address, 
-                latitude, longitude, pickup_location, delivery_date, special_instructions, 
-                total_price, deposit_amount, payment_status, order_status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'processing')`,
-            [
-                orderNumber,
-                deliveryInfo.name,
-                deliveryInfo.phone,
-                deliveryInfo.delivery_method,
-                deliveryInfo.address || null,
-                deliveryInfo.coordinates?.lat || null,
-                deliveryInfo.coordinates?.lng || null,
-                deliveryInfo.pickup_location || null,
-                deliveryDate || null,
-                deliveryInfo.special_instructions || null,
-                totalPrice,
-                depositAmount
-            ]
-        );
-
-        const orderId = orderResult.insertId;
-
-        const itemPromises = items.map((item: CartItem) => {
-            return connection.query(
-                `INSERT INTO order_items (order_id, cake_id, name, quantity, price, customizations) VALUES (?, ?, ?, ?, ?, ?)`,
-                [orderId, item.cakeId, item.name, item.quantity, item.price, JSON.stringify(item.customizations || {})]
-            );
-        });
-
-        await Promise.all(itemPromises);
-
-        await connection.commit();
-        
-        return NextResponse.json({ 
-            success: true, 
-            orderNumber: orderNumber,
-            depositAmount: depositAmount 
-        }, { status: 201 });
-
-    } catch (error) {
-        await connection.rollback();
-        const message = error instanceof Error ? error.message : 'An unknown error occurred';
-        console.error('API Error (POST /orders):', error);
-        return NextResponse.json({ message: `Failed to place order: ${message}` }, { status: 500 });
-    } finally {
-        connection.release();
-    }
-}
+// The POST handler has been removed. The logic for creating an order is now
+// handled directly in the 'placeOrder' server action for better reliability
+// and performance, especially in production environments.
