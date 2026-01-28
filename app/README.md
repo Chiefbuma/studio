@@ -142,6 +142,10 @@ CREATE TABLE `order_items` (
   `customizations` JSON,
   FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`) ON DELETE CASCADE
 );
+
+-- Add Indexes for Performance
+CREATE INDEX idx_orders_created_at ON orders(created_at);
+CREATE INDEX idx_order_items_order_id ON order_items(order_id);
 ```
 
 ### c. Database Seed Script (MySQL/MariaDB)
@@ -339,7 +343,34 @@ RewriteRule ^(.*)$ https://127.0.0.1:%{SERVER_PORT}/$1 [P,L]
 
 After setting the variables and creating the `.htaccess` file, click the **"Restart"** button. Your application should now be live on your domain.
 
-### i. Troubleshooting
+## 6. Performance Optimizations
+
+To ensure the application is fast and responsive, especially on mobile devices, several key optimizations have been implemented.
+
+### a. Faster Initial Load
+
+The initial cover/splash screen has been removed. The application now loads directly into the "Today's Special" offer page, reducing the time to first interaction and getting users to the content faster.
+
+### b. Database Indexing
+
+The database schema has been updated with indexes on frequently queried columns. This significantly speeds up data retrieval operations, making the entire application, particularly the admin panel, feel more responsive.
+
+-   `CREATE INDEX idx_orders_created_at ON orders(created_at);`: Speeds up the sorting of orders by their creation date on the main orders page.
+-   `CREATE INDEX idx_order_items_order_id ON order_items(order_id);`: Dramatically improves the speed of fetching all items associated with a specific order.
+
+These indexes should be applied to your database to see the performance benefits.
+
+### c. Image Loading Strategy
+
+The application is currently configured to load images without server-side optimization (`unoptimized: true` in `next.config.ts`). This is a necessary setting to ensure compatibility with shared hosting environments that do not support Next.js's built-in image optimization service.
+
+For optimal image performance, it is recommended to deploy the application to a hosting provider with full support for Next.js features, such as Vercel or a dedicated Node.js server.
+
+### d. Client-Side Caching
+
+The application fetches primary data (cakes, customizations, special offers) once when it first loads and caches it on the client-side for the duration of the user's session. This prevents redundant data fetching when navigating between the menu and offer pages, resulting in near-instant transitions.
+
+## 7. Troubleshooting
 
 #### Error: Phusion Passenger shows "We're sorry, but something went wrong"
 This means your Next.js application crashed. **Check your log file**: `/home/gledcapi/logs/passenger.log`. Common causes are incorrect environment variables (like a bad database password or missing `JWT_SECRET`).

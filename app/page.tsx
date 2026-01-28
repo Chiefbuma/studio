@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import CoverPage from '@/components/cake-paradise/cover-page';
 import SpecialOffer from '@/components/cake-paradise/special-offer';
 import Menu from '@/components/cake-paradise/menu';
 import { CustomizationModal } from '@/components/cake-paradise/customization/customization-modal';
@@ -15,24 +14,13 @@ import { SocialIcons } from '@/components/cake-paradise/social-icons';
 import { CartIcon } from '@/components/cake-paradise/cart-icon';
 
 export default function Home() {
-  const [view, setView] = useState<'cover' | 'offer' | 'menu'>('cover');
+  const [view, setView] = useState<'offer' | 'menu'>('offer');
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedCake, setSelectedCake] = useState<Cake | null>(null);
   const [isOrderingCustom, setIsOrderingCustom] = useState(false);
 
   const { cakes, specialOffer, customizationOptions, customCake, loading } = useCakeData();
   const { addToCart } = useCart();
-
-  useEffect(() => {
-    if (loading) return;
-    const coverTimer = setTimeout(() => {
-      if (view === 'cover') {
-        setView('offer');
-      }
-    }, 3000);
-
-    return () => clearTimeout(coverTimer);
-  }, [view, loading]);
 
   // Handler for adding the non-customizable special offer cake directly to the cart.
   const handleOrderSpecialOffer = (cake: Cake) => {
@@ -90,7 +78,6 @@ export default function Home() {
         <CartIcon />
         <CartSheet />
         
-        {view === 'cover' && <CoverPage />}
         {view === 'offer' && (
           <SpecialOffer
             specialOffer={specialOffer}
