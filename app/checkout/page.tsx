@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -13,8 +12,19 @@ import { Loader2, ArrowLeft, ShoppingCart, ChevronDown, Lock, Image as ImageIcon
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { getCustomizationOptions } from '@/services/cake-service';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 // Paystack public key from environment variables
 const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || '';
@@ -72,7 +82,6 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions | null>(null);
-  const [confirmedOrder, setConfirmedOrder] = useState<{ orderNumber: string, depositAmount: number } | null>(null);
 
   const [deliveryInfo, setDeliveryInfo] = useState<DeliveryInfo>({
     name: '',
@@ -88,10 +97,10 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     // Redirect to home if cart is empty on mount.
-    if (cart.length === 0 && !confirmedOrder) {
+    if (cart.length === 0) {
         router.replace('/');
     }
-  }, [cart, router, confirmedOrder]);
+  }, [cart, router]);
 
   useEffect(() => {
     // Fetch customization options to build the WhatsApp message
@@ -111,10 +120,6 @@ export default function CheckoutPage() {
   const customerEmail = `${deliveryInfo.phone}@whiskedelights.com`; 
 
   const handlePaymentSuccess = (response: { reference: string }, orderNumber: string) => {
-    // This function provides immediate feedback to the user on the client-side.
-    // In a production app, the true order confirmation and fulfillment process
-    // should ONLY be triggered by a verified Paystack webhook on your backend.
-
     // Generate and send WhatsApp message for immediate notification to the owner
     const message = generateWhatsAppMessage(orderNumber);
     const whatsappUrl = `https://wa.me/${ownerWhatsAppNumber}?text=${encodeURIComponent(message)}`;
@@ -188,21 +193,7 @@ export default function CheckoutPage() {
     return message;
   };
 
-  const handleConfirmDetails = async () => {
-    // Basic validation
-    if (!deliveryInfo.name.trim() || !deliveryInfo.phone.trim()) {
-        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please enter your name and phone number.' });
-        return;
-    }
-     if (deliveryInfo.delivery_method === 'delivery' && !deliveryInfo.address.trim()) {
-        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please provide a delivery address.' });
-        return;
-    }
-     if (deliveryInfo.delivery_method === 'pickup' && !deliveryInfo.pickup_location.trim()) {
-        toast({ variant: 'destructive', title: 'Missing Information', description: 'Please select a pickup location.' });
-        return;
-    }
-
+  const handleCheckout = async () => {
     setIsProcessing(true);
     try {
         const result = await placeOrder({
@@ -214,37 +205,30 @@ export default function CheckoutPage() {
 
         if (result.success) {
           toast({
-            title: "Order Placed!",
-            description: `Your order #${result.orderNumber} is ready for payment.`,
+            title: "Order Confirmed!",
+            description: `Your order #${result.orderNumber} is confirmed. Proceeding to payment...`,
           });
-          setConfirmedOrder({
-              orderNumber: result.orderNumber,
-              depositAmount: result.depositAmount,
-          });
+          // Immediately trigger payment
+          triggerPaystackPayment(result.orderNumber, result.depositAmount);
         } else {
-          // Order failed
+          // Order placement failed
           toast({
             variant: "destructive",
             title: "Order Failed",
-            description: result.error || "An unknown error occurred.",
+            description: result.error || "An unknown error occurred while placing your order.",
           });
+          setIsProcessing(false);
         }
     } catch (error) {
         console.error("Checkout failed unexpectedly:", error);
+        await logError(`Checkout failed unexpectedly: ${error instanceof Error ? error.message : 'Unknown error'}`);
         toast({
             variant: "destructive",
             title: "An Unexpected Error Occurred",
             description: "Could not place your order. Please try again later.",
         });
-    } finally {
         setIsProcessing(false);
     }
-  };
-
-  const handlePayNow = () => {
-    if (!confirmedOrder) return;
-    setIsProcessing(true);
-    triggerPaystackPayment(confirmedOrder.orderNumber, confirmedOrder.depositAmount);
   };
 
   const triggerPaystackPayment = (orderNumber: string, amount: number) => {
@@ -254,7 +238,9 @@ export default function CheckoutPage() {
             title: 'Payment Gateway Error',
             description: 'The payment gateway is not configured correctly.',
         });
-        console.error("Paystack public key is missing or invalid.");
+        const errorMsg = "Paystack public key is missing or invalid.";
+        console.error(errorMsg);
+        logError(errorMsg);
         setIsProcessing(false);
         return;
     }
@@ -272,7 +258,7 @@ export default function CheckoutPage() {
         payment_type: "Deposit"
       },
       callback: function(response: any) {
-        // No need to setIsProcessing(false) here, as we navigate away
+        // Success is handled, page will navigate away
         handlePaymentSuccess(response, orderNumber);
       },
       onClose: function() {
@@ -282,7 +268,7 @@ export default function CheckoutPage() {
         toast({
           variant: "destructive",
           title: 'Payment Incomplete',
-          description: 'Your payment was not completed. Please try again.',
+          description: 'Your payment was not completed. You can try paying again.',
         });
       }
     });
@@ -290,7 +276,7 @@ export default function CheckoutPage() {
     handler.openIframe();
   }
 
-  if (cart.length === 0 && !confirmedOrder) {
+  if (cart.length === 0) {
     return (
         <div className="min-h-screen flex items-center justify-center bg-background">
             <div className="text-center space-y-4">
@@ -300,6 +286,12 @@ export default function CheckoutPage() {
         </div>
     );
   }
+
+  const isFormInvalid = !deliveryInfo.name.trim() || 
+                      !deliveryInfo.phone.trim() ||
+                      (deliveryInfo.delivery_method === 'delivery' && !deliveryInfo.address.trim()) ||
+                      (deliveryInfo.delivery_method === 'pickup' && !deliveryInfo.pickup_location.trim());
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -321,48 +313,35 @@ export default function CheckoutPage() {
         <main className="container mx-auto p-4 md:p-8 max-w-3xl">
              <OrderSummaryCollapsible />
             
-             {!confirmedOrder ? (
-                 <Card>
-                    <CardContent className="p-6">
-                        <h3 className="text-xl font-bold mb-4">Delivery Details</h3>
-                        <DeliveryForm deliveryInfo={deliveryInfo} setDeliveryInfo={setDeliveryInfo} />
-                        <Button onClick={handleConfirmDetails} className="w-full mt-6" size="lg" disabled={isProcessing}>
-                            {isProcessing ? <Loader2 className="animate-spin" /> : 'Confirm & Proceed to Payment'}
-                        </Button>
-                    </CardContent>
-                </Card>
-             ) : (
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Ready to Pay</CardTitle>
-                        <CardDescription>Your order has been placed. Please complete the payment to finalize it.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <div className="p-4 bg-muted/50 rounded-lg space-y-2 border">
-                            <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Order Number:</span>
-                                <span className="font-mono font-medium">{confirmedOrder.orderNumber}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-lg">
-                                <span className="text-muted-foreground">Deposit to Pay:</span>
-                                <span className="font-bold text-primary">{formatPrice(confirmedOrder.depositAmount)}</span>
-                            </div>
-                        </div>
-                        <Button onClick={handlePayNow} className="w-full" size="lg" disabled={isProcessing}>
-                            {isProcessing ? <Loader2 className="animate-spin" /> : (
-                            <>
-                                <Lock className="mr-2 h-5 w-5" />
-                                Pay Now with Paystack
-                            </>
-                            )}
-                        </Button>
-                         <Button onClick={() => setConfirmedOrder(null)} className="w-full" variant="outline" disabled={isProcessing}>
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to Edit Details
-                        </Button>
-                    </CardContent>
-                </Card>
-             )}
+            <Card>
+                <CardContent className="p-6">
+                    <h3 className="text-xl font-bold mb-4">Delivery Details</h3>
+                    <DeliveryForm deliveryInfo={deliveryInfo} setDeliveryInfo={setDeliveryInfo} />
+                     <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button className="w-full mt-6" size="lg" disabled={isFormInvalid}>
+                                Proceed to Payment
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Confirm Your Order</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    You are about to place your order. An 80% deposit of <strong>{formatPrice(depositAmount)}</strong> will be required to finalize it.
+                                    <br/><br/>
+                                    Please ensure all details are correct before proceeding.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel disabled={isProcessing}>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleCheckout} disabled={isProcessing}>
+                                    {isProcessing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Please wait...</> : 'Pay with Paystack'}
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </CardContent>
+            </Card>
         </main>
     </div>
   );
