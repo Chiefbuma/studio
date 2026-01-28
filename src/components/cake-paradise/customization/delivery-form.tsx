@@ -252,8 +252,17 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
                     <p className="text-xs text-muted-foreground mt-1">Heads up: We require 48 hours to prepare your cake.</p>
                 </div>
                 <div className="space-y-2">
-                    <Label htmlFor="delivery_time">Preferred Time</Label>
-                    <Input id="delivery_time" type="time" value={deliveryInfo.delivery_time} onChange={(e) => handleInputChange('delivery_time', e.target.value)} />
+                    <Label htmlFor="delivery_time">Preferred Time Slot</Label>
+                    <Select value={deliveryInfo.delivery_time} onValueChange={(value) => handleInputChange('delivery_time', value)}>
+                        <SelectTrigger id="delivery_time">
+                            <SelectValue placeholder="Select a time slot" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Morning (9am - 12pm)">Morning (9am - 12pm)</SelectItem>
+                            <SelectItem value="Afternoon (12pm - 4pm)">Afternoon (12pm - 4pm)</SelectItem>
+                            <SelectItem value="Evening (4pm - 7pm)">Evening (4pm - 7pm)</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
@@ -264,5 +273,3 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
         </div>
     );
 }
-
-    
