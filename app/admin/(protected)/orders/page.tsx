@@ -31,7 +31,7 @@ export default function OrdersPage() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [toast]);
     
     useEffect(() => {
         fetchData();

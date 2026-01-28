@@ -38,7 +38,7 @@ export default function OffersPage() {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [toast]);
 
     useEffect(() => {
         fetchData();
