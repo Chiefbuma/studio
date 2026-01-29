@@ -8,7 +8,7 @@ import type { CustomizationOptions } from '@/lib/types';
 import { placeOrder, logError } from '@/lib/actions';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, ArrowLeft, Image as ImageIcon, Lock, Store, Truck } from 'lucide-react';
+import { Loader2, ArrowLeft, Image as ImageIcon, Lock, Store, Truck, RefreshCw } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -22,7 +22,12 @@ export default function PaymentPage() {
   const { cart, totalPrice, deliveryInfo, clearCheckoutData } = useCart();
   const router = useRouter();
   const { toast } = useToast();
+  
+  // State management for the payment flow
   const [isProcessing, setIsProcessing] = useState(false);
+  const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderDetails, setOrderDetails] = useState<{ orderNumber: string; depositAmount: number } | null>(null);
+
   const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions | null>(null);
 
   useEffect(() => {
@@ -55,10 +60,11 @@ export default function PaymentPage() {
     );
   }
 
-  const depositAmount = totalPrice * 0.8;
+  const finalDepositAmount = totalPrice * 0.8;
   const customerEmail = `${deliveryInfo.phone}@whiskedelights.com`; 
 
   const handlePaymentSuccess = (response: { reference: string }, orderNumber: string) => {
+    setIsProcessing(false);
     const message = generateWhatsAppMessage(orderNumber);
     const whatsappUrl = `https://wa.me/${ownerWhatsAppNumber}?text=${encodeURIComponent(message)}`;
     
@@ -69,6 +75,7 @@ export default function PaymentPage() {
     toast({
       title: "Payment Confirmed!",
       description: `Your order #${orderNumber} is being prepared. Ref: ${response.reference}`,
+      duration: 10000,
     });
     
     clearCheckoutData();
@@ -123,7 +130,7 @@ export default function PaymentPage() {
 
     message += `\n*--- Payment ---*\n`;
     message += `*Total Price:* ${formatPrice(totalPrice)}\n`;
-    message += `*Deposit Paid:* ${formatPrice(depositAmount)}\n`;
+    message += `*Deposit Paid:* ${formatPrice(orderDetails?.depositAmount || finalDepositAmount)}\n`;
     message += `*Status:* PAID ✅`;
 
     return message;
@@ -131,19 +138,28 @@ export default function PaymentPage() {
 
   const handleCheckout = async () => {
     setIsProcessing(true);
+
+    // If order is already placed, just retry payment
+    if (orderPlaced && orderDetails) {
+        triggerPaystackPayment(orderDetails.orderNumber, orderDetails.depositAmount);
+        return;
+    }
+
     try {
         const result = await placeOrder({
             items: cart,
             deliveryInfo,
             totalPrice,
-            depositAmount
+            depositAmount: finalDepositAmount,
         });
 
-        if (result.success) {
+        if (result.success && result.orderNumber) {
           toast({
             title: "Order Confirmed!",
             description: `Your order #${result.orderNumber} is confirmed. Proceeding to payment...`,
           });
+          setOrderDetails({ orderNumber: result.orderNumber, depositAmount: result.depositAmount });
+          setOrderPlaced(true);
           triggerPaystackPayment(result.orderNumber, result.depositAmount);
         } else {
           toast({ variant: "destructive", title: "Order Failed", description: result.error });
@@ -151,7 +167,6 @@ export default function PaymentPage() {
         }
     } catch (error) {
         const errorMessage = `Checkout failed unexpectedly: ${error instanceof Error ? error.message : 'Unknown error'}`;
-        console.error(errorMessage);
         await logError(errorMessage);
         toast({ variant: "destructive", title: "An Unexpected Error Occurred", description: "Could not place your order. Please try again later."});
         setIsProcessing(false);
@@ -159,39 +174,45 @@ export default function PaymentPage() {
   };
 
   const triggerPaystackPayment = (orderNumber: string, amount: number) => {
-     if (!paystackPublicKey || (!paystackPublicKey.startsWith('pk_test_') && !paystackPublicKey.startsWith('pk_live_'))) {
-        const errorMsg = "Payment gateway is not configured correctly.";
-        toast({ variant: 'destructive', title: 'Payment Gateway Error', description: errorMsg });
-        console.error(errorMsg);
-        logError(errorMsg);
-        setIsProcessing(false);
-        return;
-    }
+     try {
+        if (!paystackPublicKey || (!paystackPublicKey.startsWith('pk_test_') && !paystackPublicKey.startsWith('pk_live_'))) {
+            throw new Error("Payment gateway is not configured correctly. Paystack public key is missing or invalid.");
+        }
 
-    const handler = (window as any).PaystackPop.setup({
-      key: paystackPublicKey,
-      email: customerEmail,
-      amount: Math.round(amount * 100),
-      currency: 'KES',
-      phone: deliveryInfo.phone,
-      ref: `WD_${orderNumber}_${Date.now()}`,
-      metadata: { order_number: orderNumber, customer_phone: deliveryInfo.phone, payment_type: "Deposit" },
-      callback: (response: any) => handlePaymentSuccess(response, orderNumber),
-      onClose: () => {
-        setIsProcessing(false);
-        const errorMessage = `Paystack payment was not completed for order ${orderNumber}. User closed the modal.`;
-        logError(errorMessage);
-        toast({ variant: "destructive", title: 'Payment Incomplete', description: 'Your payment was not completed.' });
-      }
-    });
-    handler.openIframe();
+        if (!(window as any).PaystackPop) {
+            throw new Error("Payment gateway (Paystack) failed to load. Please check your internet connection and try again.");
+        }
+
+        const handler = (window as any).PaystackPop.setup({
+            key: paystackPublicKey,
+            email: customerEmail,
+            amount: Math.round(amount * 100),
+            currency: 'KES',
+            phone: deliveryInfo.phone,
+            ref: `WD_${orderNumber}_${Date.now()}`,
+            metadata: { order_number: orderNumber, customer_phone: deliveryInfo.phone, payment_type: "Deposit" },
+            callback: (response: any) => handlePaymentSuccess(response, orderNumber),
+            onClose: () => {
+                setIsProcessing(false); // Re-enable the button to allow retry
+                const errorMessage = `Paystack payment was not completed for order ${orderNumber}. User closed the modal.`;
+                logError(errorMessage);
+                toast({ variant: "destructive", title: 'Payment Incomplete', description: 'You can click "Retry Payment" to try again.' });
+            }
+        });
+        handler.openIframe();
+     } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred while trying to open the payment modal.";
+        logError(`triggerPaystackPayment error for order ${orderNumber}: ${errorMessage}`);
+        toast({ variant: 'destructive', title: 'Payment Error', description: errorMessage });
+        setIsProcessing(false); // Re-enable button on failure
+     }
   }
   
   return (
     <div className="min-h-screen bg-background">
         <header className="bg-card border-b p-4 sticky top-0 z-20">
             <div className="container mx-auto flex items-center">
-                <Button variant="ghost" onClick={() => router.push('/checkout')}>
+                <Button variant="ghost" onClick={() => router.push('/checkout')} disabled={isProcessing}>
                     <ArrowLeft className="mr-2 h-4 w-4" /> 
                     Edit Details
                 </Button>
@@ -282,11 +303,13 @@ export default function PaymentPage() {
                             </div>
                              <div className="flex justify-between items-center text-lg">
                                 <span className="font-bold text-primary">80% Deposit Required</span>
-                                <span className="font-bold text-primary">{formatPrice(depositAmount)}</span>
+                                <span className="font-bold text-primary">{formatPrice(finalDepositAmount)}</span>
                             </div>
                              <Button onClick={handleCheckout} size="lg" className="w-full" disabled={isProcessing}>
                                 {isProcessing ? (
                                     <><Loader2 className="mr-2 h-4 w-4 animate-spin"/>Please wait...</>
+                                ) : orderPlaced ? (
+                                    <><RefreshCw className="mr-2 h-4 w-4" />Retry Payment</>
                                 ) : (
                                     <><Lock className="mr-2 h-4 w-4" />Confirm & Proceed to Pay</>
                                 )}
