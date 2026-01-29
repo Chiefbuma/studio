@@ -347,35 +347,47 @@ RewriteRule ^(.*)$ https://127.0.0.1:%{SERVER_PORT}/$1 [P,L]
 
 After setting the variables and creating the `.htaccess` file, click the **"Restart"** button. Your application should now be live on your domain.
 
-## 6. Performance Optimizations
+## 6. Architectural Patterns & Optimizations
 
-To ensure the application is fast and responsive, especially on mobile devices, several key optimizations have been implemented.
+The application is built with a focus on reliability, performance, and a smooth user experience. Several key patterns and optimizations are used to achieve this.
 
-### a. Faster Initial Load
+### a. Resilient Two-Step Checkout Flow
 
-The initial cover/splash screen has been removed. The application now loads directly into the "Today's Special" offer page, reducing the time to first interaction and getting users to the content faster.
+To ensure transaction integrity and provide a clear user journey, the checkout process is separated into two distinct pages. This is an e-commerce best practice that prevents common issues like duplicate orders.
 
-### b. Database Indexing
+1.  **/checkout**: This page is solely for collecting customer and delivery details. Input is validated before the user can proceed.
+2.  **/payment**: This page acts as a final confirmation screen. It displays a full summary of the order and delivery information, allowing the user to review everything before committing to payment.
 
-To ensure fast query performance, especially as the number of orders and cakes grows, several columns have been indexed. Indexes significantly speed up data retrieval operations, making the entire application—particularly the admin panel—feel more responsive.
+The payment logic itself is designed for resilience:
+-   **Idempotent Order Placement**: An order is created in the database with a `pending` status *before* the payment modal is shown. If the modal fails to open (due to network or device issues), the user is presented with a "Retry Payment" button. This button only retries the payment for the *existing* order and **will not** create a duplicate.
+-   **Payment Gateway Timeout**: To prevent users from getting stuck, the application will time out after 20 seconds of trying to load the Paystack modal and automatically enable the "Retry Payment" option.
 
--   **`orders(created_at)`**: Speeds up the sorting of orders by their creation date on the main orders page.
--   **`orders(order_status)`**: Allows for efficient filtering of orders by their status (e.g., finding all "processing" orders).
--   **`orders(customer_phone)`**: Dramatically improves the speed of searching for all orders placed by a specific customer.
--   **`order_items(order_id)`**: Critical for quickly fetching all items associated with a specific order.
--   **`cakes(category)`**: Speeds up filtering cakes by category on the menu pages.
+### b. Optimized Data Fetching & Caching
 
-You should apply these indexes to your database to get the full performance benefits. The SQL scripts are provided in the schema section.
+The application provides a fast, near-instantaneous browsing experience by employing an intelligent data fetching strategy.
 
-### c. Image Loading Strategy
+-   **Initial Data Hydration**: On first load, a custom `useCakeData` hook fetches all primary application data (cakes, customizations, special offer) in a single batch. This is accompanied by a polished loading animation to improve perceived performance.
+-   **Client-Side Caching**: The fetched data is cached on the client-side for the duration of the user's session. This means that navigating between the main offer page and the menu is instantaneous, as no new data needs to be fetched from the server.
+-   **Persistent Shopping Cart**: The `useCart` hook manages the shopping cart state and automatically persists it to the browser's `localStorage`. This ensures a user's cart is not lost if they accidentally refresh the page or close the tab.
+
+### c. Database Indexing for Performance
+
+To ensure fast query performance, especially as the number of orders and cakes grows, several database columns have been indexed. Indexes significantly speed up data retrieval operations, which makes the entire application—particularly the admin panel—feel more responsive.
+
+-   `orders(created_at)`: Speeds up sorting orders by date.
+-   `orders(order_status)`: Allows for efficient filtering of orders by status (e.g., finding all "processing" orders).
+-   `orders(customer_phone)`: Dramatically improves the speed of searching for a customer's orders.
+-   `order_items(order_id)`: Critical for quickly fetching all items for a specific order.
+-   `cakes(category)`: Speeds up filtering cakes by category.
+
+The SQL scripts to apply these indexes are provided in the schema section.
+
+### d. Image Loading Strategy
 
 The application is currently configured to load images without server-side optimization (`unoptimized: true` in `next.config.ts`). This is a necessary setting to ensure compatibility with shared hosting environments that do not support Next.js's built-in image optimization service.
 
 For optimal image performance, it is recommended to deploy the application to a hosting provider with full support for Next.js features, such as Vercel or a dedicated Node.js server.
 
-### d. Client-Side Caching
-
-The application fetches primary data (cakes, customizations, special offers) once when it first loads and caches it on the client-side for the duration of the user's session. This prevents redundant data fetching when navigating between the menu and offer pages, resulting in near-instant transitions.
 
 ## 7. Troubleshooting
 
