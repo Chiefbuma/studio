@@ -5,7 +5,6 @@ import SpecialOffer from '@/components/cake-paradise/special-offer';
 import Menu from '@/components/cake-paradise/menu';
 import { CustomizationModal } from '@/components/cake-paradise/customization/customization-modal';
 import type { Cake } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { CakeSlice } from 'lucide-react';
 import { useCart } from '@/hooks/use-cart';
 import { CartSheet } from '@/components/cake-paradise/cart-sheet';
@@ -59,14 +58,17 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <div className="relative w-16 h-16 mx-auto">
-            <Skeleton className="w-16 h-16 rounded-full" />
-            <CakeSlice className="w-8 h-8 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary/50" />
-          </div>
-          <p className="text-muted-foreground font-semibold">Loading WhiskeDelights...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-center p-4">
+        <div className="flex items-center gap-2 font-bold text-3xl text-primary mb-6 font-headline">
+            <CakeSlice className="h-8 w-8" />
+            <span>WhiskeDelights</span>
         </div>
+        <div className="flex items-center justify-center space-x-2" aria-label="Loading">
+            <div className="w-4 h-4 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+            <div className="w-4 h-4 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div className="w-4 h-4 bg-primary rounded-full animate-bounce"></div>
+        </div>
+        <p className="text-muted-foreground mt-6 font-semibold">Loading deliciousness...</p>
       </div>
     );
   }
