@@ -1,3 +1,4 @@
+
 import { NextResponse, NextRequest } from 'next/server';
 import pool from '@/lib/db';
 import { verifyAuth } from '@/lib/auth-utils';
@@ -14,8 +15,14 @@ export async function GET(req: NextRequest) {
         const [orders]: any[] = await connection.query('SELECT * FROM orders ORDER BY created_at DESC');
 
         for (const order of orders) {
-            const [items] = await connection.query('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
-            order.items = items;
+            const [items]: any[] = await connection.query('SELECT * FROM order_items WHERE order_id = ?', [order.id]);
+            order.items = items.map((item) => ({
+                ...item,
+                price: parseFloat(item.price),
+                customizations: typeof item.customizations === 'string' ? JSON.parse(item.customizations) : item.customizations,
+            }));
+            order.total_price = parseFloat(order.total_price);
+            order.deposit_amount = parseFloat(order.deposit_amount);
         }
         
         connection.release();
