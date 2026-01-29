@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCart } from '@/hooks/use-cart';
 import { formatPrice } from '@/lib/utils';
 import type { CustomizationOptions } from '@/lib/types';
@@ -27,6 +27,7 @@ export default function PaymentPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [orderDetails, setOrderDetails] = useState<{ orderNumber: string; depositAmount: number } | null>(null);
+  const paymentTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [customizationOptions, setCustomizationOptions] = useState<CustomizationOptions | null>(null);
 
@@ -48,6 +49,15 @@ export default function PaymentPage() {
     }
     fetchOptions();
   }, [toast]);
+  
+  useEffect(() => {
+    // Cleanup timeout on component unmount
+    return () => {
+        if (paymentTimeoutRef.current) {
+            clearTimeout(paymentTimeoutRef.current);
+        }
+    }
+  }, []);
 
   if (!deliveryInfo || cart.length === 0) {
     return (
@@ -139,9 +149,67 @@ export default function PaymentPage() {
   const handleCheckout = async () => {
     setIsProcessing(true);
 
-    // If order is already placed, just retry payment
+    // Clear any previous timeout and set a new one for 20 seconds
+    if (paymentTimeoutRef.current) {
+        clearTimeout(paymentTimeoutRef.current);
+    }
+    paymentTimeoutRef.current = setTimeout(() => {
+        setIsProcessing(false); // Stop the spinner
+        toast({
+            variant: "destructive",
+            title: "Payment Gateway Timeout",
+            description: "The payment gateway took too long to respond. Please check your connection and try again.",
+            duration: 8000,
+        });
+    }, 20000); // 20 seconds
+
+    const cleanupTimeout = () => {
+        if (paymentTimeoutRef.current) {
+            clearTimeout(paymentTimeoutRef.current);
+        }
+    };
+
+    const triggerPaystack = (orderNumber: string, amount: number) => {
+        try {
+            if (!paystackPublicKey || (!paystackPublicKey.startsWith('pk_test_') && !paystackPublicKey.startsWith('pk_live_'))) {
+                throw new Error("Payment gateway is not configured correctly. Paystack public key is missing or invalid.");
+            }
+            if (!(window as any).PaystackPop) {
+                throw new Error("Payment gateway (Paystack) failed to load. Please check your internet connection and try again.");
+            }
+
+            const handler = (window as any).PaystackPop.setup({
+                key: paystackPublicKey,
+                email: customerEmail,
+                amount: Math.round(amount * 100),
+                currency: 'KES',
+                phone: deliveryInfo.phone,
+                ref: `WD_${orderNumber}_${Date.now()}`,
+                metadata: { order_number: orderNumber, customer_phone: deliveryInfo.phone, payment_type: "Deposit" },
+                callback: (response: any) => {
+                    cleanupTimeout();
+                    handlePaymentSuccess(response, orderNumber);
+                },
+                onClose: () => {
+                    cleanupTimeout();
+                    setIsProcessing(false);
+                    const errorMessage = `Paystack payment was not completed for order ${orderNumber}. User closed the modal.`;
+                    logError(errorMessage);
+                    toast({ variant: "destructive", title: 'Payment Incomplete', description: 'You can click "Retry Payment" to try again.' });
+                }
+            });
+            handler.openIframe();
+        } catch (error) {
+            cleanupTimeout();
+            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred while trying to open the payment modal.";
+            logError(`triggerPaystackPayment error for order ${orderNumber}: ${errorMessage}`);
+            toast({ variant: 'destructive', title: 'Payment Error', description: errorMessage });
+            setIsProcessing(false);
+        }
+    };
+
     if (orderPlaced && orderDetails) {
-        triggerPaystackPayment(orderDetails.orderNumber, orderDetails.depositAmount);
+        triggerPaystack(orderDetails.orderNumber, orderDetails.depositAmount);
         return;
     }
 
@@ -160,53 +228,20 @@ export default function PaymentPage() {
           });
           setOrderDetails({ orderNumber: result.orderNumber, depositAmount: result.depositAmount });
           setOrderPlaced(true);
-          triggerPaystackPayment(result.orderNumber, result.depositAmount);
+          triggerPaystack(result.orderNumber, result.depositAmount);
         } else {
+          cleanupTimeout();
           toast({ variant: "destructive", title: "Order Failed", description: result.error });
           setIsProcessing(false);
         }
     } catch (error) {
+        cleanupTimeout();
         const errorMessage = `Checkout failed unexpectedly: ${error instanceof Error ? error.message : 'Unknown error'}`;
         await logError(errorMessage);
         toast({ variant: "destructive", title: "An Unexpected Error Occurred", description: "Could not place your order. Please try again later."});
         setIsProcessing(false);
     }
   };
-
-  const triggerPaystackPayment = (orderNumber: string, amount: number) => {
-     try {
-        if (!paystackPublicKey || (!paystackPublicKey.startsWith('pk_test_') && !paystackPublicKey.startsWith('pk_live_'))) {
-            throw new Error("Payment gateway is not configured correctly. Paystack public key is missing or invalid.");
-        }
-
-        if (!(window as any).PaystackPop) {
-            throw new Error("Payment gateway (Paystack) failed to load. Please check your internet connection and try again.");
-        }
-
-        const handler = (window as any).PaystackPop.setup({
-            key: paystackPublicKey,
-            email: customerEmail,
-            amount: Math.round(amount * 100),
-            currency: 'KES',
-            phone: deliveryInfo.phone,
-            ref: `WD_${orderNumber}_${Date.now()}`,
-            metadata: { order_number: orderNumber, customer_phone: deliveryInfo.phone, payment_type: "Deposit" },
-            callback: (response: any) => handlePaymentSuccess(response, orderNumber),
-            onClose: () => {
-                setIsProcessing(false); // Re-enable the button to allow retry
-                const errorMessage = `Paystack payment was not completed for order ${orderNumber}. User closed the modal.`;
-                logError(errorMessage);
-                toast({ variant: "destructive", title: 'Payment Incomplete', description: 'You can click "Retry Payment" to try again.' });
-            }
-        });
-        handler.openIframe();
-     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred while trying to open the payment modal.";
-        logError(`triggerPaystackPayment error for order ${orderNumber}: ${errorMessage}`);
-        toast({ variant: 'destructive', title: 'Payment Error', description: errorMessage });
-        setIsProcessing(false); // Re-enable button on failure
-     }
-  }
   
   return (
     <div className="min-h-screen bg-background">

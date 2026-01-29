@@ -208,7 +208,7 @@ export function DeliveryForm({ deliveryInfo, setDeliveryInfo }: DeliveryFormProp
                 </div>
                  <div className="space-y-2">
                     <Label htmlFor="phone">Phone Number *</Label>
-                    <Input id="phone" type="tel" placeholder="0712345678" value={deliveryInfo.phone} onChange={(e) => handleInputChange('phone', e.target.value)} required />
+                    <Input id="phone" type="tel" value={deliveryInfo.phone} onChange={(e) => handleInputChange('phone', e.target.value)} required />
                 </div>
             </div>
 
