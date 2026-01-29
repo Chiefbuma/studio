@@ -6,11 +6,11 @@ import type { Cake, CustomizationOptions } from "@/lib/types";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MoreHorizontal, Star, Image as ImageIcon, MoreVertical, ArrowUpDown, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Star, Image as ImageIcon, ArrowUpDown, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { CakeDialog } from "@/components/admin/cake-dialog";
@@ -49,7 +49,7 @@ export default function CakesPage() {
         } finally {
             setLoading(false);
         }
-    }, []); // Removed `toast` from dependency array to fix infinite loop
+    }, [toast]); // `toast` is safe here as it's from a stable context provider.
 
     useEffect(() => {
         fetchData();
@@ -190,7 +190,7 @@ export default function CakesPage() {
                     </div>
                     <div className="flex items-center gap-2">
                         {selectedRows.size > 0 && (
-                            <DropdownMenu>
+                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline">
                                         Actions ({selectedRows.size})
@@ -226,9 +226,9 @@ export default function CakesPage() {
                         <Table>
                             <TableHeader>
                                 <TableRow>
-                                    <TableHead padding="checkbox" className="p-2">
+                                    <TableHead className="p-2 w-[48px]">
                                         <Checkbox
-                                            checked={selectedRows.size === paginatedCakes.length && paginatedCakes.length > 0}
+                                            checked={paginatedCakes.length > 0 && selectedRows.size === paginatedCakes.length}
                                             indeterminate={selectedRows.size > 0 && selectedRows.size < paginatedCakes.length}
                                             onCheckedChange={handleSelectAll}
                                         />
@@ -338,5 +338,7 @@ export default function CakesPage() {
         </>
     );
 }
+
+    
 
     

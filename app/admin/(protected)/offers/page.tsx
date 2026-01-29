@@ -166,3 +166,5 @@ export default function OffersPage() {
         </Card>
     );
 }
+
+    
